@@ -3,7 +3,6 @@ define(['./module'], function (controllers) {
 
   controllers.controller('AppCtrl',
       ['$scope',
-        'securityService',
         'db',
         'Firm',
         'Guest',
@@ -13,7 +12,7 @@ define(['./module'], function (controllers) {
         'Itemtype',
         'datetime',
         '$state',
-        function ($scope, securityService, db, Firm, Guest, Reservation, Resource, Room, Itemtype, datetime, $state) {
+        function ($scope, db, Firm, Guest, Reservation, Resource, Room, Itemtype, datetime, $state) {
           console.log("App controller fired");
 
           //build expense types collection

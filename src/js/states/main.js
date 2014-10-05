@@ -9,12 +9,6 @@ define(['./module'], function (states) {
     return states.config(['$stateProvider', '$urlRouterProvider', 'viewProvider',
       function ($stateProvider, $urlRouterProvider, viewProvider) {
 
-        $stateProvider.state('signup', {
-            url: '/signup',
-            template: viewProvider.renderView('signup'),
-            controller: 'SignupCtrl'
-        });
-
         $stateProvider.state('home', {
             url:'/home',
             template: viewProvider.renderView('home'),
