@@ -1,16 +1,4 @@
-.page-header
-  .title Angular Desktop App
-
-.navbar.navbar-fixed-bottom.navbar-inverse(role="navigation")
-  .navbar-header
-    .navbar-brand: a(href="#"): Angular Desktop App
-  ul.nav.navbar-nav.pull-right(ng-show="authenticated")
-    li.dropdown
-      a.dropdown-toggle(href="#", data-toggle='dropdown')
-        | {{user.name}}
-        b.caret
-      ul.dropdown-menu
-        li: a(href="#") Quit
+include nav_common.jade
 
 .container
   h1 Current File : {{path}}

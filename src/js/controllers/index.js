@@ -6,7 +6,11 @@
  **/
 define([
     './app',
-    './signup',
     './home',
-    './file'
+    './file',
+    './reservations',
+    './rechnung',
+    './charges',
+    './addresse',
+    './liste'
 ], function () {});

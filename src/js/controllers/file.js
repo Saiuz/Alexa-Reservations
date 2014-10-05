@@ -19,10 +19,12 @@ define(['./module'], function (controllers) {
         console.log("Loading file open controller");
     }]);
 
-    controllers.controller('FileViewCtrl', ['$scope', '$state', '$stateParams', 'file', function ($scope, $state, $stateParams, file) {
+    controllers.controller('FileViewCtrl', ['$scope', '$state', '$stateParams', '$rootScope', 'file', function ($scope, $state, $stateParams, $rootScope, file) {
         console.log("Loading file view controller for file", file);
         $scope.file = file;
         $scope.path = $stateParams.path;
+        $scope.appTitle = $rootScope.appTitle;
+        $scope.appBrand = $rootScope.appBrand;
     }]);
 
 });

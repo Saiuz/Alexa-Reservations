@@ -9,11 +9,11 @@ requirejs.config({
         'domReady': '../lib/requirejs-domready/domReady',
         'angular': '../lib/angular/angular',
         'angular-ui-router': '../lib/angular-ui-router/release/angular-ui-router',
-        'handlebars': '../lib/handlebars/handlebars',
         'text': '../lib/requirejs-text/text',
         '_': '../lib/lodash/dist/lodash',
         '$': '../lib/jquery/dist/jquery',
-        'angular-bootstrap': '../lib/angular-bootstrap/ui-bootstrap-tpls'
+        'angular-bootstrap': '../lib/angular-bootstrap/ui-bootstrap-tpls',
+        'angular-xeditable': '../lib/angular-xeditable/dist/js/xeditable'
     },
 
     /**
@@ -27,14 +27,14 @@ requirejs.config({
         'angular-ui-router':{
             deps:['angular']
         },
-        'handlebars':{
-            exports:'Handlebars'
-        },
         '_':{
             exports:'_'
         },
         'angular-bootstrap':{
             deps: ['angular', '$']
+        },
+        'angular-xeditable':{
+          deps:['angular']
         }
     },
 

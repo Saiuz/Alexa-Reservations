@@ -1,0 +1,158 @@
+<div  class="btn-group" >      <!-- todo add typeahead for guest and firm in edit mode-->
+    <button class="btn btn-default" type="button" ng-click="toggleEditButton()">{{editText}}</button>
+    <a class="btn btn-default" href="#/charges/{{res.reservation_number}}" ng-show="canCheckInOut && !edit">{{checkText}}</a>
+</div>
+<div class="form-horizontal" ng-if="hasResults">
+    <div class="form-group">
+        <label class="control-label col-xs-4">Title</label>
+
+        <div class="col-xs-8" ng-if="!edit">
+            <p class="form-control-static">{{res.title}}</p>
+        </div>
+        <div class="col-xs-8" ng-if="edit">
+            <input type="text" ng-model="res.title" class="form-control">
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-xs-4">Gast</label>
+
+        <div class="col-xs-8" ng-if="!edit">
+            <p class="form-control-static">{{res.guest.name}}</p>
+        </div>
+        <div class="col-xs-8" ng-if="edit">
+            <input type="text" ng-model="res.guest.name" class="form-control">
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-xs-4">Firma</label>
+
+        <div class="col-xs-8" ng-if="!edit">
+            <p class="form-control-static">{{res.firm}}</p>
+        </div>
+        <div class="col-xs-8" ng-if="edit">
+            <input type="text" ng-model="res.firm" class="form-control">
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-xs-4">Ankunft</label>
+
+        <div class="col-xs-8" ng-if="!edit">
+            <p class="form-control-static">{{res.start_date | date:'shortDate'}}</p>
+        </div>
+        <div class="col-xs-8" ng-if="edit">
+            <input type="date" ng-model="test" date="dd/MM/yyyy" class="form-control">
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-xs-4">Abfahrt</label>
+
+        <div class="col-xs-8" ng-if="!edit">
+            <p class="form-control-static">{{res.end_date | date:'shortDate'}}</p>
+        </div>
+        <div class="col-xs-8" ng-if="edit">
+            <input type="date" ng-model="res.end_date" class="form-control">
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-xs-4">Nachte</label>
+
+        <div class="col-xs-8">
+            <p class="form-control-static">{{res.nights}}</p>
+        </div>
+        <!-- Nights are calculated -->
+    </div>
+    <div class="form-group">
+        <label class="control-label col-xs-4">Num. Gäste</label>
+
+        <div class="col-xs-8" ng-if="!edit">
+            <p class="form-control-static">{{res.occupants}}</p>
+        </div>
+        <div class="col-xs-8" ng-if="edit">
+            <select ng-model="res.occupants" class="form-control"
+                    ng-options="num for num in numGuests"></select>
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-xs-4">Zimmer</label>
+
+        <div class="col-xs-8" ng-if="!edit">
+            <p class="form-control-static">{{res.room}}</p>
+        </div>
+        <div class="col-xs-8" ng-if="edit">
+            <select ng-model="res.room" class="form-control" ng-options="num for num in rooms"></select>
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-xs-4">Preis</label>
+
+        <div class="col-xs-8" ng-if="!edit">
+            <p class="form-control-static">{{res.room_price | currency : '€'}}</p>
+        </div>
+        <div class="col-xs-8" ng-if="edit">
+            <input type="number" ng-model="res.room_price" class="form-control">
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-xs-4">Parkplatz</label>
+
+        <div class="col-xs-8" ng-if="!edit">
+            <p class="form-control-static">{{res.resource}}</p>
+        </div>
+        <div class="col-xs-8" ng-if="edit">
+            <select ng-model="res.resource" class="form-control"
+                    ng-options="r for r in resources"></select>
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-xs-4">Preis</label>
+
+        <div class="col-xs-8" ng-if="!edit">
+            <p class="form-control-static">{{res.resource_price | currency : '€'}}</p>
+        </div>
+        <div class="col-xs-8" ng-if="edit">
+            <input type="number" ng-model="res.resource_price" class="form-control">
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-xs-4">Status</label>
+
+        <div class="col-xs-8" ng-if="!edit">
+            <p class="form-control-static">{{res.status}}</p>
+        </div>
+        <div class="col-xs-8" ng-if="edit">
+            <select ng-model="res.status" class="form-control"
+                    ng-options="stat for stat in status"></select>
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-xs-4">Zimmer Plan</label>
+
+        <div class="col-xs-8" ng-if="!edit">
+            <p class="form-control-static">{{res.plan}}</p>
+        </div>
+        <div class="col-xs-8" ng-if="edit">
+            <select ng-model="res.plan" class="form-control" ng-options="p for p in plans"></select>
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-xs-4">Source</label>
+
+        <div class="col-xs-8" ng-if="!edit">
+            <p class="form-control-static">{{res.source}}</p>
+        </div>
+        <div class="col-xs-8" ng-if="edit">
+            <select ng-model="res.source" class="form-control" ng-options="t for t in sources"></select>
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-xs-4">Bemerkung</label>
+
+        <div class="col-xs-8" ng-if="!edit">
+            <p class="form-control-static">{{res.comments}}</p>
+        </div>
+        <div class="col-xs-8" ng-if="edit">
+            <input type="text" ng-model="res.comments" class="form-control">
+        </div>
+    </div>
+</div>
+<div ng-if="!hasResults">No reservation selected</div>

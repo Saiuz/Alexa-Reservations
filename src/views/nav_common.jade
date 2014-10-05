@@ -1,0 +1,30 @@
+// Common App header and navigation html
+.app-page-header.inline
+  img(src="./images/logo.png", alt="{{appTitle}}" height="40" width="68")
+  .pull-right
+    h3 {{pageHeading}}
+  //.app-logo.pull-left {{appTitle}}
+.navbar.navbar-fixed-bottom.navbar-inverse(role="navigation")
+  .navbar-header
+    .navbar-brand: a(href="#"):  {{appBrand}}
+  ul.nav.navbar-nav
+    li(ng-class="{active: (url == '/home')}")
+      a(href="#/home") Home
+    li(ng-class="{active: (url == '/reservations')}")
+      a(href="#/reservations") Reservierung
+    li(ng-class="{active: (url == '/charges/0')}")
+      a(href="#/charges/0") Gebühren
+    li(ng-class="{active: (url == '/rechnung/0')}")
+      a(href="#/rechnung/0") Rechnung
+    li(ng-class="{active: (url == '/addresse')}")
+      a(href="#/addresse") Addresse
+    li(ng-class="{active: (url == '/liste')}")
+      a(href="#/liste") Liste
+  ul.nav.navbar-nav.pull-right(ng-show="authenticated")
+    li.dropdown
+      a.dropdown-toggle(href="#", data-toggle='dropdown')
+        | V0.1
+      //  | {{user.name}}
+      //  b.caret
+      //ul.dropdown-menu
+      //  li: a(href="#") Quit

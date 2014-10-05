@@ -1,0 +1,131 @@
+include nav_common.jade
+.container
+  .row
+    .col-md-4
+      .panel.panel-default
+        .panel-heading
+          span.input-group-btn Aktuelle Reservierungen
+            button.btn.btn-small.pull-right(type="button" ng-click="findRes()")
+              i.glyphicon.glyphicon-search
+        .panel-body
+          div(reservation-list list-mode="c" list-date="theDate" selected-reservation="selectedReservation")
+    .col-md-8
+      .panel.panel-default
+        .panel-heading Gebühren&nbsp;
+          span(ng-show="showCharges") für: {{res.guest.name}} - Zimmer {{res.room}}, Abfahrt {{res.end_date | date:'shortDate'}}, {{res.nights}} Nöchte
+          a.btn.btn-default.btn-small.pull-right(ng-show="showCharges" href="#/rechnung/{{res.reservation_number}}")
+            span(class="glyphicon glyphicon-arrow-right" ng-show="showCharges") &nbsp;Zu Rechnung
+        .panel-body
+          .col-md-12
+            div.table-bordered(ng-show="showCharges")
+              tabset(justified="true")
+                tab(heading="Allgemein")
+                  .form-horizontal
+                    .form-group.left
+                      label.control-label.col-xs-4 Zimmer:
+                      .col-xs-8
+                        p.form-control-static  {{res.nights}} Tage {{res.plan}} à {{res.room_price | currency: '€'}}
+                    .form-group.left
+                      label.control-label.col-xs-4 Parkgebühr:
+                      .col-xs-8
+                        p.form-control-static  {{res.nights}} Tage  à {{res.park_price | currency: '€'}}
+                  hr
+                  ax-expense-item-list(item-type-array="itemTypes" expense-item-array="expenses" item_type="Allgemein", count_title="Tage" default_count="{{res.nights}}" max_count="{{res.nights}}")
+                tab(heading="Getränke")
+                  ax-expense-item-list(item-type-array="itemTypes" expense-item-array="expenses" item_type="Getränke", count_title="Mal" )
+                tab(heading="Speisen")
+                  ax-expense-item-list(item-type-array="itemTypes" expense-item-array="expenses" item_type="Speisen", count_title="Mal" )
+                tab(heading="Kur & Heilmittel" ng-show="rvm.isCure")
+                  ax-expense-item-list(item-type-array="itemTypes" expense-item-array="expenses" item_type="{{res.insurance}}", count_title="Mal" )
+          div.form-horizontal(ng-show="false")
+            h3 Debug:
+            .form-group
+              label.control-label.col-xs-4 Res. #:
+              .col-xs-8
+                p.form-control-static(editable-text="res.reservation_number") {{res.reservation_number}}
+            .form-group
+              label.control-label.col-xs-4 title:
+              .col-xs-8
+                p.form-control-static {{res.title}}
+            .form-group
+              label.control-label.col-xs-4 guest:
+              .col-xs-8
+                p.form-control-static {{res.guest}}
+            .form-group
+              label.control-label.col-xs-4 firm:
+              .col-xs-8
+                p.form-control-static {{res.firm}}
+            .form-group
+              label.control-label.col-xs-4 start_date:
+              .col-xs-8
+                p.form-control-static {{res.start_date}}
+            .form-group
+              label.control-label.col-xs-4 end_date:
+              .col-xs-8
+                p.form-control-static {{res.end_date}}
+            .form-group
+              label.control-label.col-xs-4 (nights):
+              .col-xs-8
+                p.form-control-static {{res.nights}}
+            .form-group
+              label.control-label.col-xs-4 checked-in:
+              .col-xs-8
+                p.form-control-static {{res.checked_in}}
+            .form-group
+              label.control-label.col-xs-4 checked-out:
+              .col-xs-8
+                p.form-control-static {{res.checked_out}}
+            .form-group
+              label.control-label.col-xs-4 occupants:
+              .col-xs-8
+                p.form-control-static {{res.occupants}}
+            .form-group
+              label.control-label.col-xs-4 room:
+              .col-xs-8
+                p.form-control-static {{res.room}}
+            .form-group
+              label.control-label.col-xs-4 room_price:
+              .col-xs-8
+                p.form-control-static {{res.room_price}}
+            .form-group
+              label.control-label.col-xs-4 park_place:
+              .col-xs-8
+                p.form-control-static {{res.park_place}}
+            .form-group
+              label.control-label.col-xs-4 park_price:
+              .col-xs-8
+                p.form-control-static {{res.park_price}}
+            .form-group
+              label.control-label.col-xs-4 conf_room:
+              .col-xs-8
+                p.form-control-static {{res.conf_room}}
+            .form-group
+              label.control-label.col-xs-4 conf_price:
+              .col-xs-8
+                p.form-control-static {{res.conf_price}}
+            .form-group
+              label.control-label.col-xs-4 status:
+              .col-xs-8
+                p.form-control-static {{res.status}}
+            .form-group
+              label.control-label.col-xs-4 plan:
+              .col-xs-8
+                p.form-control-static {{res.plan}}
+            .form-group
+              label.control-label.col-xs-4 plan_code:
+              .col-xs-8
+                p.form-control-static {{res.plan_code}}
+            .form-group
+              label.control-label.col-xs-4 source:
+              .col-xs-8
+                p.form-control-static {{res.source}}
+            .form-group
+              label.control-label.col-xs-4 comments:
+              .col-xs-8
+                p.form-control-static {{res.comments}}
+            .form-group
+              label.control-label.col-xs-4 expenses:
+              .col-xs-8
+                p.form-control-static {{res.expenses}}
+
+

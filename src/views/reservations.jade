@@ -1,0 +1,202 @@
+
+include nav_common.jade
+
+.container
+  .row
+    .col-md-5
+      .panel.panel-default
+        .panel-heading
+          .form-horizontal
+            span.input-group  Neue Reservierung
+        .panel-body
+          div.form-horizontal
+            .form-group
+              label.control-label.col-xs-4 Res. Typ
+              .col-xs-8
+                radio-button-group(data-toggle="buttons-radio" model="res.type" options="resTypeOptions" id="value" name="text" suffix="default")
+            .form-group(ng-show="!rvm.isBusiness")
+              label.control-label.col-xs-4 Zimmer Plan
+              .col-xs-8
+                select.form-control(ng-model="rvm.selectedPlan" ng-options="z as z.name for z in rvm.roomPlans" ng-change="rvm.roomPlanChanged()")
+            .form-group(ng-show="rvm.isBusiness")
+              label.control-label.col-xs-4 Zimmer Plan
+              .col-xs-8
+                p.form-control-static {{rvm.selectedPlan.name}}
+            .form-group(ng-show="rvm.isBusiness")
+              label.control-label.col-xs-4  Firma
+              .col-xs-8
+                span.input-group
+                  input.form-control(type="text" ng-model="firm" typeahead="n.name for n in getFirms($viewValue)" typeahead-on-select="rvm.firmChanged($item, $model, $label)")
+                  span.input-group-btn
+                    button.btn.btn-default(type="button" ng-click="newFirm()")
+                      i.glyphicon.glyphicon-open
+                  i.glyphicon.glyphicon-refresh(ng-show="loadingLocations")
+            .form-group
+              label.control-label.col-xs-4  Gast
+              .col-xs-8
+                span.input-group
+                  input.form-control(type="text" ng-model="guest" typeahead="n.dname for n in getGuests($viewValue)" typeahead-on-select="rvm.guestChanged($item, $model, $label)" )
+                  span.input-group-btn
+                    button.btn.btn-default(type="button" ng-click="newGuest()")
+                      i.glyphicon.glyphicon-open
+                  i.glyphicon.glyphicon-refresh(ng-show="loadingLocations")
+            .form-group
+              label.control-label.col-xs-4  Von
+              .col-xs-8
+                span.input-group
+                  input.form-control(type="text" datepicker-popup="dd.MM.yyyy"  is-open="openedStart" ng-model="res.start_date" datepicker-options="dateOptions" ng-required="true", close-text="OK", current-text="Heute" clear-text="Löschen")
+                  span.input-group-btn
+                    button.btn.btn-default(type="button" ng-click="openStart($event)")
+                      i.glyphicon.glyphicon-calendar
+            .form-group
+              label.control-label.col-xs-4  Bis
+              .col-xs-8
+                span.input-group
+                  input.form-control(type="text" datepicker-popup="dd.MM.yyyy"  is-open="openedEnd" ng-model="res.end_date" datepicker-options="dateOptions" min-date="start_date" ng-required="true", close-text="OK", current-text="Heute" clear-text="Löschen")
+                  span.input-group-btn
+                    button.btn.btn-default(type="button" ng-click="openEnd($event)")
+                      i.glyphicon.glyphicon-calendar
+            .form-group
+              label.control-label.col-xs-4  Nächte
+              .col-xs-3
+                input.form-control(type="number" mim=1 ng-model="rvm.nights")
+            .form-group
+              label.control-label.col-xs-4 Gäste Anzahl
+              .col-xs-8
+                radio-button-group(data-toggle="buttons-radio" model="res.occupants" options="occupantOptions" id="value" name="text" suffix="default")
+            .form-group(ng-show="rvm.selectedPlan.value !== 0")
+              label.control-label.col-xs-4 Freie Zimmer
+              .col-xs-8
+                select.form-control(ng-model="rvm.selectedRoom" ng-options="r as r.text for r in rvm.availableRooms" ng-change="rvm.updateRoom()")
+            .form-group.form-group(ng-show="res.room > 0")
+              label.control-label.col-xs-4 Zimmer Preis
+              .col-xs-3
+                input.form-control(type="text", ng-model="res.room_price")
+            .form-group.form-group(ng-show="res.room > 0 && rvm.isCure")
+              label.control-label.col-xs-4 Krankenkasse
+              .col-xs-8
+                select.form-control(ng-model="res.insurance" ng-options="r for r in rvm.insuranceList")
+            .form-group.form-group(ng-show="res.room > 0")
+              label.control-label.col-xs-4 Parkplatz
+              .col-xs-8
+                select.form-control(ng-model="rvm.selectedParking" ng-options="r as r.text for r in rvm.availableParking" ng-change="rvm.updateParking()")
+            .form-group.form-group(ng-show="res.room > 0 && rvm.isBusiness")
+              label.control-label.col-xs-4 Konf. Rm.
+              .col-xs-8
+                select.form-control(ng-model="rvm.selectedConfRm" ng-options="r as r.text for r in rvm.availableConfRm" ng-change="rvm.updateConfRm()")
+            .form-group.form-group(ng-show="res.room > 0")
+              label.control-label.col-xs-4 Status
+              .col-xs-8
+                select.form-control(ng-model="res.status" ng-options="r  for r in rvm.statusList")
+            .form-group.form-group(ng-show="res.room > 0")
+              label.control-label.col-xs-4 Quelle
+              .col-xs-8
+                select.form-control(ng-model="res.source" ng-options="r  for r in rvm.sourceList")
+            .form-group.form-group(ng-show="res.room > 0")
+              label.control-label.col-xs-4 Bemerkung
+              .col-xs-8
+                textarea.form-control( ng-model="res.comments" )
+            .form-group.form-group(ng-show="res.room > 0")
+              .col-xs-10
+                button Speichern
+          div.form-horizontal(ng-show="false")
+            h3 Debug:
+            .form-group
+              label.control-label.col-xs-4 Res. #:
+              .col-xs-8
+                p.form-control-static {{res.reservation_number}}
+            .form-group
+              label.control-label.col-xs-4 Res. Type:
+              .col-xs-8
+                p.form-control-static {{res.type}}
+            .form-group
+              label.control-label.col-xs-4 title:
+              .col-xs-8
+                p.form-control-static {{res.title}}
+            .form-group
+              label.control-label.col-xs-4 guest:
+              .col-xs-8
+                p.form-control-static {{res.guest}}
+            .form-group
+              label.control-label.col-xs-4 firm:
+              .col-xs-8
+                p.form-control-static {{res.firm}}
+            .form-group
+              label.control-label.col-xs-4 start_date:
+              .col-xs-8
+                p.form-control-static {{res.start_date}}
+            .form-group
+              label.control-label.col-xs-4 end_date:
+              .col-xs-8
+                p.form-control-static {{res.end_date}}
+            .form-group
+              label.control-label.col-xs-4 (nights):
+              .col-xs-8
+                p.form-control-static {{res.nights}}
+            .form-group
+              label.control-label.col-xs-4 checked-in:
+              .col-xs-8
+                p.form-control-static {{res.checked_in}}
+            .form-group
+              label.control-label.col-xs-4 checked-out:
+              .col-xs-8
+                p.form-control-static {{res.checked_out}}
+            .form-group
+              label.control-label.col-xs-4 occupants:
+              .col-xs-8
+                p.form-control-static {{res.occupants}}
+            .form-group
+              label.control-label.col-xs-4 room:
+              .col-xs-8
+                p.form-control-static {{res.room}}
+            .form-group
+              label.control-label.col-xs-4 room_price:
+              .col-xs-8
+                p.form-control-static {{res.room_price}}
+            .form-group
+              label.control-label.col-xs-4 park_place:
+              .col-xs-8
+                p.form-control-static {{res.park_place}}
+            .form-group
+              label.control-label.col-xs-4 park_price:
+              .col-xs-8
+                p.form-control-static {{res.park_price}}
+            .form-group
+              label.control-label.col-xs-4 conf_room:
+              .col-xs-8
+                p.form-control-static {{res.conf_room}}
+            .form-group
+              label.control-label.col-xs-4 conf_price:
+              .col-xs-8
+                p.form-control-static {{res.conf_price}}
+            .form-group
+              label.control-label.col-xs-4 status:
+              .col-xs-8
+                p.form-control-static {{res.status}}
+            .form-group
+              label.control-label.col-xs-4 plan:
+              .col-xs-8
+                p.form-control-static {{res.plan}}
+            .form-group
+              label.control-label.col-xs-4 plan_code:
+              .col-xs-8
+                p.form-control-static {{res.plan_code}}
+            .form-group
+              label.control-label.col-xs-4 source:
+              .col-xs-8
+                p.form-control-static {{res.source}}
+            .form-group
+              label.control-label.col-xs-4 comments:
+              .col-xs-8
+                p.form-control-static {{res.comments}}
+            .form-group
+              label.control-label.col-xs-4 expenses:
+              .col-xs-8
+                p.form-control-static {{res.expenses}}
+
+    .col-md-7
+      .panel.panel-default
+        .panel-heading Zimmer Plan
+        .panel-body
+          div
+            img(src="./images/resplan.png" alt="room calendar widget" width="600 px")

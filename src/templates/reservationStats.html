@@ -1,0 +1,70 @@
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th></th>
+            <th class="text-center">Abfahrt</th>
+            <th class="text-center">Ankunft</th>
+            <th class="text-center">Bleiben</th>
+            <th class="text-center">Einzel</th>
+            <th class="text-center">Double</th>
+        </tr>
+    </thead>
+    <tbody>
+    <tr ng-class="{'currentRow': currentDay === 1 }">
+        <th class="text-left">Montag</th>
+        <td class="text-center">{{stats[0][0]}}</td>
+        <td class="text-center">{{stats[0][1]}}</td>
+        <td class="text-center">{{stats[0][2]}}</td>
+        <td class="text-center">{{stats[0][3]}}</td>
+        <td class="text-center">{{stats[0][4]}}</td>
+    </tr>
+    <tr ng-class="{'currentRow': currentDay === 2 }">
+        <th class="text-left">Dienstag</th>
+        <td class="text-center">{{stats[1][0]}}</td>
+        <td class="text-center">{{stats[1][1]}}</td>
+        <td class="text-center">{{stats[1][2]}}</td>
+        <td class="text-center">{{stats[1][3]}}</td>
+        <td class="text-center">{{stats[1][4]}}</td>
+    </tr>
+    <tr ng-class="{'currentRow': currentDay === 3 }">
+        <th class="text-left">Mittwoch</th>
+        <td class="text-center">{{stats[2][0]}}</td>
+        <td class="text-center">{{stats[2][1]}}</td>
+        <td class="text-center">{{stats[2][2]}}</td>
+        <td class="text-center">{{stats[2][3]}}</td>
+        <td class="text-center">{{stats[2][4]}}</td>
+    </tr>
+    <tr ng-class="{'currentRow': currentDay === 4 }">
+        <th class="text-left">Donnerstag</th>
+        <td class="text-center">{{stats[3][0]}}</td>
+        <td class="text-center">{{stats[3][1]}}</td>
+        <td class="text-center">{{stats[3][2]}}</td>
+        <td class="text-center">{{stats[3][3]}}</td>
+        <td class="text-center">{{stats[3][4]}}</td>
+    </tr>
+    <tr ng-class="{'currentRow': currentDay === 5 }">
+        <th class="text-left">Freitag</th>
+        <td class="text-center">{{stats[4][0]}}</td>
+        <td class="text-center">{{stats[4][1]}}</td>
+        <td class="text-center">{{stats[4][2]}}</td>
+        <td class="text-center">{{stats[4][3]}}</td>
+        <td class="text-center">{{stats[4][4]}}</td>
+    </tr>
+    <tr ng-class="{'currentRow': currentDay === 6 }">
+        <th class="text-left">Samstag</th>
+        <td class="text-center">{{stats[5][0]}}</td>
+        <td class="text-center">{{stats[5][1]}}</td>
+        <td class="text-center">{{stats[5][2]}}</td>
+        <td class="text-center">{{stats[5][3]}}</td>
+        <td class="text-center">{{stats[5][4]}}</td>
+    </tr>
+    <tr ng-class="{'currentRow': currentDay === 7 }">
+        <th class="text-left">Sonntag</th>
+        <td class="text-center">{{stats[6][0]}}</td>
+        <td class="text-center">{{stats[6][1]}}</td>
+        <td class="text-center">{{stats[6][2]}}</td>
+        <td class="text-center">{{stats[6][3]}}</td>
+        <td class="text-center">{{stats[6][4]}}</td>
+    </tr>
+    </tbody>
+</table>

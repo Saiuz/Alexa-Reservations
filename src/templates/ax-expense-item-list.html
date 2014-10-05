@@ -1,0 +1,41 @@
+<div>
+    <h4>{{title}}</h4>
+    <table class="table  table-bordered table-hover table-condensed">
+        <thead>
+        <tr>
+            <th>
+                <span>{{col1Title}}</span><span class="glyphicon glyphicon-plus-sign" ng-show="itemList.length > 0"></span><span ng-show="itemList.length > 0"> <select ng-model="selected" ng-options="i as i.item_name for i in itemList" ng-change="addExpenseItem()"></select></span>
+            </th>
+            <th class="text-center">{{col2Title}}</th>
+            <th class="text-center">{{col3Title}}</th>
+            <th></th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr ng-repeat="item in expenseItemArray | filter:{item_type: itemType}">
+            <td>
+                <span>
+                    {{item.name}}
+                </span>
+            </td>
+            <td class="text-center">
+                <span>
+                    <a href="#" editable-number="item.count" e-min="1"  onaftersave="calculateTotals()">{{item.count}}</a>
+                </span>
+            </td>
+            <td class="text-center">
+                <span>
+                    <a href="#" editable-text="item.price"  onaftersave="calculateTotals()">{{item.price | currency : '€'}}</a>
+                </span>
+            </td>
+            <td class="text-center">
+                <span class="glyphicon glyphicon-remove" ng-click="removeItem($index)"></span>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+    <div>
+        <span class="text-muted" ng-show="total > 0">{{itemType}} Total: {{total | currency : '€'}}</span>
+    </div>
+
+</div>

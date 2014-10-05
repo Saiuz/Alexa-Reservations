@@ -1,17 +1,46 @@
-.page-header
-  .title Angular Desktop App
 
-.navbar.navbar-fixed-bottom.navbar-inverse(role="navigation")
-  .navbar-header
-    .navbar-brand: a(href="#"): Angular Desktop App
-  ul.nav.navbar-nav.pull-right(ng-show="authenticated")
-    li.dropdown
-      a.dropdown-toggle(href="#", data-toggle='dropdown')
-        | {{user.name}}
-        b.caret
-      ul.dropdown-menu
-        li: a(href="#") Quit
+include nav_common.jade
 
 .container
-  p.lead This is a basic AngularJS application hosted in Node Webkit.
-    | You now have access to Bootstrap 3, AngularJS 1.2.20, Node-WebKit 0.9.2 and a lot of different librairies through Bower an Require.js.
+  .row
+    .col-md-4
+      .panel.panel-default
+        .panel-heading Ankunft {{theDate | date:'shortDate'}}
+        .panel-body.scrollable200
+          div(reservation-list list-mode="arrival" list-date="theDate" selected-reservation="selectedReservation")
+    .col-md-4
+      .panel.panel-default
+        .panel-heading Abfahrt {{theDate | date:'shortDate'}}
+        .panel-body.scrollable200
+          div(reservation-list list-mode="departure" list-date="theDate" selected-reservation="selectedReservation")
+    .col-md-4
+      .panel.panel-default
+        .panel-heading Abfahrt {{theNextDate | date:'shortDate'}}
+        .panel-body.scrollable200
+          div(reservation-list list-mode="departure" list-date="theNextDate" selected-reservation="selectedReservation")
+  .row
+    .col-md-6
+      .panel.panel-default(ng-hide="selectedReservation === 0")
+        .panel-heading
+          .form-horizontal
+            span.input-group-btn Reservierung #: {{selectedReservation}}
+              button.btn.btn-small.pull-right(type="button" ng-click="clearSelected()")
+                i.glyphicon.glyphicon-eye-close
+        .panel-body
+          div(reservation-details reservation="selectedReservation")
+    .col-md-6
+      .panel.panel-default
+        .panel-heading Wochen Plan für {{weekStart | date:'shortDate'}} bis {{weekEnd | date:'shortDate'}}
+          div
+            a.btn.btn-default.btn-small(href="#" ng-click="goPrevWeek()")
+              span.glyphicon.glyphicon-fast-backward
+            a.btn.btn-default.btn-small(href="#" ng-click="goPrev()")
+              span.glyphicon.glyphicon-backward
+            a.btn.btn-default.btn-amall(href="#" ng-click="goToday()")
+              span Heute
+            a.btn.btn-default.btn-small(href="#" ng-click="goNext()")
+              span.glyphicon.glyphicon-forward
+            a.btn.btn-default.btn-small(href="#" ng-click="goNextWeek()")
+              span.glyphicon.glyphicon-fast-forward
+        .panel-body
+          div(reservation-stats date-in-week="theDate")

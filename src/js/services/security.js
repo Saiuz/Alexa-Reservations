@@ -10,7 +10,7 @@ define(['./module'], function (services) {
 
         this.getUserInfos = function() {
             // Fake user information. Just a promise resolving to a dummy user object
-            return $q.when({name: "Guest"});
+            return $q.when({name: "Bobby V"});
         };
 
     }]);

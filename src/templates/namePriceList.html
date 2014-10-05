@@ -1,0 +1,39 @@
+<div>
+    <table class="table  table-bordered table-hover table-condensed">
+        <thead>
+        <tr>Item</tr>
+        <tr>Count</tr>
+        <tr>Price</tr>
+        <tr>Edit</tr>
+        </thead>
+        <tbody>
+        <tr ng-repeat="item in expenseItemArray">
+            <td>
+                <span editable-select="item.name" e-name="item" e-form="rowform"
+                      e-ng-options="">{{showItem(item)}}</span>
+            </td>
+            <td>
+                <span editable-number="item.count" e-name="count" e-form="rowform">{{item.count | 0}}</span>
+            </td>
+            <td>
+                <span editable-number="item.price" e-name="price" e-form="rowform">{{item.price | 0}}</span>
+            </td>
+            <td >
+                <form editable-form name="rowform" onbeforesave="saveItem($data, item.id)" ng-show="rowform.$visible" class="form-buttons form-inline" shown="inserted == user">
+                    <button type="submit" ng-disabled="rowform.$waiting" class="btn btn-primary">
+                        save
+                    </button>
+                    <button type="button" ng-disabled="rowform.$waiting" ng-click="rowform.$cancel()" class="btn btn-default">
+                        cancel
+                    </button>
+                </form>
+                <div class="buttons" ng-show="!rowform.$visible">
+                    <button class="btn btn-primary" ng-click="rowform.$show()">edit</button>
+                    <button class="btn btn-danger" ng-click="removeUser($index)">del</button>
+                </div>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+    <button class="btn btn-default" ng-click="addExpenseItem()">Add row</button>
+</div>
