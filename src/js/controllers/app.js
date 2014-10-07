@@ -10,300 +10,187 @@ define(['./module'], function (controllers) {
         'Resource',
         'Room',
         'Itemtype',
+        'RoomPlan',
         'datetime',
         '$state',
-        function ($scope, db, Firm, Guest, Reservation, Resource, Room, Itemtype, datetime, $state) {
+        function ($scope, db, Firm, Guest, Reservation, Resource, Room, Itemtype, RoomPlan, datetime, $state) {
           console.log("App controller fired");
 
           //build expense types collection
           Itemtype.count(function(err, count) {
             if (count === 0){
               Itemtype.create({
-                item_name: 'Übernachtung im Einzelzimmer',
-                item_category: 'Zimmer Plan',
-                item_code: 1,
+                name: 'Frühstück',
+                category: 'Allgemein',
+                code: 0,
+                no_delete: false,
+                day_count: true,
+                edit_name: false,
+                display_string: '%count% %name% à € %unitprice%',
+                display_order: 1,
+                taxable_rate: 19,
+                default_unit_price: 4.80
+              },function(err, count){if (err)console.log(err)});
+              Itemtype.create({
+                name: 'Kurtaxe',
+                category: 'Plan',
+                code: 0,
+                no_delete: false,
+                day_count: true,
+                edit_name: false,
+                display_string: '%count% %name% à € %unitprice%',
+                display_order: 1,
+                taxable_rate: 7,
+                default_unit_price: 3
+              },function(err, count){if (err)console.log(err)});
+              Itemtype.create({
+                name: 'Parkplatz',
+                category: 'Allgemein',
+                code: 0,
+                no_delete: false,
+                day_count: true,
+                edit_name: false,
+                display_string: '%count% %name% à € %unitprice%',
+                display_order: 1,
+                taxable_rate: 19,
+                default_unit_price: 3
+              },function(err, count){if (err)console.log(err)});
+              Itemtype.create({
+                name: 'Telephone',
+                category: 'Allgemein',
+                code: 0,
+                no_delete: false,
+                day_count: true,
+                edit_name: false,
                 display_string: '',
                 display_order: 1,
                 taxable_rate: 19,
-                default_unit_price: 0,
-                default_plan_price: 0,
-                types_allowed: ['Std.', 'Bus.'],
-                edit_name: false,
-                required_types: [],
-                excluded_types: ['Kur']
+                default_unit_price: 3
               },function(err, count){if (err)console.log(err)});
               Itemtype.create({
-                item_name: 'Übernachtung im Doppelzimmer',
-                item_category: 'Zimmer Plan',
-                item_code: 1,
-                display_string: '',
-                display_order: 2,
-                taxable_rate: 19,
-                default_unit_price: 0,
-                default_plan_price: 0,
-                types_allowed: ['Std.', 'Bus.'],
-                edit_name: false,
-                required_types: [],
-                excluded_types: ['Kur']
-              },function(err, count){if (err)console.log(err)});
-              Itemtype.create({
-                item_name: 'Körner Kur',
-                item_category: 'Zimmer Plan',
-                item_code: 2,
-                display_string: '',
-                display_order: 3,
-                taxable_rate: 19,
-                default_unit_price: 0,
-                default_plan_price: 300,
-                types_allowed: ['Kur'],
-                edit_name: false,
-                required_types: [],
-                excluded_types: []
-              },function(err, count){if (err)console.log(err)});
-              Itemtype.create({
-                item_name: 'Urlaub in der Kurstadt',
-                item_category: 'Zimmer Plan',
-                item_code: 2,
-                display_string: '',
-                display_order: 5,
-                taxable_rate: 19,
-                default_unit_price: 0,
-                default_plan_price: 450,
-                types_allowed: ['Std.'],
-                edit_name: false,
-                required_types: [],
-                excluded_types: []
-              },function(err, count){if (err)console.log(err)});
-              Itemtype.create({
-                item_name: 'Kur-Klassiker',
-                item_category: 'Zimmer Plan',
-                item_code: 2,
-                display_string: '',
-                display_order: 6,
-                taxable_rate: 19,
-                default_unit_price: 0,
-                default_plan_price: 200,
-                types_allowed: ['Kur'],
-                edit_name: false,
-                required_types: [],
-                excluded_types: []
-              },function(err, count){if (err)console.log(err)});
-              Itemtype.create({
-                item_name: 'Vollverpflegung',
-                item_category: 'Zimmer Plan',
-                item_code: 2,
-                display_string: '',
-                display_order: 6,
-                taxable_rate: 19,
-                default_unit_price: 0,
-                default_plan_price: 300,
-                types_allowed: ['Kur'],
-                edit_name: false,
-                required_types: [],
-                excluded_types: []
-              },function(err, count){if (err)console.log(err)});
-              Itemtype.create({
-                item_name: 'Schnupperangebot',
-                item_category: 'Zimmer Plan',
-                item_code: 1,
-                display_string: '',
-                display_order: 7,
-                taxable_rate: 19,
-                types_allowed: ['Std.'],
-                default_unit_price: 0,
-                default_plan_price: 320,
-                edit_name: false,
-                required_types: [],
-                excluded_types: []
-              },function(err, count){if (err)console.log(err)});
-              Itemtype.create({
-                item_name: 'Halbpension',
-                item_category: 'Zimmer Plan',
-                item_code: 3,
-                display_string: '',
-                display_order: 4,
-                taxable_rate: 19,
-                types_allowed: ['Std.'],
-                default_unit_price: 0,
-                default_plan_price: 0,
-                edit_name: false,
-                required_types: [],
-                excluded_types: []
-              },function(err, count){if (err)console.log(err)});
-              Itemtype.create({
-                item_name: 'Frühstück',
-                item_category: 'Allgemein',
-                display_string: '',
-                taxable_rate: 19,
-                default_unit_price: 4.80,
-                default_plan_price: 0,
-                business_allowed: true,
-                edit_name: false,
-                required_types: [],
-                excluded_types: []
-              },function(err, count){if (err)console.log(err)});
-              Itemtype.create({
-                item_name: 'Kurtaxe',
-                item_category: 'Allgemein',
-                display_string: '',
-                taxable_rate: 7,
-                default_unit_price: 3,
-                default_plan_price: 0,
-                business_allowed: true,
-                edit_name: false,
-                required_types: [],
-                excluded_types: []
-              },function(err, count){if (err)console.log(err)});
-              Itemtype.create({
-                item_name: 'Parkplatz',
-                item_category: 'Allgemein',
-                display_string: '',
-                taxable_rate: 7,
-                default_unit_price: 3,
-                default_plan_price: 0,
-                business_allowed: true,
-                edit_name: false,
-                required_types: [],
-                excluded_types: []
-              },function(err, count){if (err)console.log(err)});
-              Itemtype.create({
-                item_name: 'Telephone',
-                item_category: 'Allgemein',
-                display_string: '',
-                taxable_rate: 7,
-                default_unit_price: 3,
-                default_plan_price: 0,
-                business_allowed: true,
-                edit_name: false,
-                required_types: [],
-                excluded_types: []
-              },function(err, count){if (err)console.log(err)});
-              Itemtype.create({
-                item_name: 'Pauschale',
-                item_category: 'Allgemein',
-                display_string: '',
-                taxable_rate: 7,
-                default_unit_price: 0,
-                default_plan_price: 0,
-                business_allowed: true,
+                name: 'Pauschale',
+                category: 'Allgemein',
+                code: 2,
+                no_delete: false,
+                day_count: false,
                 edit_name: true,
-                required_types: [],
-                excluded_types: []
-              },function(err, count){if (err)console.log(err)});
-
-              Itemtype.create({
-                item_name: 'Classic Mineralwasser 0,2l',
-                item_category: 'Getränke',
-                display_string: '',
+                display_string: '%name% à € %price%',
+                display_order: 1,
                 taxable_rate: 19,
-                default_unit_price: 1.5,
-                default_plan_price: 0,
-                business_allowed: true,
-                edit_name: false,
-                required_types: [],
-                excluded_types: []
+                default_unit_price: 0
               },function(err, count){if (err)console.log(err)});
               Itemtype.create({
-                item_name: 'Distelhäuser Landbier dunkel 0,5l',
-                item_category: 'Getränke',
-                display_string: '',
+                name: 'Classic Mineralwasser 0,2l',
+                category: 'Getränke',
+                code: 0,
+                no_delete: false,
+                day_count: false,
+                edit_name: true,
+                display_string: '%count% %name% à € %unitprice%',
+                display_order: 1,
                 taxable_rate: 19,
-                default_unit_price: 2.1,
-                default_plan_price: 0,
-                business_allowed: true,
-                multiple_allowed: true,
-                edit_name: false,
-                required_types: [],
-                excluded_types: []
+                default_unit_price: 1.5
               },function(err, count){if (err)console.log(err)});
               Itemtype.create({
-                item_name: 'Kuchen',
-                item_category: 'Speisen',
-                display_string: '',
+                name: 'Distelhäuser Landbier dunkel 0,5l',
+                category: 'Getränke',
+                code: 0,
+                no_delete: false,
+                day_count: false,
+                edit_name: true,
+                display_string: '%count% %name% à € %unitprice%',
+                display_order: 1,
                 taxable_rate: 19,
-                default_unit_price: 2,
-                default_plan_price: 0,
-                business_allowed: true,
-                edit_name: false,
-                required_types: [],
-                excluded_types: []
+                default_unit_price: 2.1
               },function(err, count){if (err)console.log(err)});
               Itemtype.create({
-                item_name: 'Erdnüsse',
-                item_category: 'Speisen',
-                display_string: '',
+                name: 'Kuchen',
+                category: 'Speisen',
+                code: 0,
+                no_delete: false,
+                day_count: false,
+                edit_name: true,
+                display_string: '%count% %name% à € %unitprice%',
+                display_order: 1,
                 taxable_rate: 19,
-                default_unit_price: 1,
-                default_plan_price: 0,
-                business_allowed: true,
-                edit_name: false,
-                required_types: [],
-                excluded_types: []
+                default_unit_price: 2.0
               },function(err, count){if (err)console.log(err)});
               Itemtype.create({
-                item_name: 'Halbpension',
-                item_category: 'Speisen',
-                display_string: '',
+                name: 'Erdnüsse',
+                category: 'Speisen',
+                code: 0,
+                no_delete: false,
+                day_count: false,
+                edit_name: true,
+                display_string: '%count% %name% à € %unitprice%',
+                display_order: 1,
                 taxable_rate: 19,
-                default_unit_price: 15.5,
-                default_plan_price: 0,
-                business_allowed: true,
-                edit_name: false,
-                required_types: [],
-                excluded_types: []
+                default_unit_price: 1.0
               },function(err, count){if (err)console.log(err)});
               Itemtype.create({
-                item_name: 'Vollpension',
-                item_category: 'Speisen',
-                display_string: '',
+                name: 'Halbpension',
+                category: 'Speisen',
+                code: 0,
+                no_delete: false,
+                day_count: true,
+                edit_name: true,
+                display_string: '%count% %name% à € %unitprice%',
+                display_order: 1,
                 taxable_rate: 19,
-                default_unit_price: 26.5,
-                default_plan_price: 0,
-                business_allowed: true,
-                edit_name: false,
-                required_types: [],
-                excluded_types: []
+                default_unit_price: 19.0
               },function(err, count){if (err)console.log(err)});
               Itemtype.create({
-                item_name: 'X1501 Fangopackungen',
-                item_category: 'VDAK',
-                display_string: '',
+                name: 'Vollpension',
+                category: 'Speisen',
+                code: 0,
+                no_delete: false,
+                day_count: true,
+                edit_name: true,
+                display_string: '%count% %name% à € %unitprice%',
+                display_order: 1,
                 taxable_rate: 19,
-                default_unit_price: 8.19,
-                default_plan_price: 0,
-                business_allowed: false,
-                edit_name: false,
-                required_types: [],
-                excluded_types: []
+                default_unit_price: 29.0
               },function(err, count){if (err)console.log(err)});
               Itemtype.create({
-                item_name: 'X1712 Gashaltiges Bad mit Zusatz',
-                item_category: 'VDAK',
-                display_string: '',
+                name: 'X1501 Fangopackungen',
+                category: 'VDAK',
+                code: 0,
+                no_delete: false,
+                day_count: false,
+                edit_name: true,
+                display_string: '%count% %name% à € %unitprice%',
+                display_order: 1,
                 taxable_rate: 19,
-                default_unit_price: 8.19,
-                default_plan_price: 0,
-                business_allowed: false,
-                edit_name: false,
-                required_types: [],
-                excluded_types: []
+                default_unit_price: 8.19
               },function(err, count){if (err)console.log(err)});
               Itemtype.create({
-                item_name: 'X0106 Klassische Massage',
-                item_category: 'VDAK',
-                display_string: '',
+                name: 'X1712 Gashaltiges Bad mit Zusatz',
+                category: 'VDAK',
+                code: 0,
+                no_delete: false,
+                day_count: false,
+                edit_name: true,
+                display_string: '%count% %name% à € %unitprice%',
+                display_order: 1,
                 taxable_rate: 19,
-                default_unit_price: 14.06,
-                default_plan_price: 0,
-                business_allowed: false,
-                edit_name: false,
-                required_types: [],
-                excluded_types: []
+                default_unit_price: 15.5
+              },function(err, count){if (err)console.log(err)});
+              Itemtype.create({
+                name: 'X0106 Klassische Massage',
+                category: 'VDAK',
+                code: 0,
+                no_delete: false,
+                day_count: false,
+                edit_name: true,
+                display_string: '%count% %name% à € %unitprice%',
+                display_order: 1,
+                taxable_rate: 19,
+                default_unit_price: 14.06
               },function(err, count){if (err)console.log(err)});
 /*
               Itemtype.create({
-                item_name: '',
-                item_category: '',
+                name: '',
+                category: '',
                 display_string: '',
                 taxable_rate: 19,
                 default_unit_price: 0,
@@ -314,13 +201,101 @@ define(['./module'], function (controllers) {
                 excluded_types: []
               },function(err, count){if (err)console.log(err)});
 */
-
             }
             else {
               console.log("Itemtype collection contains %d records", count);
             }
           });
 
+          RoomPlan.count(function(err, count){
+            if (count === 0){
+               RoomPlan.create({
+                 name: 'Unterkunft mit Frühstück im Einzelzimmer',
+                 resTypeFilter: ['Std.'],
+                 is_plan: false,
+                 single_only: true,
+                 double_only: false,
+                 display_string: '%day% Tage %name% à € %roomprice%',
+                 required_items: [
+                   {name: 'Zimmer', category: 'Plan', count: -1, price: -1, no_delete: true, day_count: true, taxable_rate: 7},
+                   {name: 'Frühstück', category: 'Plan', count: -1, price: 5, no_delete: true, day_count: true, taxable_rate: 19},
+                   {name: 'Kurtaxe', category: 'Plan', count: -1, price: 3.15, canDelete: false, dayCount: true, taxable_rate: 19}
+                 ]
+               });
+              RoomPlan.create({
+                name: 'Unterkunft mit Frühstück im Doppelzimmer',
+                resTypeFilter: ['Std.'],
+                is_plan: false,
+                single_only: false,
+                double_only: true,
+                display_string: '%day% Tage %name% à € %roomprice%',
+                required_items: [
+                  {name: 'Zimmer', category: 'Plan', count: -1, price: -1, no_delete: true, day_count: true, taxable_rate: 7},
+                  {name: 'Frühstück', category: 'Plan', count: -1, price: 5, no_delete: true, day_count: true, taxable_rate: 19}
+                ]
+              });
+              RoomPlan.create({
+                name: 'Schnupperangebot',
+                resTypeFilter: ['Std.'],
+                is_plan: true,
+                single_only: false,
+                double_only: false,
+                pp_price: 153,
+                single_surcharge: 22,
+                duration: 3,
+                display_string: '%duration% Tage %name%',
+                required_items: [
+                  {name: 'Zimmer', category: 'Plan', count: 3, price: 46, canDelete: false, dayCount: true, taxable_rate: 7},
+                  {name: 'Frühstück', category: 'Plan', count:3, price: 5, canDelete: false, dayCount: true, taxable_rate: 19}
+                ]
+              });
+              RoomPlan.create({
+                name: 'Urlaub in der Kurstadt',
+                resTypeFilter: ['Std.'],
+                is_plan: true,
+                single_only: false,
+                double_only: false,
+                pp_price: 330,
+                single_surcharge: 35,
+                duration: 6,
+                display_string: '%duration% Tage %name%',
+                required_items: [
+                  {name: 'Zimmer', category: 'Plan', count: 6, price: 46, canDelete: false, dayCount: true, taxable_rate: 7},
+                  {name: 'Frühstück', category: 'Plan', count:6, price: 5, canDelete: false, dayCount: true, taxable_rate: 19},
+                  {name: 'Zug/Radfhart nach Weikersheim', category: 'Plan', count:1, price: 10, canDelete: false, dayCount: true, taxable_rate: 19},
+                  {name: 'Besuch des Deutschordensmuseum', category: 'Plan', count:1, price: 8, canDelete: false, dayCount: true, taxable_rate: 19},
+                  {name: 'Massagebehandlung im Haus', category: 'Plan', count:1, price: 6, canDelete: false, dayCount: true, taxable_rate: 19},
+                  {name: 'Eintritt in den Wildpark', category: 'Plan', count:1, price: 3, canDelete: false, dayCount: true, taxable_rate: 19},
+                  {name: 'Stadtführung', category: 'Plan', count:1, price: 5, canDelete: false, dayCount: true, taxable_rate: 19}
+                ]
+              });
+              RoomPlan.create({
+                name: 'Übernachtung im Einzelzimmer',
+                resTypeFilter: ['Bus.'],
+                is_plan: false,
+                single_only: true,
+                double_only: false,
+                display_string: '%day% Tage %name% à € %roomprice%',
+                required_items: [
+                  {name: 'Zimmer', count: -1, price: -1, no_delete: true, day_count: true, taxable_rate: 19}
+                ]
+              });
+              RoomPlan.create({
+                name: 'Übernachtung im Dopplezimmer',
+                resTypeFilter: ['Bus.'],
+                is_plan: false,
+                single_only: false,
+                double_only: true,
+                display_string: '%day% Tage %name% à € %roomprice%',
+                required_items: [
+                  {name: 'Zimmer', count: -1, price: -1, no_delete: true, day_count: true, taxable_rate: 19}
+                ]
+              });
+            }
+            else {
+              console.log("RoomPlan collection contains %d records", count);
+            }
+          });
           Guest.count(function (err, count) {
             if (count === 0) {
               console.log("Creating guest collection");
@@ -453,75 +428,81 @@ define(['./module'], function (controllers) {
               console.log("Creating Room collection");
               Room.create({
                 number: 2,
-                room_type: 'Einzelzimmer',
+                room_type: 'Economy-Einzelzimmer',
                 display_order: 1,
-                price: {base_rate: 59, full_pension1: 75.5, full_pension2: 0, breakfast_plan: 51.5, half_pension: 65.5}
+                price: 57
               },function(err, count){if (err)console.log(err)});
               Room.create({
                 number: 3,
-                room_type: 'Einzelzimmer',
+                room_type: 'Komfort-Einzelzimmer',
                 display_order: 1,
-                price: {base_rate: 59, full_pension1: 75.5, full_pension2: 0, breakfast_plan: 51.5, half_pension: 65.5}
+                price: 66
               },function(err, count){if (err)console.log(err)});
               Room.create({
                 number: 4,
-                room_type: 'Einzelzimmer',
+                room_type: 'Komfort-Einzelzimmer',
                 display_order: 1,
-                price: {base_rate: 59, full_pension1: 75.5, full_pension2: 0, breakfast_plan: 51.5, half_pension: 65.5}
+                price: 66
               },function(err, count){if (err)console.log(err)});
               Room.create({
                 number: 5,
-                room_type: 'Einzelzimmer',
+                room_type: 'Economy-Einzelzimmer',
                 display_order: 1,
-                price: {base_rate: 59, full_pension1: 75.5, full_pension2: 0, breakfast_plan: 51.5, half_pension: 65.5}
+                price: 57
               },function(err, count){if (err)console.log(err)});
               Room.create({
                 number: 6,
-                room_type: 'Einzelzimmer',
+                room_type: 'Komfort-Einzelzimmer',
                 display_order: 1,
-                price: {base_rate: 59, full_pension1: 75.5, full_pension2: 0, breakfast_plan: 51.5, half_pension: 65.5}
+                price: 66
               },function(err, count){if (err)console.log(err)});
               Room.create({
                 number: 7,
-                room_type: 'Einzelzimmer',
+                room_type: 'Komfort-Einzelzimmer',
                 display_order: 1,
-                price: {base_rate: 59, full_pension1: 75.5, full_pension2: 0, breakfast_plan: 51.5, half_pension: 65.5}
+                price: 66
               },function(err, count){if (err)console.log(err)});
               Room.create({
                 number: 9,
-                room_type: 'Doppelzimmer',
+                room_type: 'Economy-Doppelzimmer',
                 display_order: 2,
-                price: {base_rate: 65, full_pension1: 75.5, full_pension2: 130, breakfast_plan: 51.5, half_pension: 65.5}
+                price: 94
               },function(err, count){if (err)console.log(err)});
               Room.create({
                 number: 10,
-                room_type: 'Einzelzimmer',
+                room_type: 'Economy-Einzelzimmer',
                 display_order: 1,
-                price: {base_rate: 59, full_pension1: 75.5, full_pension2: 0, breakfast_plan: 51.5, half_pension: 65.5}
+                price: 57
               },function(err, count){if (err)console.log(err)});
               Room.create({
                 number: 12,
-                room_type: 'Einzelzimmer',
+                room_type: 'Komfort-Einzelzimmer',
                 display_order: 1,
-                price: {base_rate: 59, full_pension1: 75.5, full_pension2: 0, breakfast_plan: 51.5, half_pension: 65.5}
+                price: 66
               },function(err, count){if (err)console.log(err)});
               Room.create({
                 number: 15,
-                room_type: 'Einzelzimmer',
+                room_type: 'Komfort-Einzelzimmer',
                 display_order: 1,
-                price: {base_rate: 59, full_pension1: 75.5, full_pension2: 0, breakfast_plan: 51.5, half_pension: 65.5}
+                price: 66
               },function(err, count){if (err)console.log(err)});
               Room.create({
                 number: 18,
-                room_type: 'Doppelzimmer',
+                room_type: 'Komfort-Doppelzimmer',
                 display_order: 2,
-                price: {base_rate: 56, full_pension1: 63, full_pension2: 126, breakfast_plan: 39, half_pension: 65.5}
+                price: 109
               },function(err, count){if (err)console.log(err)});
               Room.create({
                 number: 23,
-                room_type: 'Suite',
+                room_type: 'Suite-A',
                 display_order: 3,
-                price: {base_rate: 86, full_pension1: 63, full_pension2: 126, breakfast_plan: 39, half_pension: 65.5}
+                price: 125
+              },function(err, count){if (err)console.log(err)});
+              Room.create({
+                number: 26,
+                room_type: 'Suite-B',
+                display_order: 3,
+                price: 130
               },function(err, count){if (err)console.log(err)});
 
             }

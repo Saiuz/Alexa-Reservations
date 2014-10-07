@@ -9,7 +9,7 @@ define(['./module'], function (services) {
     var dbpath = process.env.PWD;
 
     if (!dbpath) {
-      dbpath = process.env.APPDATA + "/nwapp"    //RHV changed from process.env.PWD which was not defined for windows
+      dbpath = process.env.APPDATA + "/Alexa-Reservations"    //RHV changed from process.env.PWD which was not defined for windows
     }
 
     console.log("Creating/opening database in folder", dbpath);
