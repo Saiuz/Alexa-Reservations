@@ -65,6 +65,7 @@ define(['./module'], function (controllers) {
             }
           })
 
+          $scope.isCollapsed1 = true;
 /*
 *//*        //watch did not work on roomSelect or roomSelect.name except for first time.
           $scope.$watch('roomSelect', function(newval, oldval){

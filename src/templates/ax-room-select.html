@@ -1,0 +1,63 @@
+<div class="panel panel-default">
+<div class="panel-heading">
+    <span ng-click="isCollapsed = !isCollapsed">{{selectTitle}} <i class="glyphicon" ng-class="{'glyphicon-chevron-down': !isCollapsed, 'glyphicon-chevron-right': isCollapsed}"></i></span>
+</div>
+<div class="panel-body" collapse="isCollapsed">
+    <table>
+        <tr>
+            <th>Freie Zimmer</th>
+        </tr>
+        <tr>
+            <td>
+                <select ng-model="roomSelect" ng-change="onRoomSelect(roomSelect)"
+                        ng-options="r.display_name for r in roomList | filter:filterAlreadySelected"></select>
+            </td>
+        </tr>
+        <tr ng-show="roomSelect.number">
+            <th>Gäste</th>
+        </tr>
+        <tr ng-show="roomSelect.number">
+            <td>
+                <input type="text" ng-model="roomName"/>
+            </td>
+        </tr>
+        <tr ng-show="roomSelect.number">
+            <th>Preis</th>
+        </tr>
+        <tr ng-show="roomSelect.number">
+            <td>
+                <input type="number" ng-model="roomPrice"/>
+            </td>
+        </tr>
+        <tr ng-show="roomSelect.number">
+            <th></th>
+        </tr>
+        <tr ng-show="roomSelect.number">
+            <td>
+                <button ng-click="addRoom()">Add</button>
+            </td>
+        </tr>
+    </table>
+    <hr/>
+    <table ng-show="rooms.length" class="small">
+        <tr>
+            <th></th>
+            <th>Zimmer</th>
+            <th>Gäste</th>
+            <th>Preis</th>
+            <th></th>
+        </tr>
+        <tr ng-repeat="room in rooms">
+            <td>{{room.number}}</td>
+            <td>{{room.room_type}}</td>
+            <td>{{room.guest}}</td>
+            <td>{{room.price}}</td>
+            <td>
+                <button ng-click="removeRoom(room.number)" class="btn btn-xs"><span
+                        class="glyphicon glyphicon-remove"></span>
+                </button>
+            </td>
+        </tr>
+    </table>
+</div>
+</div>
