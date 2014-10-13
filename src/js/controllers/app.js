@@ -428,83 +428,95 @@ define(['./module'], function (controllers) {
               console.log("Creating Room collection");
               Room.create({
                 number: 2,
-                room_type: 'Economy-Einzelzimmer',
+                room_type: 'Einzelzimmer',
+                room_class: 'Economy',
                 display_order: 1,
                 price: 57
               },function(err, count){if (err)console.log(err)});
               Room.create({
                 number: 3,
-                room_type: 'Komfort-Einzelzimmer',
+                room_type: 'Einzelzimmer',
+                room_class: 'Komfort',
                 display_order: 1,
                 price: 66
               },function(err, count){if (err)console.log(err)});
               Room.create({
                 number: 4,
-                room_type: 'Komfort-Einzelzimmer',
+                room_type: 'Einzelzimmer',
+                room_class: 'Komfort',
                 display_order: 1,
                 price: 66
               },function(err, count){if (err)console.log(err)});
               Room.create({
                 number: 5,
-                room_type: 'Economy-Einzelzimmer',
+                room_type: 'Einzelzimmer',
+                room_class: 'Economy',
                 display_order: 1,
                 price: 57
               },function(err, count){if (err)console.log(err)});
               Room.create({
                 number: 6,
-                room_type: 'Komfort-Einzelzimmer',
+                room_type: 'Einzelzimmer',
+                room_class: 'Komfort',
                 display_order: 1,
                 price: 66
               },function(err, count){if (err)console.log(err)});
               Room.create({
                 number: 7,
-                room_type: 'Komfort-Einzelzimmer',
+                room_type: 'Einzelzimmer',
+                room_class: 'Komfort',
                 display_order: 1,
                 price: 66
               },function(err, count){if (err)console.log(err)});
               Room.create({
                 number: 9,
-                room_type: 'Economy-Doppelzimmer',
+                room_type: 'Doppelzimmer',
+                room_class: 'Economy',
                 display_order: 2,
                 price: 94
               },function(err, count){if (err)console.log(err)});
               Room.create({
                 number: 10,
-                room_type: 'Economy-Einzelzimmer',
+                room_type: 'Einzelzimmer',
+                room_class: 'Economy',
                 display_order: 1,
                 price: 57
               },function(err, count){if (err)console.log(err)});
               Room.create({
                 number: 12,
-                room_type: 'Komfort-Einzelzimmer',
+                room_type: 'Einzelzimmer',
+                room_class: 'Komfort',
                 display_order: 1,
                 price: 66
               },function(err, count){if (err)console.log(err)});
               Room.create({
                 number: 15,
-                room_type: 'Komfort-Einzelzimmer',
+                room_type: 'Einzelzimmer',
+                room_class: 'Komfort',
                 display_order: 1,
                 price: 66
               },function(err, count){if (err)console.log(err)});
               Room.create({
                 number: 18,
-                room_type: 'Komfort-Doppelzimmer',
+                room_type: 'Doppelzimmer',
+                room_class: 'Komfort',
                 display_order: 2,
                 price: 109
               },function(err, count){if (err)console.log(err)});
               Room.create({
                 number: 23,
-                room_type: 'Suite-A',
+                room_type: 'Suite',
+                room_class: '',
                 display_order: 3,
                 price: 125
               },function(err, count){if (err)console.log(err)});
               Room.create({
                 number: 26,
-                room_type: 'Suite-B',
+                room_type: 'Suite',
+                room_class: 'Balkon',
                 display_order: 3,
                 price: 130
               },function(err, count){if (err)console.log(err)});
-
             }
             else {
               console.log("Room collection contains %d records", count);
@@ -581,19 +593,15 @@ define(['./module'], function (controllers) {
                 }
                 Reservation.create({
                   reservation_number: 1400101,
-                  type: 'Std.',
+                  type: 'Bus.',
                   title: 'The Grand Central (LongStay)',
                   guest: {name: guest1, id: id1},
                   firm: 'The Grand Central',
                   start_date: datetime.dateOnly(new Date()),
                   end_date: datetime.dateOnly(new Date(), 10),
                   occupants: 1,
-                  room: 2,
-                  room_price: 54,
-                  park_place: 'Parkplatz 1',
-                  park_price: 3,
-                  conf_room: 'Konf. 28',
-                  conf_price: 0,
+                  rooms: [{number: 2, room_type: 'Economy-Einzelzimmer', guest: 'Dr. Susie Longstay', price: 54}],
+                  resources: [{name: 'Parkplatz 1',resource_type: 'Parkplatz', price: 3}],
                   status: 'Sicher',
                   plan: 'Übernachtung im Einzelzimmer',
                   source: 'Phone',
@@ -615,7 +623,7 @@ define(['./module'], function (controllers) {
                 }
                 Reservation.create({
                   reservation_number: 1400102,
-                  type: 'Bus.',
+                  type: 'Std.',
                   title: guest2,
                   guest: {name: guest2, id: id2},
                   firm: '',
@@ -623,10 +631,9 @@ define(['./module'], function (controllers) {
                   end_date: datetime.dateOnly(new Date()),
                   checked_in: datetime.dateOnly(new Date(), -10),
                   occupants: 2,
-                  room: 9,
-                  room_price: 60,
-                  park_place: 'Parkplatz 2',
-                  park_price: 3,
+                  rooms: [{number: 3, room_type: 'Komfort-Einzelzimmer', guest: 'Johnny Guest', price: 66},
+                         {number: 4, room_type: 'Komfort-Einzelzimmer', guest: 'Jane Smith', price: 66}],
+                  resources: [{name: 'Parkplatz 2',resource_type: 'Parkplatz', price: 3}],
                   status: 'Sicher',
                   plan: 'Übernachtung im Doppelzimmer',
                   source: 'Booking.Com',
@@ -656,10 +663,8 @@ define(['./module'], function (controllers) {
                   end_date: datetime.dateOnly(new Date(), 15),
                   checked_in: datetime.dateOnly(new Date(), -1),
                   occupants: 1,
-                  room: 6,
-                  room_price: 60,
-                  park_place: 'Parkplatz 3',
-                  park_price: 3,
+                  rooms: [{number: 12, room_type: 'Economy-Einzelzimmer', guest: 'Monika Adams', price: 57}],
+                  resources: [{name: 'Parkplatz 2',resource_type: 'Parkplatz', price: 3}],
                   status: 'Sicher',
                   plan: 'Körner Kur',
                   insurance: 'VDAK',

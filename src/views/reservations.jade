@@ -17,7 +17,7 @@ include nav_common.jade
             .form-group(ng-show="!rvm.isBusiness")
               label.control-label.col-xs-4 Zimmer Plan
               .col-xs-8
-                select.form-control(ng-model="rvm.selectedPlan" ng-options="z as z.name for z in rvm.roomPlans" ng-change="rvm.roomPlanChanged()")
+                select.form-control(ng-model="rvm.selectedPlan" ng-options="z as z.name for z in rvm.roomPlans track by z._id.id" ng-change="rvm.roomPlanChanged()")
             .form-group(ng-show="rvm.isBusiness")
               label.control-label.col-xs-4 Zimmer Plan
               .col-xs-8
@@ -80,10 +80,6 @@ include nav_common.jade
               label.control-label.col-xs-4 Parkplatz
               .col-xs-8
                 select.form-control(ng-model="rvm.selectedParking" ng-options="r as r.text for r in rvm.availableParking" ng-change="rvm.updateParking()")
-            .form-group.form-group(ng-show="res.room > 0 && rvm.isBusiness")
-              label.control-label.col-xs-4 Konf. Rm.
-              .col-xs-8
-                select.form-control(ng-model="rvm.selectedConfRm" ng-options="r as r.text for r in rvm.availableConfRm" ng-change="rvm.updateConfRm()")
             .form-group.form-group(ng-show="res.room > 0")
               label.control-label.col-xs-4 Status
               .col-xs-8

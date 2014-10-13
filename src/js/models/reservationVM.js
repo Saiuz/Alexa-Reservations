@@ -33,7 +33,7 @@ define(['./module'], function (model) {
     // define the model
     var ReservationVM = function () {
     };
-             //todo - exend logic to handle the three reservation types (normal and business similar plans)
+             //todo - extend logic to handle the three reservation types (normal and business similar plans)
     var _this = ReservationVM;  // and a shortcut
     // ** Configuration properties ** todo-move these into a configuration object
     _this.roomListFirstText = ''; //consumer provides text that is placed as the first item before the room list
@@ -45,9 +45,6 @@ define(['./module'], function (model) {
     // ** model properties  **
     _this.reservation = {}; // The reservation object
     _this.roomPlansAll = []; // provides list of all room plans available
-    _this.roomPlansBus = [];  // Plans available for business and normal stay guests (plans same as business.
-    _this.roomPlansKur = []; // Plans available for cures
-    _this.roomPlansStd = []; // Plans available for standard reservation types
     _this.roomPlans = []; // this list changes depending on the value of the reservation type - this property
                           // should be used by the UI, the above four are made available just in case.
     _this.selectedPlan = {}; // The currently selected room plan object
@@ -119,8 +116,7 @@ define(['./module'], function (model) {
         deferred.resolve(0);
       }
       else {
-        _this.reservation.room = undefined;
-        _this.reservation.room_price = undefined;
+        _this.reservation.rooms = [];
         var dbl = (_this.reservation.occupants > 1);
         _this.availableRooms = _this.roomListFirstText.length ? [
           {
@@ -505,48 +501,27 @@ define(['./module'], function (model) {
         var firstItem =  {value: 0, name: _this.roomPlanFirstText, price: 0, code: 0};
         var errorItem = [{value: 0, name: '*** ERROR ***', price: 0, code: 0}];
 
-        _this.roomPlansAll = [];
-        _this.roomPlansBus = [];
-        _this.roomPlansKur = [];
-        _this.roomPlansStd = [];
-
+        _this.roomPlansAll = list;  //all plans from db
+        _this.roomPlans = []; //filtered list based on reservation type
         if (_this.roomPlanFirstText.length) {
-          _this.roomPlansAll.push(firstItem);
-          _this.roomPlansBus.push(firstItem);
-          _this.roomPlansKur.push(firstItem);
-          _this.roomPlansStd.push(firstItem);
+          _this.roomPlans.push(firstItem);
         }
 
-        if (list.length > 0) {
+        if (list.length > 0) {       //todo- factor into a sub
           angular.forEach(list, function (item) {
-            var listItem = {
-              value: item._id.id,
-              name: item.item_name,
-              price: item.default_plan_price,
-              code: item.item_code
-            };
-            _this.roomPlansAll.push(listItem);
-            if (item.types_allowed.indexOf(_this.resTypeList[0]) >= 0) {
-              _this.roomPlansStd.push(listItem);
-            }
-            if (item.types_allowed.indexOf(_this.resTypeList[1]) >= 0) {
-              _this.roomPlansBus.push(listItem);
-            }
-            if (item.types_allowed.indexOf(_this.resTypeList[2]) >= 0) {
-              _this.roomPlansKur.push(listItem);
+            if (item.resTypeFilter.indexOf(_this.reservation.type) >= 0) {
+              _this.roomPlans.push(item);
             }
           });
-          _findSingleRoomPlan();
+         //_findSingleRoomPlan();
         }
         else {  //no rooms plans found
           if (_this.roomPlansAll.length === 0) {
-            _this.roomPlansAll = errorItem;
-            _this.roomPlansBus = errorItem;
-            _this.roomPlansKur = errorItem;
-            _this.roomPlansStd = errorItem
+            _this.roomPlansAll = [errorItem];
           }
         }
-        _this.selectedPlan = _this.roomPlansAll[0];
+        _this.selectedPlan = _this.roomPlans[0]; //todo-only for new case. Need to add logic to update selected plan if res has an existing plan. Also may need to add
+        //todo - business logic that prevents zimmer plan change for an existing res
       });
     };
 

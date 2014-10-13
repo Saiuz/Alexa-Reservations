@@ -9,7 +9,7 @@ define(['./module'], function (services) {
   // date object, or the original object if the original object is not a Date
   // object.
 
-  services.factory('dashboard', function (Reservation, Guest, Room, Resource, Itemtype, Firm, datetime, $q) {
+  services.factory('dashboard', function (Reservation, Guest, Room, RoomPlan, Resource, Itemtype, Firm, datetime, $q) {
 
     return {
       getNextDaysDate: function (dateval) {
@@ -185,9 +185,12 @@ define(['./module'], function (services) {
       },
       // Find free rooms by finding the rooms for all reservations that
       // overlap the specified dates and then
-      // returning the list of rooms not in the set. Note: might have to break up into two functions
-      // See: http://stackoverflow.com/questions/325933/determine-whether-two-date-ranges-overlap
-      findAvailableRooms: function (start, end, doubleOnly) {
+      // returning the list of rooms not in the set.
+      // If doubleOnly is true then we ignore single rooms.
+      // If forlist is true then an empty Room object is added at the top of the list
+      // with a room number of 0. This will create a Room object that returns a default display_name
+      // value as determined in the Room schema.
+      findAvailableRooms: function (start, end, doubleOnly, forlist) {
         var deferred = $q.defer();
         Reservation.find({start_date: {$lt: end}, end_date: {$gt: start}})
             .exec(function (err, res) {
@@ -200,7 +203,9 @@ define(['./module'], function (services) {
                 var booked = [];
                 if (res.length > 0) {
                   angular.forEach(res, function (item) {
-                    booked.push(item.room);
+                    angular.forEach(item.rooms, function (room){
+                      booked.push(room.number);
+                    });
                   });
                 }
                 console.log("Booked: " + booked.length);
@@ -214,6 +219,10 @@ define(['./module'], function (services) {
                         console.log("findAvailableRooms query 2 failed: " + err);
                       }
                       else {
+                        if (forlist) {
+                          var defroom = new Room({number: 0});
+                          rooms.unshift(defroom);
+                        }
                         deferred.resolve(rooms);
                       }
                     });
@@ -236,12 +245,9 @@ define(['./module'], function (services) {
                 var booked = [];
                 if (res.length > 0) {
                   angular.forEach(res, function (item) {
-                    if (resType === 'Parkplatz') {
-                      booked.push(item.park_place);
-                    }
-                    else {
-                      booked.push(item.conf_room);
-                    }
+                    angular.forEach(item.resources, function (res){
+                       booked.push(res.name);
+                    });
                   });
                 }
                 console.log(resType + " Booked: " + booked.length);
@@ -263,11 +269,11 @@ define(['./module'], function (services) {
         return deferred.promise;
       },
 
-      // retrieve the room plan types, filter if business reservation
-      getRoomPlanList: function (isBusiness) {
+      // retrieve the room plan types filtering will be done in the vm or UI
+      getRoomPlanList: function () {
         var deferred = $q.defer();
-        var qryobj = isBusiness ? {item_category: 'Zimmer Plan', business_allowed: true} : {item_category: 'Zimmer Plan'};
-        Itemtype.find(qryobj)
+        //var qryobj = isBusiness ? {item_category: 'Zimmer Plan', business_allowed: true} : {item_category: 'Zimmer Plan'};
+        RoomPlan.find()
             .sort({display_order: 1})
             .exec(function (err, itemtypes) {
               if (err) {
