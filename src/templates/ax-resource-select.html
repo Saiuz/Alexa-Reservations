@@ -1,0 +1,43 @@
+<div class="panel panel-default">
+    <div class="panel-heading">
+        <span ng-click="isCollapsed = !isCollapsed">{{selectTitle}} <i class="glyphicon" ng-class="{'glyphicon-chevron-down': !isCollapsed, 'glyphicon-chevron-right': isCollapsed}"></i></span>
+    </div>
+    <div class="panel-body" collapse="isCollapsed">
+        <table class="small">
+            <tr>
+                <th>Freie {{resourceTitle}}</th>
+            </tr>
+            <tr>
+                <td>
+                    <select ng-model="resourceSelect" ng-change="onResourceSelect(resourceSelect)"
+                            ng-options="r.name for r in resourceList | filter:filterAlreadySelected"></select>
+                </td>
+            </tr>
+            <tr ng-show="resourceSelect.price >= 0">
+                <th>Preis €</th>
+            </tr>
+            <tr ng-show="resourceSelect.price >= 0">
+                <td>
+                    <input class="col-xs-4" type="number" ng-model="resourcePrice"/>&nbsp;
+                    <button ng-click="addResource()">Beigeben</button>
+                </td>
+            </tr>
+        </table>
+        <table ng-show="resources.length" class="table small">
+             <tr>
+                <th></th>
+                <th>{{resourceTitle}}</th>
+                <th>Preis</th>
+            </tr>
+            <tr ng-repeat="res in resources">
+                <td>
+                    <button ng-click="removeResource(res.name)" class="btn btn-xs"><span
+                            class="glyphicon glyphicon-remove"></span>
+                    </button>
+                </td>
+                <td>{{res.name}}</td>
+                <td>{{res.price | currency: '€'}}</td>
+             </tr>
+        </table>
+    </div>
+</div>

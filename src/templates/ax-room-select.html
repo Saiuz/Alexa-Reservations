@@ -3,7 +3,7 @@
     <span ng-click="isCollapsed = !isCollapsed">{{selectTitle}} <i class="glyphicon" ng-class="{'glyphicon-chevron-down': !isCollapsed, 'glyphicon-chevron-right': isCollapsed}"></i></span>
 </div>
 <div class="panel-body" collapse="isCollapsed">
-    <table>
+    <table class="small">
         <tr>
             <th>Freie Zimmer</th>
         </tr>
@@ -22,41 +22,32 @@
             </td>
         </tr>
         <tr ng-show="roomSelect.number">
-            <th>Preis</th>
+            <th>Preis €</th>
         </tr>
         <tr ng-show="roomSelect.number">
             <td>
-                <input type="number" ng-model="roomPrice"/>
-            </td>
-        </tr>
-        <tr ng-show="roomSelect.number">
-            <th></th>
-        </tr>
-        <tr ng-show="roomSelect.number">
-            <td>
-                <button ng-click="addRoom()">Add</button>
+                <input class="col-xs-4" type="number" ng-model="roomPrice"/>&nbsp;
+                <button ng-click="addRoom()">Beigeben</button>
             </td>
         </tr>
     </table>
-    <hr/>
-    <table ng-show="rooms.length" class="small">
+    <table ng-show="rooms.length" class="table small">
         <tr>
             <th></th>
-            <th>Zimmer</th>
+            <th colspan="2">Zimmer</th>
             <th>Gäste</th>
             <th>Preis</th>
-            <th></th>
         </tr>
-        <tr ng-repeat="room in rooms">
-            <td>{{room.number}}</td>
-            <td>{{room.room_type}}</td>
-            <td>{{room.guest}}</td>
-            <td>{{room.price}}</td>
+        <tr ng-repeat="room in prooms">
             <td>
                 <button ng-click="removeRoom(room.number)" class="btn btn-xs"><span
                         class="glyphicon glyphicon-remove"></span>
                 </button>
             </td>
+            <td>{{room.number}}</td>
+            <td>{{room.room_type}}</td>
+            <td>{{room.guest}}</td>
+            <td>{{room.price | currency: '€'}}</td>
         </tr>
     </table>
 </div>

@@ -19,6 +19,8 @@ define(['./module'], function (controllers) {
           $scope.appBrand = $rootScope.appBrand;
           $scope.url = $state.current.url;
 
+          $scope.reservationNumber = 0;
+
 
           //Testing stuff
           // Testing the basics for a multiple room selection directive. I originally incorporated the controls
@@ -32,30 +34,40 @@ define(['./module'], function (controllers) {
           var res = new Reservation();
           res.rooms.push({ //same as ReservedRoom schema
             number: 2,
-            room_type: 'Single',
+            room_type: 'Einzelzimmer',
             room_class: 'Economy',
             guest: 'Smith',
             price: 44
           });
+          res.resources.push({
+             name: 'Parkplatz 3',
+             resource_type: 'Parkplatz',
+             price: 3
+          });
+
           $scope.rooms = res.rooms;
+          $scope.resources = res.resources;
           $scope.roomTitle = res.rooms.length ? res.rooms.length + ' rooms selected' : "Select room";
           $scope.roomCount = res.rooms.length;
           $scope.name = '';
           dashboard.findAvailableRooms(start,end,true, true).then(function(rooms){
             $scope.roomList = rooms;
-            $scope.roomSelect = $scope.roomList[0];
             $scope.price= 666;
             $scope.name = 'John Smith'
           });
-
+          dashboard.findAvailableResources(start,end,'Parkplatz', true).then(function(res){
+             $scope.resourceList = res;
+          });
           $scope.changeDates = function(){
              start = datetime.dateOnly(new Date("12/10/2014"));
              end = datetime.dateOnly(start, 3);
             dashboard.findAvailableRooms(start,end,true, true).then(function(rooms){
               $scope.roomList = rooms;
-              $scope.roomSelect = $scope.roomList[0];
               $scope.price= 999;
               $scope.name = 'Jane Smith'
+            });
+            dashboard.findAvailableResources(start,end,'Parkplatz', true).then(function(res){
+              $scope.resourceList = res;
             });
           } ;
 

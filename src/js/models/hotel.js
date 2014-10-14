@@ -1,12 +1,55 @@
 /**
- * Defines the data models for the hotel reservation application
+ * Defines the Mongoose data models for the hotel reservation application
  */
 
 define(['./module'], function (model) {
   'use strict';
-
+  // ** enums used to control fields in various schemas **
+  // Salutaion enum for Guest
+  var salutationEnum = ['Dr.', 'Frau', 'Familie', 'Herr', 'Herrn'];
   // item type enum used in ExpenseItem and ItemType schema
   var itemTypeEnum =['Plan','Allgemein', 'Speisen', 'Getränke', 'VDAK', 'AOK & Andere', 'Privat'];
+  // enums used in Room and ReservedRoom schemas
+  var roomTypeEnum = ['Einzelzimmer', 'Doppelzimmer', 'Suite'];
+  var roomTypeAbbrEnum = ['EZ', 'DZ', 'SU', '']
+  var roomClassEnum = ['Economy', 'Komfort', 'Balkon', ''];
+  var roomClassAbbrEnum=['Econ', 'Komf', 'BK', ''];
+  // enums used in Reservation Schema
+  var resStatusEnum = ['Sicher', 'Vorreservation'];
+  var resSourceEnum = ['Phone', 'Booking.Com'];
+  var resInsuranceEnum = ['VDAK', 'AOK & Andere', 'Privat'];
+  var resTypeEnum = ['Std.', 'Bus.', 'Kur', 'Group'];
+  // enum for Resource Schema
+  var resourceTypeEnum = ['Parkplatz','Konferenzraum'];
+
+  //service (model) that exposes methods to retrieve the various schema enums and some other utility methods
+  model.factory('dbEnums', function(){
+    return {
+      getSalutationEnum: function (){return salutationEnum.slice(0)},
+      getItemTypeEnum: function (){return itemTypeEnum.slice(0)},
+      getRoomTypeEnum: function (){return roomTypeEnum.slice(0)},
+      getRoomTypeAbbrEnum: function (){return roomTypeAbbrEnum.slice(0)},
+      getRoomClassEnum: function (){return roomClassEnum.slice(0)},
+      getRoomClassAbbrEnum: function (){return roomClassAbbrEnum.slice(0)},
+      getReservationStatusEnum:  function (){return resStatusEnum.slice(0)},
+      getReservationSourceEnum: function (){return resSourceEnum.slice(0)},
+      getReservationInsuranceEnum: function (){return resInsuranceEnum.slice(0)},
+      getReservationTypeEnum: function (){return resTypeEnum.slice(0)},
+      getResourceTypeEnum: function (){return resourceTypeEnum.slice(0)},
+      getRoomDisplayAbbr: function(rmobj){
+        if (rmobj && 'room_type' in rmobj && 'room_class' in rmobj) {
+          var tix = roomTypeEnum.indexOf(rmobj.room_type);
+          var cls = roomClassEnum.indexOf(rmobj.room_class);
+          tix = tix === -1 ? 3 : tix;
+          cls = cls === -1 ? 3 : cls;
+          return roomTypeAbbrEnum[tix] + (roomClassAbbrEnum[cls] === '' ? "" : "-") + roomClassAbbrEnum[cls];
+        }
+        else {
+          return '***';
+        }
+      }
+    }
+  });
 
   // define a child schema for expense_items. Used in RoomPlan and Reservation schema
   model.factory('ExpenseItem', function (db){
@@ -69,9 +112,9 @@ define(['./module'], function (model) {
   // define a child schema for a reserved resource such as a parking spot. Used in Reservation schema
   model.factory('ReservedResource', function (db){
     var schema = new db.Schema({
-      name: String, // the room number
+      name: String, // the resource name (unique)
       resource_type: String, //the resource type from the resource table
-      price: String  // the room price
+      price: String  // the resource price
     });
 
     return schema;
@@ -80,7 +123,6 @@ define(['./module'], function (model) {
   // Guest Schema
   model.factory('Guest', function(db) {
 
-    var salutationEnum = ['Dr.', 'Frau', 'Familie', 'Herr', 'Herrn'];
     var schema = new db.Schema({
         first_name: { type: String},
         last_name: { type: String, required: true, index: true },
@@ -114,11 +156,6 @@ define(['./module'], function (model) {
         nam = this.city ? nam + ' ('  + this.city + ')' : this.firm ? nam + ' [' + this.firm + ']' : nam;
         return nam;
       });
-      // Add model methods here
-      //Get Enum list for allowed salutation values
-      schema.statics.getSalutationEnum = function (){
-        return salutationEnum;
-      };
 
     // Instantiating the guest model instance
     return db.model('guest', schema);
@@ -140,11 +177,6 @@ define(['./module'], function (model) {
       taxable_rate: Number,  // percent taxed e.g 7 or 19 (%)
       default_unit_price: Number
     });
-
-    // Method to return the itemTypeEnum.
-    schema.statics.getItemTypeEnum = function(){
-      return itemTypeEnum;
-    };
 
     return db.model('itemtype', schema);
   }) ;
@@ -168,13 +200,6 @@ define(['./module'], function (model) {
 
   // Reservation schema
   model.factory('Reservation', function(db, ExpenseItem, ReservedRoom, ReservedResource, datetime){
-
-    // Define enums for fields with limited values.
-    var resStatusEnum = ['Sicher', 'Vorreservation'];
-    var resSourceEnum = ['Phone', 'Booking.Com'];
-    var resInsuranceEnum = ['VDAK', 'AOK & Andere', 'Privat'];
-    var resTypeEnum = ['Std.', 'Bus.', 'Kur', 'Group'];
-
     var schema = new db.Schema({
       reservation_number: {type: Number, required: true, unique: true, index: true},   //generated by app contains the year as part of the number e.g.1400001
       type: {type: String, enum: resTypeEnum},  // determines if business, standard, group etc.
@@ -220,23 +245,6 @@ define(['./module'], function (model) {
       //todo-get all taxable amounts and group by tax rate and sum
       return [{rate: 0, total: 0}];
     });
-    // Add model methods here
-    //Get Enum lists for restricted fields in reservation
-    schema.statics.getReservationStatusEnum = function (){
-      return resStatusEnum;
-    };
-
-    schema.statics.getReservationSourceEnum = function (){
-      return resSourceEnum;
-    };
-
-    schema.statics.getResInsuranceEnum = function (){
-      return resInsuranceEnum;
-    };
-
-    schema.statics.getResTypeEnum = function (){
-      return resTypeEnum;
-    };
 
     return db.model('reservation', schema);
   });
@@ -260,8 +268,6 @@ define(['./module'], function (model) {
   //Schema for room resource
   model.factory('Room', function(db) {
 
-    var roomTypeEnum = ['Einzelzimmer', 'Doppelzimmer', 'Suite'];
-    var roomClassEnum = ['Economy', 'Komfort', 'Balkon',''];
     var schema = new db.Schema({
       number: {type: Number, required: true, unique: true},
       room_type: {type: String, enum: roomTypeEnum},
@@ -270,26 +276,31 @@ define(['./module'], function (model) {
       price: Number
     });
 
+    // virtual method that generates a display name which concatenates the type with the class. Used for UI
+    // display objects. If the room number is 0 then it generates a display_name of <Zimmer auswählen>
     schema.virtual('display_name').get(function() {
       if (this.number) {
         return this.number + " (" + this.room_class + (this.room_class === '' ? "" : "-") + this.room_type + ")";
       }
       else {
-        return "<Zimmer wählen>";
+        return "<Zimmer auswählen>";
       }
     });
-
-    schema.statics.getRoomTypeEnum = function (){
-      return roomTypeEnum;
-    };
+    // virtual method that generates an abbreviated display name which concatenates the type with the class. Used for UI
+    // display objects.
+    schema.virtual('display_abbr').get(function() {
+      var tix = roomTypeEnum.indexOf(this.room_type);
+      var cls = roomClassEnum.indexOf(this.room_class);
+      tix = tix === -1 ? 3 : tix;
+      cls = cls === -1 ? 3 : cls;
+      return roomTypeAbbrEnum[tix] + (roomClassAbbrEnum[cls] === '' ? "" : "-") + roomClassAbbrEnum[cls];
+    });
 
     return db.model('room', schema);
   });
 
   //Schema for other reservable resources (parking, conference room etc)
   model.factory('Resource', function(db) {
-
-    var resourceTypeEnum = ['Parkplatz','Konferenzraum'];
     var schema = new db.Schema({
       name: {type: String, required: true, unique: true},
       resource_type: {type: String, enum: resourceTypeEnum},
@@ -297,10 +308,6 @@ define(['./module'], function (model) {
       multiple_allowed: Boolean,  // if true then multiple entries of this type are allowed, else only one allowed per res.
       price: Number
     });
-
-    schema.statics.getResourceTypeEnum = function (){
-      return resourceTypeEnum;
-    };
 
     return db.model('resource', schema);
   });

@@ -7,7 +7,7 @@
  */
 define(['./module'], function (directives) {
   'use strict';
-  directives.directive('reservationDetails', ['Reservation', 'dashboard', function (Reservation, dashboard) {
+  directives.directive('reservationDetails', ['dashboard', 'dbEnums', function (dashboard, dbEnums) {
 
     var linker = function (scope, element, attrs) {
       scope.hasResults = false;
@@ -25,10 +25,10 @@ define(['./module'], function (directives) {
       ];*/
       scope.rooms = [2,3,4,5,6,7,8,9];
       scope.numGuests = [1,2,3];
-      scope.status = Reservation.getReservationStatusEnum();
+      scope.status = dbEnums.getReservationStatusEnum();
       scope.plans = dashboard.getRoomPlanList();
       scope.resources= ['Platz 1','Platz 2'];
-      scope.sources = Reservation.getReservationSourceEnum();
+      scope.sources = dbEnums.getReservationSourceEnum();
       scope.test = new Date(2014,6,29);
       scope.toggleEditButton = function(){
           if (scope.edit) {

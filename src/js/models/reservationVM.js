@@ -17,9 +17,138 @@
  */
 define(['./module'], function (model) {
   'use strict';
+  model.factory('ReservationVM', function ($q, Reservation, dbEnums, dashboard, datetime) {
+   console.log("Invoking ReservationVM");
+
+    // *** private variables and methods ***
+
+    // clean the db reservation model start and end dates. Converts them to javaScript date objects and
+    // removes any time values.
+    var _cleanResDates = function () {
+      return {
+        start: datetime.dateOnly(new Date(_this.reservation.start_date)),
+        end: datetime.dateOnly(new Date(_this.reservation.end_date))
+      };
+    };
+
+    // populates arrays of room plans value/text objects that can be used by the UI
+    // also populates room plan prices for plans that are whole packages.
+    var _getRoomPlans = function () {
+      return dashboard.getRoomPlanList().then(function (list) {
+
+       //var firstItem =  {value: 0, name: _this.roomPlanFirstText, price: 0, code: 0};
+       // var errorItem = [{value: 0, name: '*** ERROR ***', price: 0, code: 0}];
+
+        _this.roomPlans = list;  //all plans from db
+//        _this.roomPlans = []; //filtered list based on reservation type
+//        if (_this.roomPlanFirstText.length) {
+//          _this.roomPlans.push(firstItem);
+//        }
+//
+//        if (list.length > 0) {
+//          angular.forEach(list, function (item) {
+//            if (item.resTypeFilter.indexOf(_this.reservation.type) >= 0) {
+//              _this.roomPlans.push(item);
+//            }
+//          });
+//          //_findSingleRoomPlan();
+//        }
+//        else {  //no rooms plans found
+//          if (_this.roomPlansAll.length === 0) {
+//            _this.roomPlansAll = [errorItem];
+//          }
+//        }
+        _this.selectedPlan = _this.roomPlans[0]; //todo-only for new case. Need to add logic to update selected plan if res has an existing plan. Also may need to add
+        //todo - business logic that prevents zimmer plan change for an existing res
+      });
+    };
+
+    //initialize the static properties of the VM
+    // NOTE: room plan logic currently assumes that the standard and business res. types share the
+    // same plans. Need to verify if this is true. May need to split into three separate plan groups.
+    var _initializeVM = function () {
+      var deferred = $q.defer();
+      _getRoomPlans().then(function () {
+        deferred.resolve();
+      });
+      return deferred.promise;
+    };
+
+    // This method is called when an existing reservation is brought into the model
+    // It will set the view model properties accordingly
+    var _setModel = function () {
+      //need to refactor from old
+    };
+    // ******* ViewModel definition  ********
+    var ReservationVM = function () {
+    };
+    var _this = ReservationVM; //shortcut
+
+    // *** public properties assigned to VM
+    _this.reservation = {}; // The reservation object
+    _this.roomPlans = []; // The list of available room plans for the reservation. This list is filtered based on
+                          // reservation type.
+    _this.selectedPlan = {}; // The currently selected room plan object
+    _this.isStandard = false; // viewmodel property that is true if the reservation is a standard reservation
+    _this.isBusiness = false; // viewmodel property that is true if the reservation is a business reservation
+    _this.isCure = false; // viewmodel property that is true if the reservation is a cure reservation
+    _this.isGroup = false; // viewmodel property that is true if the reservation is a group reservation
+    _this.nights = 0; //property of the viewmodel since the Reservation schema property is calculated.
+    _this.statusList = dbEnums.getReservationStatusEnum();
+    _this.sourceList = dbEnums.getReservationSourceEnum();
+    _this.resTypeList = dbEnums.getReservationTypeEnum(); //holds a list of the reservation types e.g. standard, business, cure
+    _this.insuranceList = dbEnums.getReservationInsuranceEnum();
+
+    // *** Public methods assigned to VM ***
+
+    //creates a new reservation and gets the new reservation number.
+    // The method will also initialize the start_date, end_date, nights and occupants properties of the reservation
+    // with default values. It will select the default reservation type of standard and a room plan of single room,
+    //
+    // NOTE: this method does not reserve the reservation number so it only works in a single user environment.
+    _this.newReservation = function () {
+      var deferred = $q.defer();
+      dashboard.getNewReservationNumber().then(function (val) {
+        _this.reservation = new Reservation();
+        _this.reservation.reservation_number = val;
+        _this.reservation.type = _this.resTypeList[0]; //defaults to standard reservation
+        _this.reservation.start_date = datetime.dateOnly(new Date());
+        _this.reservation.end_date = datetime.dateOnly(new Date(), 1);
+        _this.nights = 1;
+        _this.reservation.occupants = 1;
+        _this.reservation.status = _this.statusList[0];
+        _this.reservation.source = _this.sourceList[0];
+        _initializeVM().then(function () {
+          _this.selectedPlan = _this.roomPlans[0];  // todo-may need different logic to default to single room
+          //_this.resTypeChanged(); // set room plans based on res type default
+          console.log("New reservation created");
+          return deferred.resolve(_this.reservation);
+        });
+      });
+
+      return deferred.promise;
+    };
+
+    // Retrieves the specified reservation and updates view model
+    _this.getReservation = function (resnum) {
+      var deferred = $q.defer();
+      dashboard.getReservationByNumber(resnum).then(function (res) {
+        _this.reservation = res;
+        _initializeVM().then(function () {
+          _setModel();
+          return deferred.resolve(_this.reservation);
+        });
+      });    //todo - get room plans and set appropriate properties such as isBusiness and nights
+
+      return deferred.promise;
+    };
+
+    // *** End of ViewModel factory, return the VM class.
+    return _this;
+  });
 
   // Guest Schema
-  model.factory('ReservationVM', function ($q, Reservation, dashboard, datetime) {
+  model.factory('ReservationVM_old', function ($q, Reservation, dbEnums, dashboard, datetime) {
     // private variables
     var _singleRoomDefault = 2, //database id of basic single room plan
         _doubleRoomDefault = 3, //database id of basic double room plan
@@ -33,7 +162,7 @@ define(['./module'], function (model) {
     // define the model
     var ReservationVM = function () {
     };
-             //todo - extend logic to handle the three reservation types (normal and business similar plans)
+             //todo - extend logic to handle the four reservation types (normal and business similar plans)
     var _this = ReservationVM;  // and a shortcut
     // ** Configuration properties ** todo-move these into a configuration object
     _this.roomListFirstText = ''; //consumer provides text that is placed as the first item before the room list
@@ -60,10 +189,10 @@ define(['./module'], function (model) {
     _this.selectedConfRm = {};
     _this.selectedGuest = {};
     _this.selectedFirm = {};
-    _this.statusList = Reservation.getReservationStatusEnum();
-    _this.sourceList = Reservation.getReservationSourceEnum();
-    _this.resTypeList = Reservation.getResTypeEnum(); //holds a list of the reservation types e.g. standard, business, cure
-    _this.insuranceList = Reservation.getResInsuranceEnum();
+    _this.statusList = dbEnums.getReservationStatusEnum();
+    _this.sourceList = dbEnums.getReservationSourceEnum();
+    _this.resTypeList = dbEnums.getReservationTypeEnum(); //holds a list of the reservation types e.g. standard, business, cure
+    _this.insuranceList = dbEnums.getReservationInsuranceEnum();
 
     //** model methods **
     //
@@ -332,7 +461,7 @@ define(['./module'], function (model) {
     // Note this logic currently assumes that the standard and business res. types share the same plans.
     _this.resTypeChanged = function () {
       if (!_this.selectedPlan) {   //todo-figure out why this was needed
-        _this.selectedPlan = _this.roomPlansStd[0];
+        _this.selectedPlan = _this.roomPlans[0];
       };
       var ix = _this.resTypeList.indexOf(_this.reservation.type);
       this.isStandard = false;

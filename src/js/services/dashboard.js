@@ -232,7 +232,7 @@ define(['./module'], function (services) {
       },
 
       // find bookable resources such as parking places available between the specified dates
-      findAvailableResources: function (start, end, resType) {
+      findAvailableResources: function (start, end, resType, forlist) {
         var deferred = $q.defer();
         Reservation.find({start_date: {$lt: end}, end_date: {$gt: start}})
             .exec(function (err, res) {
@@ -246,7 +246,9 @@ define(['./module'], function (services) {
                 if (res.length > 0) {
                   angular.forEach(res, function (item) {
                     angular.forEach(item.resources, function (res){
-                       booked.push(res.name);
+                      if (res.resource_type === resType) {
+                        booked.push(res.name);
+                      }
                     });
                   });
                 }
@@ -261,6 +263,10 @@ define(['./module'], function (services) {
                         console.log("findAvailableResources query 2 failed: " + err);
                       }
                       else {
+                        if (forlist) {
+                          var defres = new Resource({name: '', resource_type: resType, price: -1});
+                          res.unshift(defres);
+                        }
                         deferred.resolve(res);
                       }
                     });

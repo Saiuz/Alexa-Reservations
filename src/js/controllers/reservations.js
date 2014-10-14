@@ -10,7 +10,7 @@ define(['./module'], function (controllers) {
       ['$scope',
         '$state',
         '$rootScope',
-        'ReservationVM',
+        'ReservationVM_old',
         'Reservation',
         'dashboard',
         'datetime',
@@ -29,6 +29,7 @@ define(['./module'], function (controllers) {
           ReservationVM.resourceListEmptyText= '** besetzt **';
 
           $scope.ignoreWatch = true;
+
           // Create a new reservation (db) object and initialize some properties
           ReservationVM.newReservation().then(function () {
             $scope.res = ReservationVM.reservation;
