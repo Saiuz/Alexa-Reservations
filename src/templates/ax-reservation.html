@@ -2,15 +2,80 @@
     <div class="form-group">
        <label class="control-label col-xs-4">Res. Typ</label>
        <div class="col-xs-8">
-           <radio-button-group model="res.type" options="resTypeOptions" id="value" name="text" suffix="default"></radio-button-group>
+           <radio-button-group model="res.type" options="resTypeOptions" callback="resTypeChange" id="value" name="text" suffix="default"></radio-button-group>
        </div>
     </div>
     <div class="form-group">
         <label class="control-label col-xs-4">Zimmer Plan</label>
         <div class="col-xs-8">
             <select class="form-control" ng-model="rvm.selectedPlan"
-                    ng-options="z as z.name for z in rvm.roomPlans track by z._id.id | filter:filterByResType"
-                    ng-change="rvm.roomPlanChanged()"></select>
+                    ng-options="z as z.name for z in rvm.roomPlans"
+                    ng-change="roomPlanChanged()"></select>
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-xs-4">Von</label>
+        <div class="col-xs-8">
+            <span class="input-group">
+                <input class="form-control" type="text" datepicker-popup="dd.MM.yyyy"  is-open="openedStart" ng-model="res.start_date" datepicker-options="dateOptions" ng-required="true"  close-text="OK"  current-text="Heute" clear-text="Löschen" />
+                <span class="input-group-btn">
+                    <button class="btn btn-default" type="button"  ng-click="openStart($event)"><i class="glyphicon glyphicon-calendar"></i></button>
+                </span>
+            </span>
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-xs-4">Bis</label>
+        <div class="col-xs-8">
+            <span class="input-group">
+                <input class="form-control" type="text" datepicker-popup="dd.MM.yyyy"  is-open="openedEnd" ng-model="res.end_date" datepicker-options="dateOptions" ng-required="true" close-text="OK"  current-text="Heute" clear-text="Löschen" />
+                <span class="input-group-btn">
+                    <button class="btn btn-default" type="button"  ng-click="openEnd($event)"><i class="glyphicon glyphicon-calendar"></i></button>
+                </span>
+            </span>
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-xs-4">Nächte</label>
+        <div class="col-xs-8">
+            <input class="form-control" type="number" min="1" ng-model="rvm.nights" />
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-xs-4">Gäste Anzahl</label>
+        <div class="col-xs-8">
+            <span class="col-xs-5"><radio-button-group data-toggle="buttons-radio" model="res.occupants" options="occupantOptions" id="value" name="text" suffix="default"></radio-button-group> </span>
+            <span class="col-xs-3" ng-show="res.occupants >2"><input class="form-control" type="number" ng-model="res.occupants" /></span>
+        </div>
+    </div>
+    <div class="form-group" ng-show="rvm.showFirm">
+        <label class="control-label col-xs-4">Firma</label>
+        <div class="col-xs-8">
+            Firm directive goes here
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-xs-4">Gast</label>
+        <div class="col-xs-8">
+            Guest directive goes here
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-xs-4">Zimmer</label>
+        <div class="col-xs-8">
+            <ax-room-select room-list="availableRooms" rooms="res.rooms" guest="{{res.guest.name}}" plan-price="{{planPrice}}" room-count="roomCount"></ax-room-select>
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-xs-4">Parkplatz</label>
+        <div class="col-xs-8">
+            <ax-resource-select resource-list="availableResources" resources="res.resources" resource-type="Parkplatz" resource-title="Parkplatz" resource-count="resourceCount"></ax-resource-select>
+        </div>
+    </div>
+    <div class="form-group" ng-show="rvm.showInsurance">
+        <label class="control-label col-xs-4">Krankenkasse</label>
+        <div class="col-xs-8">
+            <select class="form-control" ng-model="res.insurance" ng-options="r for r in rvm.insuranceList"></select>
         </div>
     </div>
     <div class="form-group">
@@ -19,10 +84,5 @@
             *****
         </div>
     </div>
-    <div class="form-group">
-        <label class="control-label col-xs-4">****</label>
-        <div class="col-xs-8">
-            *****
-        </div>
-    </div>
+
 </div>

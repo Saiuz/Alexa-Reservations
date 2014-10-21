@@ -9,6 +9,7 @@ define(['./module'], function (directives) {
       restrict: 'E',
       scope: { model: '=',
                options: '=',
+               callback: '=',
                id: '@',
                name: '@',
                suffix: '@' },
@@ -24,6 +25,9 @@ define(['./module'], function (directives) {
           }
           $event.cancelBubble = true;
           $event.returnValue = false;
+          if($scope.callback) {
+            $scope.callback(option[$scope.id]);
+          }
         };
         $scope.isActive = function (option) {
           return option[$scope.id] == $scope.model;

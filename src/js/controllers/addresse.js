@@ -18,9 +18,16 @@ define(['./module'], function (controllers) {
           $scope.appTitle = $rootScope.appTitle;
           $scope.appBrand = $rootScope.appBrand;
           $scope.url = $state.current.url;
-
-          $scope.reservationNumber = 0;
-
+          $scope.showRes = true;
+          $scope.reservationNumber = undefined;
+          $scope.curRes=function(){
+            $scope.reservationNumber = 1400101;
+            $scope.showRes = true;
+          }
+          $scope.newRes=function(){
+            $scope.reservationNumber = 0;
+            $scope.showRes = true;
+          }
 
           //Testing stuff
           // Testing the basics for a multiple room selection directive. I originally incorporated the controls

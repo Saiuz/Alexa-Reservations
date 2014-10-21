@@ -59,7 +59,7 @@ define(['./module'], function (directives) {
       // on the reservation. The roomList will change if some other important property has changed,
       // such as start or end dates, number of occupants, etc.
       scope.$watch('roomList',function(newval, oldval){
-        if (newval !== undefined){
+        if (newval !== undefined && newval.length > 0){
           if (newval.length > 0) {
             scope.roomSelect = newval[0];
           }
@@ -85,7 +85,7 @@ define(['./module'], function (directives) {
 
       //pass in the selected value just in case the method gets called before the roomSelect property gets updated.
       scope.onRoomSelect = function(newval) {
-        scope.roomPrice = Number(scope.planPrice ? scope.planPrice : scope.roomSelect.price);
+        scope.roomPrice = Number(Number(scope.planPrice) > 0 ? scope.planPrice : scope.roomSelect.price);
         scope.roomName = scope.guest;
       };
 

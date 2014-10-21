@@ -18,48 +18,64 @@
 define(['./module'], function (model) {
   'use strict';
   model.factory('ReservationVM', function ($q, Reservation, dbEnums, dashboard, datetime) {
-   console.log("Invoking ReservationVM");
+    console.log("Invoking ReservationVM");
 
     // *** private variables and methods ***
 
-    // clean the db reservation model start and end dates. Converts them to javaScript date objects and
-    // removes any time values.
-    var _cleanResDates = function () {
-      return {
-        start: datetime.dateOnly(new Date(_this.reservation.start_date)),
-        end: datetime.dateOnly(new Date(_this.reservation.end_date))
-      };
+    // filters the room plan list based on the reservation type provided
+    // if curPlanCode provided then it will also set the selectedPlan property
+    // to the current plan. Else it will set it to default value
+    var _filterRoomPlans = function (resType, curPlanCode) {
+      var firstItem = {value: 0, name: _this.roomPlanFirstText};
+      var errorItem = {value: 0, name: '*** ERROR ***'};
+      var rPlans = []; //filtered list based on reservation type
+      if (_this.roomPlansAll && _this.roomPlansAll.length > 0) {
+        if (_this.roomPlanFirstText.length) {
+          rPlans.push(firstItem);
+        }
+        var selected = undefined;
+        angular.forEach(_this.roomPlansAll, function (plan) {
+          if (plan.resTypeFilter.indexOf(resType) !== -1) {
+            var pobj = {value: plan._id.id, name: plan.name};
+            rPlans.push(pobj);
+            if (curPlanCode && pobj.value === curPlanCode) {
+              selected = pobj;
+
+            }
+          }
+        });
+
+        //If only one entry then remove the first entry added  above
+        if (rPlans.length === 2) {
+          rPlans.splice(0, 1);
+        }
+      }
+      else {
+        rPlans.push(errorItem);
+      }
+      _this.roomPlans = rPlans;
+      _this.selectedPlan = selected ? selected : _this.roomPlans[0];
+      _this.roomPlanChanged(); //update certain VM model properties based on plan.
+      //todo - may need to add business logic that prevents zimmer plan change for an existing res
+    };
+
+    // Returns the complete room plan object based on which plan was chosen. (selectedPlan)
+    // The plan list displayed to the UI only contains the name and id of the actual plan object
+    var _findSelectedPlan = function () {
+      var selPlan = undefined;
+      angular.forEach(_this.roomPlansAll, function (plan) {
+        if (plan._id.id === _this.selectedPlan.value) {
+          selPlan = plan;
+        }
+      });
+      return selPlan;
     };
 
     // populates arrays of room plans value/text objects that can be used by the UI
     // also populates room plan prices for plans that are whole packages.
     var _getRoomPlans = function () {
       return dashboard.getRoomPlanList().then(function (list) {
-
-       //var firstItem =  {value: 0, name: _this.roomPlanFirstText, price: 0, code: 0};
-       // var errorItem = [{value: 0, name: '*** ERROR ***', price: 0, code: 0}];
-
-        _this.roomPlans = list;  //all plans from db
-//        _this.roomPlans = []; //filtered list based on reservation type
-//        if (_this.roomPlanFirstText.length) {
-//          _this.roomPlans.push(firstItem);
-//        }
-//
-//        if (list.length > 0) {
-//          angular.forEach(list, function (item) {
-//            if (item.resTypeFilter.indexOf(_this.reservation.type) >= 0) {
-//              _this.roomPlans.push(item);
-//            }
-//          });
-//          //_findSingleRoomPlan();
-//        }
-//        else {  //no rooms plans found
-//          if (_this.roomPlansAll.length === 0) {
-//            _this.roomPlansAll = [errorItem];
-//          }
-//        }
-        _this.selectedPlan = _this.roomPlans[0]; //todo-only for new case. Need to add logic to update selected plan if res has an existing plan. Also may need to add
-        //todo - business logic that prevents zimmer plan change for an existing res
+        _this.roomPlansAll = list;  //all plans from db
       });
     };
 
@@ -76,8 +92,9 @@ define(['./module'], function (model) {
 
     // This method is called when an existing reservation is brought into the model
     // It will set the view model properties accordingly
-    var _setModel = function () {
-      //need to refactor from old
+    var _setModel = function (res) {
+      _filterRoomPlans(res.type, res.plan_code);
+      _this.nights = res.nights;
     };
     // ******* ViewModel definition  ********
     var ReservationVM = function () {
@@ -85,14 +102,19 @@ define(['./module'], function (model) {
     var _this = ReservationVM; //shortcut
 
     // *** public properties assigned to VM
-    _this.reservation = {}; // The reservation object
-    _this.roomPlans = []; // The list of available room plans for the reservation. This list is filtered based on
-                          // reservation type.
+    _this.roomPlanFirstText = '<Zimmer Plan auswählen>'; // default text for first item in room plan list
+    _this.roomPlansAll = []; // The list of available room plans for the reservation. This list is filtered based on
+    // reservation type and the filtered list is placed int the roomPlans array.
+    _this.roomPlans = [];  // Filtered list of room plans based on reservation type. Used by UI.
     _this.selectedPlan = {}; // The currently selected room plan object
-    _this.isStandard = false; // viewmodel property that is true if the reservation is a standard reservation
-    _this.isBusiness = false; // viewmodel property that is true if the reservation is a business reservation
-    _this.isCure = false; // viewmodel property that is true if the reservation is a cure reservation
-    _this.isGroup = false; // viewmodel property that is true if the reservation is a group reservation
+    _this.availableRooms = []; // A list of available rooms for a specific date range.
+    _this.availableResources = []; // A list of available resources for a specific date range.
+    _this.showFirm = false; // viewmodel property that is true if the reservation requires a firm name.
+    _this.showInsurance = false; // viewmodel property that is true if the reservation requires insurance.
+    _this.single_only = false; // viewmodel property that is true if the selected room plan is a single room only plan.
+    _this.double_only = false; // viewmodel property that is true if the selected room plan is a double room only plan.
+    _this.planPrice = 0; //set by room plan selection.
+    _this.singleSurcharge = 0; // set by room plan selection.
     _this.nights = 0; //property of the viewmodel since the Reservation schema property is calculated.
     _this.statusList = dbEnums.getReservationStatusEnum();
     _this.sourceList = dbEnums.getReservationSourceEnum();
@@ -108,21 +130,24 @@ define(['./module'], function (model) {
     // NOTE: this method does not reserve the reservation number so it only works in a single user environment.
     _this.newReservation = function () {
       var deferred = $q.defer();
-      dashboard.getNewReservationNumber().then(function (val) {
-        _this.reservation = new Reservation();
-        _this.reservation.reservation_number = val;
-        _this.reservation.type = _this.resTypeList[0]; //defaults to standard reservation
-        _this.reservation.start_date = datetime.dateOnly(new Date());
-        _this.reservation.end_date = datetime.dateOnly(new Date(), 1);
-        _this.nights = 1;
-        _this.reservation.occupants = 1;
-        _this.reservation.status = _this.statusList[0];
-        _this.reservation.source = _this.sourceList[0];
-        _initializeVM().then(function () {
-          _this.selectedPlan = _this.roomPlans[0];  // todo-may need different logic to default to single room
-          //_this.resTypeChanged(); // set room plans based on res type default
-          console.log("New reservation created");
-          return deferred.resolve(_this.reservation);
+      var resource = 'Parkplatz'; //currently the only bookable resource type.
+      _initializeVM().then(function () {
+        dashboard.getNewReservationNumber().then(function (val) {
+          var reservation = new Reservation();
+          reservation.reservation_number = val;
+          reservation.type = _this.resTypeList[0]; //defaults to standard reservation
+          reservation.start_date = datetime.dateOnly(new Date());
+          reservation.end_date = datetime.dateOnly(new Date(), 1);
+          _this.nights = reservation.nights;
+          reservation.occupants = 1;
+          reservation.status = _this.statusList[0];
+          reservation.source = _this.sourceList[0];
+          _filterRoomPlans(reservation.type, 0);
+          var resdates = _this.cleanResDates(reservation);
+          _this.updateAvailableRoomsAndResources(resdates, reservation.occupants === 2).then(function () {
+            console.log("New reservation created");
+            return deferred.resolve(reservation);
+          });
         });
       });
 
@@ -132,15 +157,154 @@ define(['./module'], function (model) {
     // Retrieves the specified reservation and updates view model
     _this.getReservation = function (resnum) {
       var deferred = $q.defer();
-      dashboard.getReservationByNumber(resnum).then(function (res) {
-        _this.reservation = res;
-        _initializeVM().then(function () {
-          _setModel();
-          return deferred.resolve(_this.reservation);
+      var resource = 'Parkplatz'; //currently the only bookable resource type.
+      _initializeVM().then(function () {
+        console.log("Init fired");
+        dashboard.getReservationByNumber(resnum).then(function (reservation) {
+          _setModel(reservation); //Set various properties of the Reservation view model based on the reservation contents
+          var resdates = _this.cleanResDates(reservation);
+          _this.updateAvailableRoomsAndResources(resdates, reservation.occupants === 2).then(function () {
+            console.log("Reservation " + reservation.reservation_number + " retrieved");
+            return deferred.resolve(reservation);
+          });
         });
-      });    //todo - get room plans and set appropriate properties such as isBusiness and nights
+      });
 
       return deferred.promise;
+    };
+
+    // Respond to change of reservation type from UI. This requires room plan filtering
+    _this.reservationTypeChanged = function (resType) {
+      console.log("Reservation type changed to " + resType);
+      _filterRoomPlans(resType);
+      //if there is a pre-selected plan, not the default, then execute the roomPlanChanged method
+      if (_this.selectedPlan.value) {
+        _this.roomPlanChanged();
+      }
+    };
+
+    // Respond to changes in room plan from the UI.
+    _this.roomPlanChanged = function () {
+      console.log("Room plan changed. ID: " + _this.selectedPlan.value);
+      var plan = _findSelectedPlan();
+      if (plan) {
+        _this.showFirm = plan.needs_firm;
+        _this.showInsurance = plan.needs_insurance;
+        _this.single_only = plan.single_only;
+        _this.double_only = plan.double_only;
+        if (plan.is_plan) {
+          _this.planPrice = plan.pp_price;
+          _this.singleSurcharge = plan.single_surcharge;
+        }
+        else {
+          _this.planPrice = 0;
+          _this.singleSurcharge = 0;
+        }
+      }
+      else {
+        _this.showFirm = false;
+        _this.showInsurance = false;
+        _this.planPrice = 0;
+        _this.singleSurcharge = 0;
+        _this.single_only = false;
+        _this.double_only = false;
+
+      }
+    };
+
+    // Returns an object with a the provided reservation start date and a new end date in response to a change in a
+    // reservation start date or the number of nights (nights property of the VM) in the UI
+    _this.calculateEndDate = function (start) {
+      return {
+        start: datetime.dateOnly(new Date(start)),
+        end: datetime.dateOnly(new Date(start), _this.nights)
+      };
+    };
+
+    // Updates the nights property of the VM based on the start and end dates provided
+    _this.calculateNights = function (start, end) {
+      start = datetime.dateOnly(new Date(start));
+      end = datetime.dateOnly(new Date(end));
+      _this.nights = datetime.getNightsStayed(new Date(start), new Date(end));
+      return {  //returned the clean dates
+        start: start,
+        end: end
+      };
+    };
+
+    // Utility routine that will clean the reservation start and end dates, remove the time portion.
+    // Returns a simple object with the cleaned dates in the start and an end properties.
+    _this.cleanResDates = function (reservation) {
+      return {
+        start: datetime.dateOnly(new Date(reservation.start_date)),
+        end: datetime.dateOnly(new Date(reservation.end_date))
+      };
+    };
+
+    _this.updateAvailableRoomsAndResources = function (datesObj, noSingles, roomOnly) {
+      var resource = 'Parkplatz'; //currently the only bookable resource type.
+      var deferred = $q.defer();
+      if (!datesObj.start || !datesObj.end){
+        _this.availableRooms = [];
+        _this.availableResources = [];
+        deferred.resolve(0);
+      }
+      else {
+        dashboard.findAvailableRooms(datesObj.start, datesObj.end, noSingles, true).then(function (rooms) {
+          console.log('%d available rooms found', rooms.length);
+          _this.availableRooms = rooms;
+          if (!roomOnly) {
+            dashboard.findAvailableResources(datesObj.start, datesObj.end, 'Parkplatz', true).then(function (resources) {
+              console.log('%d available ' + resource + ' found', resources.length);
+              _this.availableResources = resources;
+              deferred.resolve(resources.length + rooms.length);
+            });
+          }
+          else {
+            deferred.resolve(rooms.length);
+          }
+        });
+      }
+
+      return deferred.promise;
+    };
+
+    //Retrieve available rooms based on the supplied dates
+    _this.getAvailableRooms = function (datesObj, dbl) {
+      var deferred = $q.defer();
+      if (!(datesObj.start && datesObj.end)) {
+        deferred.resolve([]);
+      }
+      else {
+        dashboard.findAvailableRooms(datesObj.start, datesObj.end, dbl, true).then(function (rooms) {
+          console.log('%d available rooms found', rooms.length);
+          deferred.resolve(rooms);
+        });
+      }
+
+      return deferred;
+    };
+
+    //Retrieve available resources based on the supplied dates
+    _this.getAvailableResources = function (datesObj) {
+      var deferred = $q.defer();
+      if (!(datesObj.start && datesObj.end)) {
+        deferred.resolve(0);
+      }
+      else {
+        dashboard.findAvailableResources(datesObj.start, datesObj.end, 'Parkplatz', true).then(function (resources) {
+          console.log('%d available rooms found', resources.length);
+          if (resources.length > 0) {
+            _this.availableResources = resources;
+          }
+          else {
+            _this.availableResources = [];
+          }
+          deferred.resolve(resources.length);
+        });
+      }
+
+      return deferred;
     };
 
     // *** End of ViewModel factory, return the VM class.
@@ -162,7 +326,7 @@ define(['./module'], function (model) {
     // define the model
     var ReservationVM = function () {
     };
-             //todo - extend logic to handle the four reservation types (normal and business similar plans)
+    //todo - extend logic to handle the four reservation types (normal and business similar plans)
     var _this = ReservationVM;  // and a shortcut
     // ** Configuration properties ** todo-move these into a configuration object
     _this.roomListFirstText = ''; //consumer provides text that is placed as the first item before the room list
@@ -175,7 +339,7 @@ define(['./module'], function (model) {
     _this.reservation = {}; // The reservation object
     _this.roomPlansAll = []; // provides list of all room plans available
     _this.roomPlans = []; // this list changes depending on the value of the reservation type - this property
-                          // should be used by the UI, the above four are made available just in case.
+    // should be used by the UI, the above four are made available just in case.
     _this.selectedPlan = {}; // The currently selected room plan object
     _this.isStandard = false; // viewmodel property that is true if the reservation is a standard reservation
     _this.isBusiness = false; // viewmodel property that is true if the reservation is a business reservation
@@ -263,8 +427,8 @@ define(['./module'], function (model) {
             angular.forEach(rooms, function (item) {
               _this.availableRooms.push(
                   {
-                    value:  item.number,
-                    text:   item.number + ' (' + item.room_type + ')',
+                    value: item.number,
+                    text: item.number + ' (' + item.room_type + ')',
                     prices: item.price
                   });
             });
@@ -422,9 +586,9 @@ define(['./module'], function (model) {
 
     // update end date when start date changes then update available rooms.
     // end date = start date plus nights
-    _this.startDateChanged = function () {
+    _this.startDateChanged = function (res) {
       var d = _cleanResDates();
-      _this.reservation.end_date = datetime.dateOnly(d.start, _this.nights);
+      res.end_date = datetime.dateOnly(d.start, _this.nights);
       _this.getAvailableRooms();
       _this.getAvailableParking();
       _this.getAvailableConfRm();
@@ -462,7 +626,8 @@ define(['./module'], function (model) {
     _this.resTypeChanged = function () {
       if (!_this.selectedPlan) {   //todo-figure out why this was needed
         _this.selectedPlan = _this.roomPlans[0];
-      };
+      }
+      ;
       var ix = _this.resTypeList.indexOf(_this.reservation.type);
       this.isStandard = false;
       this.isBusiness = false;
@@ -550,7 +715,7 @@ define(['./module'], function (model) {
     // This method is called when an existing reservation is brought into the model
     // It will set the view model properties accordingly
     // todo- need to also set the selectedxxx properties for parking, conf rm, guest and firm
-    var _setModel = function() {
+    var _setModel = function () {
       if (!_this.reservation) return;
       var ix = _this.resTypeList.indexOf(_this.reservation.type);
       _this.isStandard = false;
@@ -562,25 +727,25 @@ define(['./module'], function (model) {
           _this.isStandard = true;
           _this.roomPlans = _this.roomPlansStd;
           var ix = _findRoomPlanIndex(_this.roomPlansStd, _this.reservation.plan);
-          _this.selectedPlan =  _this.roomPlansStd[ix];
+          _this.selectedPlan = _this.roomPlansStd[ix];
           break;
         case 1:
           _this.isBusiness = true;
           _this.roomPlans = _this.roomPlansBus;
           var ix = _findRoomPlanIndex(_this.roomPlansBus, _this.reservation.plan);
-          _this.selectedPlan =  _this.roomPlansBus[ix];
+          _this.selectedPlan = _this.roomPlansBus[ix];
           break;
         case 2:
           _this.isCure = true;
           _this.roomPlans = _this.roomPlansKur;
           var ix = _findRoomPlanIndex(_this.roomPlansKur, _this.reservation.plan);
-          _this.selectedPlan =  _this.roomPlansKur[ix];
+          _this.selectedPlan = _this.roomPlansKur[ix];
           break;
         default:
           console.log("ReservationVM, invalid reservation type: " + _this.reservation.type)
       }
 
-    } ;
+    };
 
     //BL: expect first element to be 'Übernachtung im Einzelzimmer' and the second element to be
     //    'Übernachtung im Doppelzimmer'  (or equivalent). Only two types available for bus res.
@@ -597,7 +762,7 @@ define(['./module'], function (model) {
       }
       _doubleRoomIndexBus = ix;
 
-      ix=0;
+      ix = 0;
       while (_this.roomPlansStd[ix].value !== _singleRoomDefault) {
         ix++;
       }
@@ -611,24 +776,26 @@ define(['./module'], function (model) {
     };
 
     // find the index within the plan array containing the specified plan name
-    var _findRoomPlanIndex = function(planList, name){
-       var ix = -1;
-      for (var i = 0; i < planList.length; i++){
+    var _findRoomPlanIndex = function (planList, name) {
+      var ix = -1;
+      for (var i = 0; i < planList.length; i++) {
         if (planList[i].name === name) {
           ix = i;
           break;
         }
       }
       return ix;
-    } ;
+    };
 
     // populates arrays of room plans value/text objects that can be used by the UI
     // also populates room plan prices for plans that are whole packages.
     var _getRoomPlans = function () {
       return dashboard.getRoomPlanList().then(function (list) {
 
-        var firstItem =  {value: 0, name: _this.roomPlanFirstText, price: 0, code: 0};
-        var errorItem = [{value: 0, name: '*** ERROR ***', price: 0, code: 0}];
+        var firstItem = {value: 0, name: _this.roomPlanFirstText, price: 0, code: 0};
+        var errorItem = [
+          {value: 0, name: '*** ERROR ***', price: 0, code: 0}
+        ];
 
         _this.roomPlansAll = list;  //all plans from db
         _this.roomPlans = []; //filtered list based on reservation type
@@ -642,7 +809,7 @@ define(['./module'], function (model) {
               _this.roomPlans.push(item);
             }
           });
-         //_findSingleRoomPlan();
+          //_findSingleRoomPlan();
         }
         else {  //no rooms plans found
           if (_this.roomPlansAll.length === 0) {
@@ -665,18 +832,18 @@ define(['./module'], function (model) {
 
     // updates the title based on name or firm if buisiness
     var _updateTitle = function () {
-       if (_this.isBusiness) {
-         _this.reservation.title = _this.reservation.firm + (_this.reservation.guest ? " (" + _this.reservation.guest.name + ")" : "");
-       }
+      if (_this.isBusiness) {
+        _this.reservation.title = _this.reservation.firm + (_this.reservation.guest ? " (" + _this.reservation.guest.name + ")" : "");
+      }
       else {
-         _this.reservation.title = _this.reservation.guest ? _this.reservation.guest.name  : "";
-       }
+        _this.reservation.title = _this.reservation.guest ? _this.reservation.guest.name : "";
+      }
     }
 
     // Tests if an object is not empty, e.g. {} , has it's own properties
-    var _isNotEmpty = function(obj) {
+    var _isNotEmpty = function (obj) {
       return Object.keys(obj).length !== 0;
-    } ;
+    };
 
     // End of viewmodel factory, return the view model.
     return _this;

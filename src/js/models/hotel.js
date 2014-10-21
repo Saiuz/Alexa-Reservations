@@ -188,6 +188,8 @@ define(['./module'], function (model) {
       is_plan: Boolean,  //True if this is a package plan
       single_only: Boolean, // True if plan only applies to single rooms
       double_only: Boolean, // True if plan only applies to double rooms and suites.
+      needs_firm: Boolean, //True if plan requires a firm name as part of the reservation.
+      needs_insurance: Boolean, //True if plan requires an insurance provider as part of the reservation.
       pp_price: Number, // Per person price based on Double Room
       single_surcharge: Number, // Extra amount paid by single person
       duration: Number, //Number of days the plan covers

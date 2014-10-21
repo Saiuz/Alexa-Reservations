@@ -45,9 +45,9 @@ define(['./module'], function (directives) {
 
       // Watch for a change in resourceList. If the list changes then we need to remove the resources currently
       // on the reservation. The resourceList will change if some other important property has changed,
-      // such as start or end dates, number of occupants, etc.
+      // such as start or end dates etc.
       scope.$watch('resourceList',function(newval, oldval){
-        if (newval !== undefined){
+        if (newval !== undefined && newval.length > 0){
           if (newval.length > 0) {
             if (newval[0].name === '') {
               newval[0].name = "<" + scope.resourceTitle + " auswählen>";

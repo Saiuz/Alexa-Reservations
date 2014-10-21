@@ -215,6 +215,8 @@ define(['./module'], function (controllers) {
                  is_plan: false,
                  single_only: true,
                  double_only: false,
+                 needs_firm: false,
+                 needs_insurance: false,
                  display_string: '%day% Tage %name% à € %roomprice%',
                  required_items: [
                    {name: 'Zimmer', category: 'Plan', count: -1, price: -1, no_delete: true, day_count: true, taxable_rate: 7},
@@ -228,6 +230,8 @@ define(['./module'], function (controllers) {
                 is_plan: false,
                 single_only: false,
                 double_only: true,
+                needs_firm: false,
+                needs_insurance: false,
                 display_string: '%day% Tage %name% à € %roomprice%',
                 required_items: [
                   {name: 'Zimmer', category: 'Plan', count: -1, price: -1, no_delete: true, day_count: true, taxable_rate: 7},
@@ -240,6 +244,8 @@ define(['./module'], function (controllers) {
                 is_plan: true,
                 single_only: false,
                 double_only: false,
+                needs_firm: false,
+                needs_insurance: false,
                 pp_price: 153,
                 single_surcharge: 22,
                 duration: 3,
@@ -255,6 +261,8 @@ define(['./module'], function (controllers) {
                 is_plan: true,
                 single_only: false,
                 double_only: false,
+                needs_firm: false,
+                needs_insurance: false,
                 pp_price: 330,
                 single_surcharge: 35,
                 duration: 6,
@@ -275,6 +283,8 @@ define(['./module'], function (controllers) {
                 is_plan: false,
                 single_only: true,
                 double_only: false,
+                needs_firm: true,
+                needs_insurance: false,
                 display_string: '%day% Tage %name% à € %roomprice%',
                 required_items: [
                   {name: 'Zimmer', count: -1, price: -1, no_delete: true, day_count: true, taxable_rate: 19}
@@ -286,6 +296,37 @@ define(['./module'], function (controllers) {
                 is_plan: false,
                 single_only: false,
                 double_only: true,
+                needs_firm: true,
+                needs_insurance: false,
+                display_string: '%day% Tage %name% à € %roomprice%',
+                required_items: [
+                  {name: 'Zimmer', count: -1, price: -1, no_delete: true, day_count: true, taxable_rate: 19}
+                ]
+              });
+              RoomPlan.create({
+                name: 'Der Kur-Klassiker',
+                resTypeFilter: ['Kur'],
+                is_plan: true,
+                single_only: false,
+                double_only: false,
+                needs_firm: false,
+                needs_insurance: true,
+                pp_price: 1056,
+                single_surcharge: 154,
+                duration: 6,
+                display_string: '%duration% Tage %name%',
+                required_items: [
+                  {name: 'Zimmer', count: -1, price: -1, no_delete: true, day_count: true, taxable_rate: 19}
+                ]
+              });
+              RoomPlan.create({
+                name: 'Group Stay',
+                resTypeFilter: ['Group'],
+                is_plan: false,
+                single_only: false,
+                double_only: false,
+                needs_firm: true,
+                needs_insurance: false,
                 display_string: '%day% Tage %name% à € %roomprice%',
                 required_items: [
                   {name: 'Zimmer', count: -1, price: -1, no_delete: true, day_count: true, taxable_rate: 19}
@@ -296,6 +337,7 @@ define(['./module'], function (controllers) {
               console.log("RoomPlan collection contains %d records", count);
             }
           });
+
           Guest.count(function (err, count) {
             if (count === 0) {
               console.log("Creating guest collection");
@@ -604,6 +646,7 @@ define(['./module'], function (controllers) {
                   resources: [{name: 'Parkplatz 1',resource_type: 'Parkplatz', price: 3}],
                   status: 'Sicher',
                   plan: 'Übernachtung im Einzelzimmer',
+                  plan_code: 20,
                   source: 'Phone',
                   comments: 'Group stay training'
                 }, function (err, reservation) {
@@ -635,7 +678,8 @@ define(['./module'], function (controllers) {
                          {number: 4, room_type: 'Komfort-Einzelzimmer', guest: 'Jane Smith', price: 66}],
                   resources: [{name: 'Parkplatz 2',resource_type: 'Parkplatz', price: 3}],
                   status: 'Sicher',
-                  plan: 'Übernachtung im Doppelzimmer',
+                  plan: 'Unterkunft mit Frühstück im Doppelzimmerr',
+                  plan_code: 6,
                   source: 'Booking.Com',
                   comments: ''
                 }, function (err, reservation) {
@@ -666,7 +710,8 @@ define(['./module'], function (controllers) {
                   rooms: [{number: 12, room_type: 'Economy-Einzelzimmer', guest: 'Monika Adams', price: 57}],
                   resources: [{name: 'Parkplatz 2',resource_type: 'Parkplatz', price: 3}],
                   status: 'Sicher',
-                  plan: 'Körner Kur',
+                  plan: 'Der Kur-Klassiker',
+                  plan_code: 24,
                   insurance: 'VDAK',
                   source: 'Booking.Com',
                   comments: ''

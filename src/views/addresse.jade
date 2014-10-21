@@ -6,7 +6,8 @@ include nav_common.jade
         .panel-heading
           .form-horizontal
             span.input-group  Testing
-            button(ng-click="changeDates()") Change Date
+            button(ng-click="newRes()") New Res
+            button(ng-click="curRes()") Current Res
         .panel-body
           div.form-horizontal
             .form-group
@@ -15,7 +16,7 @@ include nav_common.jade
                 ax-room-select(room-list="roomList" rooms="rooms" guest="{{name}}" plan-price="{{price}}" room-count="roomCount")
     .col-md-7
       .panel.panel-default
-        .panel-heading Zimmer Plan  {{roomTitle}}
-        .panel-body
+        .panel-heading Reservation {{reservationNumber}}
+        .panel-body(ng-show="showRes")
            ax-reservation(reservation-number="reservationNumber")
 
