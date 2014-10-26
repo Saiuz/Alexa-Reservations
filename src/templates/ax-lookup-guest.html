@@ -1,1 +1,10 @@
-<div></div>
+<span class="input-group" ng-class="{'has-error': notFound}">
+  <input class="form-control" type="text" ng-model="axguest" typeahead="n.dname for n in getGuests($viewValue)"
+         typeahead-on-select="guestChanged($item, $model, $label)" />
+  <span class="input-group-btn">
+      <button class="btn btn-default" type="button" ng-click="newGuest()">
+          <i class="glyphicon glyphicon-open"></i>
+      </button>
+  </span>
+    <i class="glyphicon glyphicon-refresh" ng-show="loading"></i>
+</span>

@@ -12,5 +12,6 @@ define([
     './rechnung',
     './charges',
     './addresse',
-    './liste'
+    './liste',
+    './guestFormModal'
 ], function () {});

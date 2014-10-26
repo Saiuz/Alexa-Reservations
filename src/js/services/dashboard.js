@@ -139,10 +139,38 @@ define(['./module'], function (services) {
             .exec(function (err, guests) {
               if (err) {
                 deferred.reject(err);
-                consol.log("getGuestNamesIds guery failed: " + err);
+                console.log("getGuestNamesIds guery failed: " + err);
               }
               else {
                 deferred.resolve(guests);
+              }
+            });
+        return deferred.promise;
+      },
+      getGuestById: function (id) {
+        var deferred = $q.defer();
+        Guest.findById(id)
+            .exec(function (err, guest) {
+              if (err) {
+                deferred.reject(err);
+                console.log("getGuestById query failed: " + err);
+              }
+              else {
+                deferred.resolve(guest);
+              }
+            });
+        return deferred.promise;
+      },
+      getFirmByName: function (name) {
+        var deferred = $q.defer();
+        Firm.findOne({'firm_name': name})
+            .exec(function (err, firm) {
+              if (err) {
+                deferred.reject(err);
+                console.log("getFirmByName query failed: " + err);
+              }
+              else {
+                deferred.resolve(firm);
               }
             });
         return deferred.promise;

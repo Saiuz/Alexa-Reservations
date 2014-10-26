@@ -12,5 +12,7 @@ define([
   './ax-expense-item-list',
   './ax-room-select',
   './ax-resource-select',
-  './ax-reservation'
+  './ax-reservation',
+  './ax-lookup-guest',
+  './ax-lookup-firm'
 ], function () {});
