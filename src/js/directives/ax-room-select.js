@@ -16,22 +16,24 @@
  */
 define(['./module'], function (directives) {
   'use strict';
-  directives.directive('axRoomSelect', ['dbEnums', function (dbEnums) {
+  directives.directive('axRoomSelect', ['dbEnums', 'configService', function (dbEnums, configService) {
     var linker = function (scope, element, attrs) {
+      scope.txt = configService.loctxt;
+
       //private function to update the selectTitle and the roomCount values
       var updateTitle = function () {
         if (scope.rooms && scope.rooms.length) {
           if (scope.rooms.length === 1){
-            scope.selectTitle = 'Zimmernummer ' + scope.rooms[0].number + ' ausgewählt';
+            scope.selectTitle = configService.loctxt.roomNumber + ' '+ scope.rooms[0].number + ' ' + configService.loctxt.selected;
           }
           else {
-            scope.selectTitle = scope.rooms.length + ' Zimmer ausgewählt';
+            scope.selectTitle = scope.rooms.length + ' ' + configService.loctxt.room + ' ' + configService.loctxt.selected;
           }
 
           scope.roomCount = scope.rooms.length;
         }
         else {
-          scope.selectTitle = 'Kein Zimmer';
+          scope.selectTitle = configService.loctxt.noRoom;
           scope.roomCount = 0;
         }
       };

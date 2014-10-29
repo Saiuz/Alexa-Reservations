@@ -5,7 +5,7 @@
  */
 define(['./module'], function (directives) {
   'use strict';
-  directives.directive('axLookupFirm', ['dashboard', 'Firm', function (dashboard, Firm) {
+  directives.directive('axLookupFirm', ['dashboard', 'Firm', '$modal', function (dashboard, Firm, $modal) {
 
     var linker = function (scope, element, attrs) {
       var ignoreWatch = false;
@@ -59,6 +59,7 @@ define(['./module'], function (directives) {
               if (names[j].name === scope.firm) {
                 scope.selectedFirm = names[j];
                 scope.axfirm = names[j].name;
+                scope.notFound = false;
                 found = true;
               }
             }
@@ -70,18 +71,44 @@ define(['./module'], function (directives) {
                 names.push({name: result.firm_name, id: result._id});
                 scope.selectedFirm = names[0];
                 scope.axfirm = names[0].name;
+                scope.notFound = false;
               }
             });
           }
-          scope.notFound = (names.length === 0);
         }
 
         console.log("Firm Name watch fired, " + newval);
       });
 
-      scope.newFirm = function () {
-        //todo--bring up new Firm form. (part of guest VM? or directive
-      }
+      scope.newFirm = function (size) {
+        //if the name in the input field is in the db then ignore the button click
+        if (names.length !== 0 && scope.axfirm) {
+          return;
+        }
+
+        var modalInstance = $modal.open({
+          templateUrl: './templates/firmFormModal.html',
+          controller: 'FirmFormModalCtrl',
+          size: size,
+          resolve: {
+            modalParams: function () {
+              return {
+                data: scope.axfirm,
+                mode: 'Create' //CRUD mode: 'Create', 'Read', 'Update', 'Delete'
+            };
+            }
+          }
+        });
+
+        modalInstance.result.then(function (result) {
+          console.log("Firm Modal returned: " + result);
+          names = [{name: result.firm_name, id: result._id}];
+          scope.selectedFirm = names[0]
+          scope.axfirm =  result.firm_name;
+          scope.firm = result.firm_name;
+          scope.notFound = false;
+        });
+      };
     };
 
     return {

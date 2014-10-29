@@ -13,5 +13,6 @@ define([
     './charges',
     './addresse',
     './liste',
-    './guestFormModal'
+  './guestFormModal',
+  './firmFormModal'
 ], function () {});

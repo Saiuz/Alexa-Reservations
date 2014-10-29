@@ -1,7 +1,7 @@
 include nav_common.jade
 .container
   .row
-    .col-md-5
+    .col-md-4
       .panel.panel-default
         .panel-heading
           .form-horizontal
@@ -11,10 +11,31 @@ include nav_common.jade
         .panel-body
           div.form-horizontal
             .form-group
-              label.control-label.col-xs-4 Zimmer
+              label.control-label.col-xs-4 Test Firm
               .col-xs-8
-                ax-room-select(room-list="roomList" rooms="rooms" guest="{{name}}" plan-price="{{price}}" room-count="roomCount")
-    .col-md-7
+                button(ng-click="testFirm('c')") New
+                button(ng-click="testFirm('r')") Read
+                button(ng-click="testFirm('u')") Update Name
+                button(ng-click="testFirm('u2')") Update ID
+                button(ng-click="testFirm('d')") Delete
+            .form-group
+              label.control-label.col-xs-4 Test Firm Results:
+              .col-xs-8
+                div {{firmTestResult}}
+            .form-group
+              label.control-label.col-xs-4 Test Guest
+              .col-xs-8
+                button(ng-click="testGuest('c')") New
+                button(ng-click="testGuest('r')") Read
+                button(ng-click="testGuest('u')") Update Name
+                button(ng-click="testGuest('u2')") Update ID
+                button(ng-click="testGuest('d')") Delete
+            .form-group
+              label.control-label.col-xs-4 Test Guest Results:
+              .col-xs-8
+                div {{guestTestResult}}
+
+  .col-md-7
       .panel.panel-default
         .panel-heading Reservation {{reservationNumber}}
         .panel-body(ng-show="showRes")

@@ -56,6 +56,32 @@ define(['./module'], function (services) {
         } else {
           return 0;
         }
+      },
+      // function parses a date string in the German format: dd.MM.yyyy
+      dateParseDe: function (dateStr) {
+        if (!dateStr) {
+          return undefined;
+        }
+        var dparts = dateStr.split('.');
+        if (dparts.length < 2) { //must have at least two parts so we can infer the year
+          return undefined;
+        }
+
+        var day = Number(dparts[0]);
+        var month = Number(dparts[1]) - 1;
+        var curYear = new Date().getFullYear();
+        var year = dparts.length === 3 ? Number(dparts[2]) : curYear;
+        if (year < 100) {
+          year = year + 2000;
+        }
+
+        //Check for valid numeric values
+        if ((day && day > 0 && day < 32) && (month && month > 0 && month < 13) && (year && year > 0)) {
+          return new Date(year, month, day);
+        }
+        else {
+          return undefined;
+        }
       }
     };
   });

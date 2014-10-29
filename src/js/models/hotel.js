@@ -138,7 +138,8 @@ define(['./module'], function (model) {
         city: String,
         post_code: Number,
         telephone: String,
-        comments: String
+        comments: String,
+        unique_name: {type: String, unique: true} //NOTE this field should not be exposed as an editable field on a UI form. It is generated on save.
     });
     // Virtual fields
     schema.virtual('name').get(function() {
@@ -149,12 +150,13 @@ define(['./module'], function (model) {
       }
     });
 
-      schema.virtual('unique_name').get(function() {
+      schema.pre('save', function(next) {
         var nam = this.salutation ? this.salutation : '';
         nam = this.first_name ? nam.length > 0 ? nam + ' ' + this.first_name : this.first_name : nam;
         nam = nam.length > 0 ? nam + ' ' + this.last_name : this.last_name; //last name always there
         nam = this.city ? nam + ' ('  + this.city + ')' : this.firm ? nam + ' [' + this.firm + ']' : nam;
-        return nam;
+        this.unique_name = nam;
+        next();
       });
 
     // Instantiating the guest model instance

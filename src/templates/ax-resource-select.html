@@ -5,7 +5,7 @@
     <div class="panel-body" collapse="isCollapsed">
         <table class="small">
             <tr>
-                <th>Freie {{resourceTitle}}</th>
+                <th>{{txt.free}} {{resourceTitle}}</th>
             </tr>
             <tr>
                 <td>
@@ -14,12 +14,12 @@
                 </td>
             </tr>
             <tr ng-show="resourceSelect.price >= 0">
-                <th>Preis €</th>
+                <th>{{txt.price}} {{txt.priceSymbol}}</th>
             </tr>
             <tr ng-show="resourceSelect.price >= 0">
                 <td>
                     <input class="col-xs-4" type="number" ng-model="resourcePrice"/>&nbsp;
-                    <button ng-click="addResource()">Beigeben</button>
+                    <button ng-click="addResource()">{{txt.add}}</button>
                 </td>
             </tr>
         </table>
@@ -27,7 +27,7 @@
              <tr>
                 <th></th>
                 <th>{{resourceTitle}}</th>
-                <th>Preis</th>
+                <th>{{txt.price}}</th>
             </tr>
             <tr ng-repeat="res in resources">
                 <td>

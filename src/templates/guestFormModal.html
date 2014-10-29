@@ -1,89 +1,134 @@
 <div class="modal-header">
-    <h3 class="modal-title">Add a Guest</h3>
+    <h3 class="modal-title">{{title}}</h3>
 </div>
 <div class="modal-body">
     <div class="form-horizontal">
         <div class="form-group">
-            <label class="control-label col-xs-4">Salutation</label>
-            <div class="col-xs-8">
-                <select class="form-control" ng-model="selSalutation" ng-options="z as z.name for z in salutations" ng-change="salutationChanged()"></select>
+            <label class="control-label col-xs-4">{{txt.salutation}}</label>
+            <div class="col-xs-8" ng-show="!edit">
+                <p class="form-control-static">{{guest.salutation}}</p>
+            </div>
+            <div class="col-xs-8" ng-show="edit">
+                <select class="form-control" ng-model="selSalutation" ng-options="z as z.name for z in salutations"
+                        ng-change="salutationChanged()"></select>
             </div>
         </div>
         <div class="form-group">
-            <label class="control-label col-xs-4">Vorname</label>
-            <div class="col-xs-8">
-                <input class="form-control" ng-model="guest.first_name" type="text" />
+            <label class="control-label col-xs-4">{{txt.firstName}}</label>
+            <div class="col-xs-8" ng-show="!edit">
+                <p class="form-control-static">{{guest.first_name}}</p>
+            </div>
+            <div class="col-xs-8" ng-show="edit">
+                <input class="form-control" ng-model="guest.first_name" type="text"/>
             </div>
         </div>
         <div class="form-group">
-            <label class="control-label col-xs-4">Nachname</label>
-            <div class="col-xs-8">
-                <input class="form-control" ng-model="guest.last_name" type="text" />
+            <label class="control-label col-xs-4">{{txt.lastName}}</label>
+            <div class="col-xs-8" ng-show="!edit">
+                <p class="form-control-static">{{guest.last_name}}</p>
+            </div>
+            <div class="col-xs-8" ng-show="edit">
+                <input class="form-control" ng-model="guest.last_name" type="text"/>
             </div>
         </div>
         <div class="form-group">
-            <label class="control-label col-xs-4">Geburtstag</label>
-            <div class="col-xs-8">
-                <input class="form-control" ng-model="guest.birthday" type="text" />
+            <label class="control-label col-xs-4">{{txt.birthday}}</label>
+            <div class="col-xs-8" ng-show="!edit">
+                <p class="form-control-static">{{guest.birthday}}</p>
+            </div>
+            <div class="col-xs-8" ng-show="edit">
+                <span class="input-group">
+                <input class="form-control" type="text" date-fix datepicker-popup="dd.MM.yyyy" is-open="openedBday1"
+                       ng-model="bdate1" datepicker-options="dateOptions" ng-required="false" close-text="OK"
+                       current-text="Heute" clear-text="Löschen"/>
+                <span class="input-group-btn">
+                    <button class="btn btn-default" type="button" ng-click="openBday1($event)"><i
+                            class="glyphicon glyphicon-calendar"></i></button>
+                </span>
+            </span>
             </div>
         </div>
         <div class="form-group">
-            <label class="control-label col-xs-4">Firma</label>
-            <div class="col-xs-8">
+            <label class="control-label col-xs-4">{{txt.firm}}</label>
+            <div class="col-xs-8" ng-show="!edit">
+                <p class="form-control-static">{{guest.firm}}</p>
+            </div>
+            <div class="col-xs-8" ng-show="edit">
                 <ax-lookup-firm firm="guest.firm"></ax-lookup-firm>
             </div>
         </div>
         <div class="form-group" ng-show="!guest.firm">
-            <label class="control-label col-xs-4">Addresse 1</label>
-            <div class="col-xs-8">
-                <input class="form-control" ng-model="guest.address1" type="text" />
+            <label class="control-label col-xs-4">{{txt.address1}}</label>
+            <div class="col-xs-8" ng-show="!edit">
+                <p class="form-control-static">{{guest.address1}}</p>
+            </div>
+            <div class="col-xs-8" ng-show="edit">
+                <input class="form-control" ng-model="guest.address1" type="text"/>
             </div>
         </div>
-        <div class="form-group"  ng-show="!guest.firm">
-            <label class="control-label col-xs-4">Addresse 2</label>
-            <div class="col-xs-8">
-                <input class="form-control" ng-model="guest.address2" type="text" />
+        <div class="form-group" ng-show="!guest.firm">
+            <label class="control-label col-xs-4">{{txt.address2}}</label>
+            <div class="col-xs-8" ng-show="!edit">
+                <p class="form-control-static">{{guest.address2}}</p>
+            </div>
+            <div class="col-xs-8" ng-show="edit">
+                <input class="form-control" ng-model="guest.address2" type="text"/>
             </div>
         </div>
-        <div class="form-group"  ng-show="!guest.firm">
-            <label class="control-label col-xs-4">PLZ</label>
-            <div class="col-xs-8">
-                <input class="form-control" ng-model="guest.post_code" type="text" />
+        <div class="form-group" ng-show="!guest.firm">
+            <label class="control-label col-xs-4">{{txt.postCode}}</label>
+            <div class="col-xs-8" ng-show="!edit">
+                <p class="form-control-static">{{guest.post_cod}}</p>
+            </div>
+            <div class="col-xs-8" ng-show="edit">
+                <input class="form-control" ng-model="guest.post_code" type="text"/>
             </div>
         </div>
-        <div class="form-group"  ng-show="!guest.firm">
-            <label class="control-label col-xs-4">Ort</label>
-            <div class="col-xs-8">
-                <input class="form-control" ng-model="guest.city" type="text" />
+        <div class="form-group" ng-show="!guest.firm">
+            <label class="control-label col-xs-4">{{txt.city}}</label>
+            <div class="col-xs-8" ng-show="!edit">
+                <p class="form-control-static">{{guest.city}}</p>
             </div>
-        </div>
-        <div class="form-group">
-            <label class="control-label col-xs-4">Telefonnummer</label>
-            <div class="col-xs-8">
-                <input class="form-control" ng-model="guest.telephone" type="text" />
-            </div>
-        </div>
-        <div class="form-group">
-            <label class="control-label col-xs-4">email</label>
-            <div class="col-xs-8">
-                <input class="form-control" ng-model="guest.email" type="email" />
-            </div>
-        </div>
-        <div class="form-group">
-            <label class="control-label col-xs-4">Bemerkung</label>
-            <div class="col-xs-8">
-                <input class="form-control" ng-model="guest.comments" type="text" />
+            <div class="col-xs-8" ng-show="edit">
+                <input class="form-control" ng-model="guest.city" type="text"/>
             </div>
         </div>
         <div class="form-group">
-            <label class="control-label col-xs-4">XXXXX</label>
-            <div class="col-xs-8">
-                YYYYY
+            <label class="control-label col-xs-4">{{txt.telephone}}</label>
+            <div class="col-xs-8" ng-show="!edit">
+                <p class="form-control-static">{{guest.telephone}}</p>
+            </div>
+            <div class="col-xs-8" ng-show="edit">
+                <input class="form-control" ng-model="guest.telephone" type="text"/>
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="control-label col-xs-4">{{txt.email}}</label>
+            <div class="col-xs-8" ng-show="!edit">
+                <p class="form-control-static">{{guest.email}}</p>
+            </div>
+            <div class="col-xs-8" ng-show="edit">
+                <input class="form-control" ng-model="guest.email" type="email"/>
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="control-label col-xs-4">{{txt.comments}}</label>
+            <div class="col-xs-8" ng-show="!edit">
+                <p class="form-control-static">{{guest.comments}}</p>
+            </div>
+            <div class="col-xs-8" ng-show="edit">
+                <textarea class="form-control" ng-model="guest.comments"></textarea>
             </div>
         </div>
     </div>
+    <div class="alert alert-warning" ng-show="errShow">
+        <a class="close" ng-click="hideErr()">&times;</a>
+        <strong>Error!</strong> {{err}}
+    </div>
 </div>
 <div class="modal-footer">
-    <button class="btn btn-primary" ng-click="save()">Save</button>
-    <button class="btn btn-warning" ng-click="cancel()">Cancel</button>
+    <label class="btn  btn-primary" ng-show="deleteMode"><input type="checkbox" ng-model="confirmed" />{{txt.confirmDelete}}</label>
+    <button class="btn btn-danger" ng-click="delete()" ng-show="!errShow && deleteMode && confirmed">{{saveTxt}}</button>
+    <button class="btn btn-primary" ng-click="save()" ng-show="!errShow && edit">{{saveTxt}}</button>
+    <button class="btn btn-warning" ng-click="cancel()">{{cancelTxt}}</button>
 </div>

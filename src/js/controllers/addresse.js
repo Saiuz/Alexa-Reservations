@@ -13,7 +13,8 @@ define(['./module'], function (controllers) {
         'dashboard',
         'datetime',
         'Reservation',
-        function ($scope, $state, $rootScope, dashboard, datetime, Reservation) {
+        '$modal',
+        function ($scope, $state, $rootScope, dashboard, datetime, Reservation, $modal) {
           console.log("Addresse  controller fired")
           $scope.appTitle = $rootScope.appTitle;
           $scope.appBrand = $rootScope.appBrand;
@@ -85,52 +86,97 @@ define(['./module'], function (controllers) {
           })
 
           $scope.isCollapsed1 = true;
-/*
-*//*        //watch did not work on roomSelect or roomSelect.name except for first time.
-          $scope.$watch('roomSelect', function(newval, oldval){
-            if (newval === oldval) return;
-            $scope.roomTitle = "Room " + $scope.roomSelect.name + "selected.";
-            $scope.price = $scope.roomSelect.price;
-          }, true);*//*
 
-          //note this method seems to be firing before roomSelect scope variable is updated!!!!! Known issue.
-          //to get around it I passed the roomSelect variable into the function. It seems to be updated on the page
-          // but not yet in the controller scope.
-          $scope.onRoomSelect = function (newval) {
-            currentRoom = newval
-            $scope.roomTitle = "Room " + newval.number + " selected. ("  + newval.room_type + ")";
-            $scope.price = newval.price;
-          }
-
-          $scope.filterAlreadyAdded = function(item) {
-            for (var ix = 0; ix < $scope.rooms.length; ix++) {
-              if ($scope.rooms[ix].room === item.number) {
-                return false;
-              }
-            }
-            return true;
-          };
-          $scope.addRoom = function() {
-            $scope.roomSelect = $scope.roomList[0];
-            $scope.price = 0;
-
-            var room = {
-              room: currentRoom.number,
-              display_name: currentRoom.room_type,
-              guest: $scope.name,
-              price: currentRoom.price
-            };
-
-            $scope.rooms.push(room);
-          };
-
-          $scope.removeRoom = function(roomnum){
-            for (var ix = 0; ix < $scope.rooms.length; ix++) {
-              if ($scope.rooms[ix].room === roomnum) {
-                $scope.rooms.splice(ix, 1);
+          var newFirm = 0;
+          var lastModef = '';
+          $scope.testFirm = function(mode, size) {
+            var modeParams = {};
+            lastModef = mode;
+            switch (mode) {
+              case 'c':
+                modeParams = {data: 'Test Firm', mode: 'Create'};
                 break;
-              }
+              case 'r':
+                modeParams = {data: 'Test Firm', mode: 'Read'};
+                break;
+              case 'u':
+                modeParams = {data: 'Test Firm', mode: 'Update'};
+                break;
+              case 'u2':
+                modeParams = {data: 7, mode: 'Update'};
+                break;
+              case 'd':
+                modeParams = {data: newFirm, mode: 'Delete'};
+                break
             }
-          };*/
+
+            var modalInstance = $modal.open({
+              templateUrl: './templates/firmFormModal.html',
+              controller: 'FirmFormModalCtrl',
+              size: size,
+              resolve: {
+                modalParams: function () {
+                  return modeParams;
+                }
+              }
+            });
+
+            modalInstance.result.then(function (result) {
+              if (lastModef === 'c') {
+                newFirm = result._id.id;
+              }
+              console.log("Firm Modal returned: " + result);
+              $scope.firmTestResult = result;
+            });
+
+          };
+          var newGuest = 0;
+          var lastModeg = '';
+
+          $scope.testGuest = function(mode, size) {
+            lastModeg = mode;
+            var modeParams = {};
+            switch (mode) {
+              case 'c':
+                modeParams = {data: 'Frau Suzie Longnose'.split(' '), mode: 'Create'};
+                break;
+              case 'r':
+                modeParams = {data: 5, mode: 'Read'};
+                break;
+              case 'u':
+                modeParams = {data: 'Suzie Longnose [The Grand Central]', mode: 'Update'};
+                break;
+              case 'u2':
+                modeParams = {data: 5, mode: 'Update'};
+                break;
+              case 'u2':
+                modeParams = {data: 5, mode: 'Update'};
+                break;
+              case 'd':
+                modeParams = {data: newGuest, mode: 'Delete'};
+                break
+            }
+
+            var modalInstance = $modal.open({
+              templateUrl: './templates/guestFormModal.html',
+              controller: 'GuestFormModalCtrl',
+              size: size,
+              resolve: {
+                modalParams: function () {
+                  return modeParams;
+                }
+              }
+            });
+
+            modalInstance.result.then(function (result) {
+              console.log("Guest Modal returned: " + result);
+              if (lastModeg === 'c') {
+                newGuest = result._id.id;
+              }
+              $scope.guestTestResult = result;
+            });
+
+          };
+
         }]);
 });

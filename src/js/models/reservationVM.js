@@ -311,7 +311,7 @@ define(['./module'], function (model) {
     return _this;
   });
 
-  // Guest Schema
+  // Old stuff
   model.factory('ReservationVM_old', function ($q, Reservation, dbEnums, dashboard, datetime) {
     // private variables
     var _singleRoomDefault = 2, //database id of basic single room plan

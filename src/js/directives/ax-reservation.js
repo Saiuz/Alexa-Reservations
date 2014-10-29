@@ -1,13 +1,10 @@
 /**
  * Created by Owner on 10/13/2014.
- * ToDo-some how need to get the directive to update inputs on first page load. May have to let the hosting page control the creation of the reservation. Not sure what is going on.
- * todo-try to move all lists and objects required for ui into ReservationVM and as much logic as possible. May want to make the
- * todo-VM model a true factory that creates a new instance of the vm with its underlying reservation. Not sure if that will help.Another alternative is to put some of the logic into the
- * todo-database model.
+ *
  */
 define(['./module'], function (directives) {
   'use strict';
-  directives.directive('axReservation', ['ReservationVM', function (ReservationVM) {
+  directives.directive('axReservation', ['ReservationVM', 'configService', function (ReservationVM, configService) {
 
     var linker = function (scope, element, attrs) {
       console.log("ax-reservation: linker function fired")
@@ -20,6 +17,7 @@ define(['./module'], function (directives) {
       scope.planPrice = 0;
       scope.roomCount = 0;
       scope.resourceCount = 0;
+      scope.txt = configService.loctxt;
 
       var rOpts = [];
       angular.forEach(scope.rvm.resTypeList, function (item) {
@@ -68,6 +66,8 @@ define(['./module'], function (directives) {
             console.log("Get existing reservation");
             ReservationVM.getReservation(newval).then(function (res) {
               scope.res = res;
+              scope.start_date = new Date(res.start_date);
+              scope.end_date = new Date(res.end_date);
               scope.availableRooms = ReservationVM.availableRooms;
               scope.availableResources = ReservationVM.availableResources;
               scope.planPrice = ReservationVM.planPrice;
@@ -79,6 +79,8 @@ define(['./module'], function (directives) {
             console.log("Create new reservation");
             ReservationVM.newReservation().then(function (res) {
               scope.res = res;
+              scope.start_date = new Date(res.start_date);
+              scope.end_date = new Date(res.end_date);
               var rOpts = [];
               angular.forEach(scope.rvm.resTypeList, function (item) {
                 rOpts.push({value: item, text: item});
@@ -93,7 +95,7 @@ define(['./module'], function (directives) {
 
       //watch for changes in certain form fields
       var ignoreIndex = -1;
-      scope.$watchCollection('[res.start_date, res.end_date, rvm.nights, res.occupants, res.type]', function (newvars, oldvars) {
+      scope.$watchCollection('[start_date, end_date, rvm.nights, res.occupants, res.type]', function (newvars, oldvars) {
         console.log("Watch collection fired " + excecuteWatch);
         if (excecuteWatch) {
 
@@ -108,8 +110,10 @@ define(['./module'], function (directives) {
             case 0:
               console.log("start_date changed");
               ignoreIndex = 1; //end_date
+              scope.res.start_date = scope.start_date;
               rdates = ReservationVM.calculateEndDate(scope.res.start_date);
               scope.res.end_date = rdates.end;
+              scope.end_date = rdates.end;
               ReservationVM.updateAvailableRoomsAndResources(rdates, scope.res.occupants === 2).then(function (cnt) {
                 scope.availableRooms = ReservationVM.availableRooms;
                 scope.availableResources = ReservationVM.availableResources;
@@ -120,8 +124,9 @@ define(['./module'], function (directives) {
             case 1:
               console.log("end_date changed");
               ignoreIndex = 2; //nights
+              scope.res.end_date = scope.end_date;
               rdates = ReservationVM.calculateNights(scope.res.start_date, scope.res.end_date);
-              scope.res.end_date = rdates.end;
+              //scope.res.end_date = rdates.end;
               ReservationVM.updateAvailableRoomsAndResources(rdates, scope.res.occupants === 2).then(function (cnt) {
                 scope.availableRooms = ReservationVM.availableRooms;
                 scope.availableResources = ReservationVM.availableResources;
@@ -134,6 +139,7 @@ define(['./module'], function (directives) {
               ignoreIndex = 1; //end_date
               rdates = ReservationVM.calculateEndDate(scope.res.start_date);
               scope.res.end_date = rdates.end;
+              scope.end_date = rdates.end;
               ReservationVM.updateAvailableRoomsAndResources(rdates, scope.res.occupants === 2).then(function (cnt) {
                 scope.availableRooms = ReservationVM.availableRooms;
                 scope.availableResources = ReservationVM.availableResources;
@@ -192,8 +198,8 @@ define(['./module'], function (directives) {
         formatYear: 'yy',
         startingDay: 1,
         showWeeks: false,
-        currentText: 'Heute',
-        closeText: 'OK'
+        currentText: configService.loctxt.today,
+        closeText: configService.loctxt.ok
       };
       scope.dateFormat = "dd.MM.yyyy";
     };
@@ -201,6 +207,7 @@ define(['./module'], function (directives) {
     var controller = function ($scope) {
       console.log("ax-reservation: controller fired.")
     };
+
     return {
       restrict: 'E',
       link: linker,

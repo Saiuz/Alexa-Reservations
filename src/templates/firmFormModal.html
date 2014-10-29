@@ -1,0 +1,107 @@
+<div class="modal-header">
+    <h3 class="modal-title">{{title}}</h3>
+</div>
+<div class="modal-body">
+    <div class="form-horizontal">
+        <div class="form-group">
+            <label class="control-label col-xs-4">{{txt.firmName}}</label>
+            <div class="col-xs-8" ng-show="read">
+                <p class="form-control-static">{{firm.firm_name}}</p>
+            </div>
+            <div class="col-xs-8" ng-show="edit">
+                <input class="form-control" ng-model="firm.firm_name" type="text" />
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="control-label col-xs-4">{{txt.address1}}</label>
+            <div class="col-xs-8" ng-show="read">
+                <p class="form-control-static">{{firm.address1}}</p>
+            </div>
+            <div class="col-xs-8" ng-show="edit">
+                <input class="form-control" ng-model="firm.address1" type="text" />
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="control-label col-xs-4">{{txt.address2}}</label>
+            <div class="col-xs-8" ng-show="read">
+                <p class="form-control-static">{{firm.address2}}</p>
+            </div>
+            <div class="col-xs-8" ng-show="edit">
+                <input class="form-control" ng-model="firm.address2" type="text" />
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="control-label col-xs-4">{{txt.postCode}}</label>
+            <div class="col-xs-8" ng-show="read">
+                <p class="form-control-static">{{firm.post_code}}</p>
+            </div>
+            <div class="col-xs-8" ng-show="edit">
+                <input class="form-control" ng-model="firm.post_code" type="text" />
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="control-label col-xs-4">{{txt.city}}</label>
+            <div class="col-xs-8" ng-show="read">
+                <p class="form-control-static">{{firm.city}}</p>
+            </div>
+            <div class="col-xs-8" ng-show="edit">
+                <input class="form-control" ng-model="firm.city" type="text" />
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="control-label col-xs-4">{{txt.roomPrice}}</label>
+            <div class="col-xs-8" ng-show="read">
+                <p class="form-control-static">{{firm.room_price}}</p>
+            </div>
+            <div class="col-xs-8" ng-show="edit">
+                <input class="form-control" ng-model="firm.room_price" type="text" />
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="control-label col-xs-4">{{txt.contact_name}}</label>
+            <div class="col-xs-8" ng-show="read">
+                <p class="form-control-static">{{firm.contact.name}}</p>
+            </div>
+            <div class="col-xs-8" ng-show="edit">
+                <input class="form-control" ng-model="firm.contact.name" type="text" />
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="control-label col-xs-4">{{txt.contact_tel}}</label>
+            <div class="col-xs-8" ng-show="read">
+                <p class="form-control-static">{{firm.contact.phone}}</p>
+            </div>
+            <div class="col-xs-8" ng-show="edit">
+                <input class="form-control" ng-model="firm.contact.phone" type="text" />
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="control-label col-xs-4">{{txt.contact_email}}</label>
+            <div class="col-xs-8" ng-show="read">
+                <p class="form-control-static">{{firm.contact.email}}</p>
+            </div>
+            <div class="col-xs-8" ng-show="edit">
+                <input class="form-control" ng-model="firm.contact.email" type="email" />
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="control-label col-xs-4">{{txt.comments}}</label>
+            <div class="col-xs-8" ng-show="read">
+                <p class="form-control-static">{{firm.comments}}</p>
+            </div>
+            <div class="col-xs-8" ng-show="edit">
+                <textarea class="form-control" ng-model="firm.comments"></textarea>
+            </div>
+        </div>
+    </div>
+    <div class="alert alert-warning" ng-show="errShow">
+        <a class="close" ng-click="hideErr()">&times;</a>
+        <strong>Error!</strong> {{err}}
+    </div>
+</div>
+<div class="modal-footer">
+    <label class="btn  btn-primary" ng-show="deleteMode"><input type="checkbox" ng-model="confirmed" />{{txt.confirmDelete}}</label>
+    <button class="btn btn-danger" ng-click="delete()" ng-show="!errShow && deleteMode && confirmed">{{saveTxt}}</button>
+    <button class="btn btn-primary" ng-click="save()" ng-show="!errShow && edit">{{saveTxt}}</button>
+    <button class="btn btn-warning" ng-click="cancel()">{{cancelTxt}}</button>
+</div>

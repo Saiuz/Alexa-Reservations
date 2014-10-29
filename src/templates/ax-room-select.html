@@ -5,7 +5,7 @@
 <div class="panel-body" collapse="isCollapsed">
     <table class="small">
         <tr>
-            <th>Freie Zimmer</th>
+            <th>{{txt.roomsFree}}</th>
         </tr>
         <tr>
             <td>
@@ -14,7 +14,7 @@
             </td>
         </tr>
         <tr ng-show="roomSelect.number">
-            <th>Gäste</th>
+            <th>{{txt.guest}}</th>
         </tr>
         <tr ng-show="roomSelect.number">
             <td>
@@ -22,21 +22,21 @@
             </td>
         </tr>
         <tr ng-show="roomSelect.number">
-            <th>Preis €</th>
+            <th>{{txt.price}} {{txt.priceSymbol}}</th>
         </tr>
         <tr ng-show="roomSelect.number">
             <td>
                 <input class="col-xs-4" type="number" ng-model="roomPrice"/>&nbsp;
-                <button ng-click="addRoom()">Beigeben</button>
+                <button ng-click="addRoom()">{{txt.add}}</button>
             </td>
         </tr>
     </table>
     <table ng-show="rooms.length" class="table small">
         <tr>
             <th></th>
-            <th colspan="2">Zimmer</th>
-            <th>Gäste</th>
-            <th>Preis</th>
+            <th colspan="2">{{txt.room}}</th>
+            <th>{{txt.guest}}</th>
+            <th>{{txt.price}}</th>
         </tr>
         <tr ng-repeat="room in prooms">
             <td>

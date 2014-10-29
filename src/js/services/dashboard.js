@@ -178,10 +178,12 @@ define(['./module'], function (services) {
       guestNameLookup: function (val, firm) {
         var deferred = $q.defer();
         var qry = firm ? {firm: firm, $or: [
+          {salutation: { $regex: val, $options: 'i'}},
           {last_name: { $regex: val, $options: 'i' }},
           {first_name: { $regex: val, $options: 'i' }}
         ]} :
         {$or: [
+          {salutation: { $regex: val, $options: 'i'}},
           {last_name: { $regex: val, $options: 'i' }},
           {first_name: { $regex: val, $options: 'i' }}
         ]};

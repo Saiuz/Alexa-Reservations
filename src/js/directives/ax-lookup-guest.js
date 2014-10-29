@@ -60,6 +60,7 @@ define(['./module'], function (directives) {
               if (names[j].id.id === scope.guest.id.id) {
                 scope.selectedGuest = names[j];
                 scope.axguest = names[j].dname;
+                scope.notFound = false;
                 found = true;
               }
             }
@@ -71,24 +72,31 @@ define(['./module'], function (directives) {
                 names.push({dname: result.unique_name, name: result.name, id: result._id});
                 scope.selectedGuest = names[0];
                 scope.axguest = names[0].dname;
+                scope.notFound = false;
               }
             });
           }
-          scope.notFound = (names.length === 0);
         }
 
         console.log("Guest Name watch fired, " + newval);
       });
 
       scope.newGuest = function (size) {
-        //todo--bring up new guest form. (part of guest VM? or directive
+        //if the name in the input field is in the db then ignore the button click
+        if (names.length !== 0 && scope.axguest) {
+          return;
+        }
+
         var modalInstance = $modal.open({
-           templateUrl: './templates/guestFormModal.html',
+          templateUrl: './templates/guestFormModal.html',
           controller: 'GuestFormModalCtrl',
           size: size,
           resolve: {
-            nameParts: function () {
-              return scope.axguest.split(' ');
+            modalParams: function () {
+              return {
+                data: scope.axguest.split(' '),
+                mode: 'Create'  //CRUD mode: 'Create', 'Read', 'Update', 'Delete'
+              };
             }
           }
         });
@@ -98,6 +106,7 @@ define(['./module'], function (directives) {
           names = [{dname: result.unique_name, name: result.name, id: result._id}];
           scope.selectedGuest = names[0]
           scope.axguest =  result.unique_name;
+          scope.guest = {name: result.name, id: result._id};
           scope.notFound = false;
         });
       };

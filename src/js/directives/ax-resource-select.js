@@ -14,21 +14,23 @@
  */
 define(['./module'], function (directives) {
   'use strict';
-  directives.directive('axResourceSelect', [function () {
+  directives.directive('axResourceSelect', ['configService',function (configService) {
     var linker = function (scope, element, attrs) {
+      scope.txt = configService.loctxt;
+
       //private function to update the selectTitle and the resourceCount values
       var updateTitle = function () {
         if (scope.resources && scope.resources.length) {
           if (scope.resources.length === 1) {
-            scope.selectTitle = scope.resources[0].name + ' ausgewählt';
+            scope.selectTitle = scope.resources[0].name + ' ' + configService.loctxt.selected;
           }
           else {
-            scope.selectTitle = scope.resources.length +  ' ' + scope.resourceTitle + ' ausgewählt';
+            scope.selectTitle = scope.resources.length +  ' ' + scope.resourceTitle + ' ' + configService.loctxt.selected;
           }
           scope.resourceCount = scope.resources.length;
         }
         else {
-          scope.selectTitle = 'Kein ' + scope.resourceTitle;
+          scope.selectTitle = configService.loctxt.no + ' ' +  scope.resourceTitle;
           scope.resourceCount = 0;
         }
       };
@@ -50,7 +52,7 @@ define(['./module'], function (directives) {
         if (newval !== undefined && newval.length > 0){
           if (newval.length > 0) {
             if (newval[0].name === '') {
-              newval[0].name = "<" + scope.resourceTitle + " auswählen>";
+              newval[0].name = "<" + scope.resourceTitle + " " + configService.loctxt.select +">";
             }
             scope.resourceSelect = newval[0];
           }
