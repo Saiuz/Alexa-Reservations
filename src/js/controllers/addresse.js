@@ -113,7 +113,7 @@ define(['./module'], function (controllers) {
             var modalInstance = $modal.open({
               templateUrl: './templates/firmFormModal.html',
               controller: 'FirmFormModalCtrl',
-              size: size,
+              size: 'sm',
               resolve: {
                 modalParams: function () {
                   return modeParams;

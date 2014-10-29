@@ -7,7 +7,7 @@ define(['./module'], function (directives) {
   directives.directive('axReservation', ['ReservationVM', 'configService', function (ReservationVM, configService) {
 
     var linker = function (scope, element, attrs) {
-      console.log("ax-reservation: linker function fired")
+      console.log("ax-reservation: linker function fired");
       var excecuteWatch = false;
       scope.rvm = ReservationVM;
       scope.res = {};

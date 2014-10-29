@@ -12,7 +12,7 @@ include nav_common.jade
           div.form-horizontal
             .form-group
               label.control-label.col-xs-4 Test Firm
-              .col-xs-8
+              .col-xs-7
                 button(ng-click="testFirm('c')") New
                 button(ng-click="testFirm('r')") Read
                 button(ng-click="testFirm('u')") Update Name
@@ -35,7 +35,7 @@ include nav_common.jade
               .col-xs-8
                 div {{guestTestResult}}
 
-  .col-md-7
+    .col-md-6
       .panel.panel-default
         .panel-heading Reservation {{reservationNumber}}
         .panel-body(ng-show="showRes")
