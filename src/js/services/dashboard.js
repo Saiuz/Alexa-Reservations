@@ -9,8 +9,9 @@ define(['./module'], function (services) {
   // date object, or the original object if the original object is not a Date
   // object.
 
-  services.factory('dashboard', function (Reservation, Guest, Room, RoomPlan, Resource, Itemtype, Firm, datetime, $q) {
-
+  services.factory(
+      'dashboard',
+      function (Reservation, Guest, Room, RoomPlan, Resource, Itemtype, Firm, datetime, $q, configService) {
     return {
       getNextDaysDate: function (dateval) {
         return datetime.dateOnly(dateval, 1);
@@ -87,10 +88,19 @@ define(['./module'], function (services) {
             .exec(function (err, reservation) {
               if (err) {
                 deferred.reject(err);
-                console.log("getDepartures query failed: " + err);
+                console.log("getReservationByNumber query failed: " + err);
               }
               else {
-                deferred.resolve(reservation);
+                // searching by res number returns null if it is not found. It doesn't throw an error like searching
+                // for an id. Therefore we throw our own error on null.
+                if (reservation) {
+                  deferred.resolve(reservation);
+                }
+                else {
+                  var err = configService.loctxt.reservation + ': ' + resnum + ' ' + configService.loctxt.notFound;
+                  console.log(err);
+                  deferred.reject(err);
+                }
               }
             });
         return deferred.promise;

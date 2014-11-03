@@ -2,8 +2,11 @@
   <input class="form-control" type="text" ng-model="axfirm" typeahead="n.name for n in getFirms($viewValue)"
          typeahead-on-select="firmChanged($item, $model, $label)"/>
   <span class="input-group-btn">
-      <button class="btn btn-default" type="button" ng-click="newFirm()">
+      <button class="btn btn-default" type="button" ng-click="newFirm()" ng-show="!canClear">
           <i class="glyphicon glyphicon-open"></i>
+      </button>
+      <button class="btn btn-default" type="button" ng-click="clearFirm()" ng-show="canClear">
+          <i class="glyphicon glyphicon-remove"></i>
       </button>
   </span>
     <i class="glyphicon glyphicon-refresh" ng-show="loading"></i>

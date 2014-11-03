@@ -1,3 +1,12 @@
+<div  ng-show="displayOnly">
+    <ul class="list-unstyled" ng-show="resources.length">
+        <li  ng-repeat="res in resources">
+            {{res.name}} {{res.price | currency: '€'}}
+        </li>
+    </ul>
+    <span ng-show="!resources.length">{{selectTitle}}</span>
+</div>
+<div ng-show="!displayOnly">
 <div class="panel panel-default panel-tight">
     <div class="panel-heading">
         <span ng-click="isCollapsed = !isCollapsed">{{selectTitle}} <i class="glyphicon" ng-class="{'glyphicon-chevron-down': !isCollapsed, 'glyphicon-chevron-right': isCollapsed}"></i></span>
@@ -40,4 +49,5 @@
              </tr>
         </table>
     </div>
+</div>
 </div>

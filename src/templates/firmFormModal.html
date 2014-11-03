@@ -2,7 +2,7 @@
     <h3 class="modal-title">{{title}}</h3>
 </div>
 <div class="modal-body">
-    <div class="form-horizontal">
+    <div class="form-horizontal" ng-show="!errLoad && !hide">
         <div class="form-group">
             <label class="control-label col-xs-4">{{txt.firmName}}</label>
             <div class="col-xs-8" ng-show="read">
@@ -94,20 +94,17 @@
             </div>
         </div>
     </div>
-    <div class="alert alert-warning" ng-show="errShow">
-        <a class="close" ng-click="hideErr()">&times;</a>
+    <div class="alert alert-danger" ng-show="errLoad || errSave">
+        <a class="close" ng-click="hideErr()" ng-show="!errLoad">&times;</a>
         <strong>Error!</strong> {{err}}
     </div>
-    <div>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Architecto, doloremque, mollitia, laboriosam, unde adipisci doloribus nisi odit suscipit sapiente facilis autem nostrum sequi porro facere aliquam ullam natus temporibus dicta?</div>
-    <div>Ea, facere, quam, eum, eius reiciendis amet sequi consequatur deserunt earum perspiciatis esse atque temporibus quibusdam fugit odio nostrum saepe cumque eos nam eveniet. Ipsa, ab necessitatibus deserunt similique adipisci!</div>
-    <div>Placeat, voluptatibus a laborum atque porro dolore consequuntur ex minima odio laboriosam qui provident tempora animi deleniti optio. Iste aliquam earum ipsum ad maxime eos sunt reiciendis id nam debitis.</div>
-    <div>Numquam ipsam expedita velit aut repellendus ab aspernatur placeat illum! Ipsa, ratione, ipsam quo rem iste aliquid dolores saepe laborum unde iusto necessitatibus eius hic accusantium tenetur esse et excepturi!</div>
-    <div>Iusto, architecto eius nisi asperiores nemo sint ducimus veritatis temporibus inventore eaque. Earum atque sed eveniet impedit. Nulla impedit voluptatum aspernatur et consequatur. Nisi pariatur repellat quos? Doloremque, ipsa, earum.</div>
-
+    <div class="alert alert-success" ng-show="hide">
+        <strong>{{actionMsg}}</strong>
+    </div>
 </div>
 <div class="modal-footer">
-    <label class="btn  btn-primary" ng-show="deleteMode"><input type="checkbox" ng-model="confirmed" />{{txt.confirmDelete}}</label>
-    <button class="btn btn-danger" ng-click="delete()" ng-show="!errShow && deleteMode && confirmed">{{saveTxt}}</button>
-    <button class="btn btn-primary" ng-click="save()" ng-show="!errShow && edit">{{saveTxt}}</button>
+    <label class="btn  btn-primary" ng-show="deleteMode && !hide"><input type="checkbox" ng-model="confirmed" />{{txt.confirmDelete}}</label>
+    <button class="btn btn-danger" ng-click="delete()" ng-show="!errLoad && deleteMode && confirmed && !hide">{{saveTxt}}</button>
+    <button class="btn btn-primary" ng-click="save()" ng-show="!errLoad && edit && !hide">{{saveTxt}}</button>
     <button class="btn btn-warning" ng-click="cancel()">{{cancelTxt}}</button>
 </div>

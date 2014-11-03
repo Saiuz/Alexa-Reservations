@@ -1,5 +1,6 @@
 /**
- * Created by Owner on 10/13/2014.
+ * Directive that manages a reservation
+ * Note: converting this to a controller/template for modal form use.
  *
  */
 define(['./module'], function (directives) {
@@ -18,6 +19,11 @@ define(['./module'], function (directives) {
       scope.roomCount = 0;
       scope.resourceCount = 0;
       scope.txt = configService.loctxt;
+      scope.saveTxt = configService.loctxt.add;
+      scope.cancelTxt = configService.loctxt.cancel;
+      scope.showErr = false;
+      scope.edit = false;
+      scope.read = false;
 
       var rOpts = [];
       angular.forEach(scope.rvm.resTypeList, function (item) {

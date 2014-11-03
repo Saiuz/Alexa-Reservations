@@ -53,14 +53,31 @@ define(['./module'], function (directives) {
       scope.isCollapsed = true;
       scope.selectTitle = '';
       scope.roomCount = 0;
+      scope.displayOnly = false;
       updateTitle();
 
       var ignoreWatch = true; //on initialization, do not remove any rooms
+
+      // for read only mode we just need to display the rooms that are found in the rooms array
+      scope.$watchCollection('[readOnly,rooms]', function(newvals){
+        scope.displayOnly = (newvals[0] === 'true');
+        if (scope.displayOnly && (newvals[1] && newvals[1].length)) {
+          angular.forEach(scope.rooms, function(item) {
+            scope.prooms.push({
+              number: item.number,
+              guest: item.guest,
+              price: item.price,
+              room_type: generateAbbr(item)
+            });
+          });
+        }
+      });
 
       // Watch for a change in roomList. If the list changes then we need to remove the rooms currently
       // on the reservation. The roomList will change if some other important property has changed,
       // such as start or end dates, number of occupants, etc.
       scope.$watch('roomList',function(newval, oldval){
+        if (scope.displayOnly) return;
         if (newval !== undefined && newval.length > 0){
           if (newval.length > 0) {
             scope.roomSelect = newval[0];
@@ -153,7 +170,8 @@ define(['./module'], function (directives) {
         rooms: '=',  //the rooms property from a reservation model
         roomCount: '=', //keeps track of the number of rooms assigned to the reservation
         guest: '@',
-        planPrice: '@'
+        planPrice: '@',
+        readOnly: '@'
       }
     };
   }]);

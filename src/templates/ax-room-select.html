@@ -1,54 +1,65 @@
-<div class="panel panel-default panel-tight">
-<div class="panel-heading">
-    <span ng-click="isCollapsed = !isCollapsed">{{selectTitle}} <i class="glyphicon" ng-class="{'glyphicon-chevron-down': !isCollapsed, 'glyphicon-chevron-right': isCollapsed}"></i></span>
+<div ng-show="displayOnly">
+    <ul class="list-unstyled" ng-show="rooms.length">
+        <li ng-repeat="room in prooms">
+           Zimmer {{room.number}} ({{room.room_type}}) <i>{{room.guest}}</i> {{room.price | currency: '€'}}
+        </li>
+    </ul>
+    <span ng-show="!rooms.length">{{selectTitle}}</span>
 </div>
-<div class="panel-body" collapse="isCollapsed">
-    <table class="small">
-        <tr>
-            <th>{{txt.roomsFree}}</th>
-        </tr>
-        <tr>
-            <td>
-                <select ng-model="roomSelect" ng-change="onRoomSelect(roomSelect)"
-                        ng-options="r.display_name for r in roomList | filter:filterAlreadySelected"></select>
-            </td>
-        </tr>
-        <tr ng-show="roomSelect.number">
-            <th>{{txt.guest}}</th>
-        </tr>
-        <tr ng-show="roomSelect.number">
-            <td>
-                <input type="text" ng-model="roomName"/>
-            </td>
-        </tr>
-        <tr ng-show="roomSelect.number">
-            <th>{{txt.price}} {{txt.priceSymbol}}</th>
-        </tr>
-        <tr ng-show="roomSelect.number">
-            <td>
-                <input class="col-xs-4" type="number" ng-model="roomPrice"/>&nbsp;
-                <button ng-click="addRoom()">{{txt.add}}</button>
-            </td>
-        </tr>
-    </table>
-    <table ng-show="rooms.length" class="table small">
-        <tr>
-            <th></th>
-            <th colspan="2">{{txt.room}}</th>
-            <th>{{txt.guest}}</th>
-            <th>{{txt.price}}</th>
-        </tr>
-        <tr ng-repeat="room in prooms">
-            <td>
-                <button ng-click="removeRoom(room.number)" class="btn btn-xs"><span
-                        class="glyphicon glyphicon-remove"></span>
-                </button>
-            </td>
-            <td>{{room.number}}</td>
-            <td>{{room.room_type}}</td>
-            <td>{{room.guest}}</td>
-            <td>{{room.price | currency: '€'}}</td>
-        </tr>
-    </table>
-</div>
+<div ng-show="!displayOnly">
+    <div class="panel panel-default panel-tight">
+        <div class="panel-heading">
+            <span ng-click="isCollapsed = !isCollapsed">{{selectTitle}} <i class="glyphicon"
+                                                                           ng-class="{'glyphicon-chevron-down': !isCollapsed, 'glyphicon-chevron-right': isCollapsed}"></i></span>
+        </div>
+        <div class="panel-body" collapse="isCollapsed">
+            <table class="small">
+                <tr>
+                    <th>{{txt.roomsFree}}</th>
+                </tr>
+                <tr>
+                    <td>
+                        <select ng-model="roomSelect" ng-change="onRoomSelect(roomSelect)"
+                                ng-options="r.display_name for r in roomList | filter:filterAlreadySelected"></select>
+                    </td>
+                </tr>
+                <tr ng-show="roomSelect.number">
+                    <th>{{txt.guest}}</th>
+                </tr>
+                <tr ng-show="roomSelect.number">
+                    <td>
+                        <input type="text" ng-model="roomName"/>
+                    </td>
+                </tr>
+                <tr ng-show="roomSelect.number">
+                    <th>{{txt.price}} {{txt.priceSymbol}}</th>
+                </tr>
+                <tr ng-show="roomSelect.number">
+                    <td>
+                        <input class="col-xs-4" type="number" ng-model="roomPrice"/>&nbsp;
+                        <button ng-click="addRoom()">{{txt.add}}</button>
+                    </td>
+                </tr>
+            </table>
+            <table ng-show="rooms.length" class="table small">
+                <tr>
+                    <th></th>
+                    <th colspan="2">{{txt.room}}</th>
+                    <th>{{txt.guest}}</th>
+                    <th>{{txt.price}}</th>
+                </tr>
+                <tr ng-repeat="room in prooms">
+                    <td>
+                        <button ng-click="removeRoom(room.number)" class="btn btn-xs"><span
+                                class="glyphicon glyphicon-remove"></span>
+                        </button>
+                    </td>
+                    <td>{{room.number}}</td>
+                    <td>{{room.room_type}}</td>
+                    <td>{{room.guest}}</td>
+                    <td>{{room.price | currency: '€'}}</td>
+                </tr>
+            </table>
+        </div>
+    </div>
 </div>

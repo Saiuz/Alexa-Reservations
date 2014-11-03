@@ -6360,3 +6360,6 @@ body {
 .panel-tight {
   margin-bottom: 2px;
 }
+.ovh {
+  overflow: hidden;
+}

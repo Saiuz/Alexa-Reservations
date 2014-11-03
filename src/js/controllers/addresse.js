@@ -14,7 +14,8 @@ define(['./module'], function (controllers) {
         'datetime',
         'Reservation',
         '$modal',
-        function ($scope, $state, $rootScope, dashboard, datetime, Reservation, $modal) {
+        '$document',
+        function ($scope, $state, $rootScope, dashboard, datetime, Reservation, $modal, $document) {
           console.log("Addresse  controller fired")
           $scope.appTitle = $rootScope.appTitle;
           $scope.appBrand = $rootScope.appBrand;
@@ -87,33 +88,34 @@ define(['./module'], function (controllers) {
 
           $scope.isCollapsed1 = true;
 
-          var newFirm = 0;
+          // for modal scroll issue
+          var bodyRef = angular.element( $document[0].body );
+
           var lastModef = '';
+          $scope.testFid = 'Test Firm'
           $scope.testFirm = function(mode, size) {
+            bodyRef.addClass('ovh');
             var modeParams = {};
             lastModef = mode;
             switch (mode) {
               case 'c':
-                modeParams = {data: 'Test Firm', mode: 'Create'};
+                modeParams = {data: $scope.testFid, mode: 'Create'};
                 break;
               case 'r':
-                modeParams = {data: 'Test Firm', mode: 'Read'};
+                modeParams = {data: $scope.testFid, mode: 'Read'};
                 break;
               case 'u':
-                modeParams = {data: 'Test Firm', mode: 'Update'};
-                break;
-              case 'u2':
-                modeParams = {data: 7, mode: 'Update'};
+                modeParams = {data: $scope.testFid, mode: 'Update'};
                 break;
               case 'd':
-                modeParams = {data: newFirm, mode: 'Delete'};
+                modeParams = {data: $scope.testFid, mode: 'Delete'};
                 break
             }
 
             var modalInstance = $modal.open({
               templateUrl: './templates/firmFormModal.html',
               controller: 'FirmFormModalCtrl',
-              size: 'sm',
+              size: 'lg',
               resolve: {
                 modalParams: function () {
                   return modeParams;
@@ -122,38 +124,32 @@ define(['./module'], function (controllers) {
             });
 
             modalInstance.result.then(function (result) {
+              bodyRef.removeClass('ovh');
               if (lastModef === 'c') {
-                newFirm = result._id.id;
+                $scope.testFid = result._id.id;
               }
               console.log("Firm Modal returned: " + result);
               $scope.firmTestResult = result;
             });
 
           };
-          var newGuest = 0;
           var lastModeg = '';
-
+          $scope.testGid = 'Frau Suzie Longnose';
           $scope.testGuest = function(mode, size) {
             lastModeg = mode;
             var modeParams = {};
             switch (mode) {
               case 'c':
-                modeParams = {data: 'Frau Suzie Longnose'.split(' '), mode: 'Create'};
+                modeParams = {data: $scope.testGid.split(' '), mode: 'Create'};
                 break;
               case 'r':
-                modeParams = {data: 5, mode: 'Read'};
+                modeParams = {data: $scope.testGid, mode: 'Read'};
                 break;
               case 'u':
-                modeParams = {data: 'Suzie Longnose [The Grand Central]', mode: 'Update'};
-                break;
-              case 'u2':
-                modeParams = {data: 5, mode: 'Update'};
-                break;
-              case 'u2':
-                modeParams = {data: 5, mode: 'Update'};
+                modeParams = {data: $scope.testGid, mode: 'Update'};
                 break;
               case 'd':
-                modeParams = {data: newGuest, mode: 'Delete'};
+                modeParams = {data: $scope.testGid, mode: 'Delete'};
                 break
             }
 
@@ -171,9 +167,49 @@ define(['./module'], function (controllers) {
             modalInstance.result.then(function (result) {
               console.log("Guest Modal returned: " + result);
               if (lastModeg === 'c') {
-                newGuest = result._id.id;
+                $scope.testGid = result._id.id;
               }
               $scope.guestTestResult = result;
+            });
+
+          };
+          $scope.testRid = 0;
+          var lastModer = '';
+          $scope.testRes = function(mode, size) {
+            lastModer = mode;
+            var modeParams = {};
+            switch (mode) {
+              case 'c':
+                modeParams = {data: $scope.testRid, mode: 'Create'};
+                break;
+              case 'r':
+                modeParams = {data: $scope.testRid, mode: 'Read'};
+                break;
+              case 'u':
+                modeParams = {data: $scope.testRid, mode: 'Update'};
+                break;
+              case 'd':
+                modeParams = {data: $scope.testRid, mode: 'Delete'};
+                break
+            }
+
+            var modalInstance = $modal.open({
+              templateUrl: './templates/reservationFormModal.html',
+              controller: 'ReservationFormModalCtrl',
+              size: size,
+              resolve: {
+                modalParams: function () {
+                  return modeParams;
+                }
+              }
+            });
+
+            modalInstance.result.then(function (result) {
+              console.log("Reservation Modal returned: " + result);
+              if (lastModer === 'c') {
+                $scope.testRid = result.reservation_number;
+              }
+              $scope.resTestResult = result;
             });
 
           };

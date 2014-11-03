@@ -15,6 +15,7 @@ define(['./module'], function (directives) {
       scope.axguest = '';
       scope.selectedGuest = {};
       scope.notFound = false;
+      scope.canClear = false;
 
       scope.getGuests = function (val) {
         scope.loading = true;
@@ -31,14 +32,25 @@ define(['./module'], function (directives) {
           }
           scope.loading = false;
           scope.notFound = (names.length === 0);
+          scope.canClear = !scope.notFound;
           return names;
         });
+      };
+
+      scope.clearFirm = function () {
+        ignoreWatch = true;
+        scope.axguest = '';
+        scope.selectedGuest = {};
+        scope.notFound = false;
+        scope.canClear = false;
+        scope.guest = {};
       };
 
       scope.guestChanged = function ($item, $model, $label) {
         ignoreWatch = true;
         scope.guest = {name: $item.name, id: $item.id};
         scope.selectedGuest = $item;
+        scope.canClear = true;
         //_updateTitle();
       };
       scope.$watch('guest.name', function (newval) {
@@ -52,6 +64,8 @@ define(['./module'], function (directives) {
         if (newval === undefined || newval === '') {
           scope.selectedGuest = {};
           scope.axguest = '';
+          scope.notFound = false;
+          scope.canClear = false;
         }
         else {
           var found = false;
@@ -62,6 +76,7 @@ define(['./module'], function (directives) {
                 scope.axguest = names[j].dname;
                 scope.notFound = false;
                 found = true;
+                scope.canClear = true;
               }
             }
           }
@@ -73,6 +88,7 @@ define(['./module'], function (directives) {
                 scope.selectedGuest = names[0];
                 scope.axguest = names[0].dname;
                 scope.notFound = false;
+                scope.canClear = true;
               }
             });
           }
@@ -86,7 +102,7 @@ define(['./module'], function (directives) {
         if (names.length !== 0 && scope.axguest) {
           return;
         }
-
+        scope.canClear = true;
         var modalInstance = $modal.open({
           templateUrl: './templates/guestFormModal.html',
           controller: 'GuestFormModalCtrl',

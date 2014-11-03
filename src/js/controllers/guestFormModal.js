@@ -10,8 +10,9 @@
  *                       name inputs when creating a new instance (mode 'C'). Which name fields get populated depend
  *                       on the number of words in the name provided.
  *
- * Successful closing of the form returns the Guest instance or the id of the Guest instance in the case of a delete
- * operation.
+ * For 'C', 'U' and 'D' operations, successful completion, after pressing the save button, the form will display a
+ * success message then automatically close after a pre-defined delay. The form will return the new or updated
+ * instance object. In the case of a delete operation, the _id of the deleted object will be returned.
  *
  * The form is activated, and any returned results are handled by the following code:
  *        var modalInstance = $modal.open({
@@ -42,10 +43,14 @@ define(['./module'], function (controllers) {
         'Guest',
         'dbEnums',
         'configService',
-        function ($scope, $modalInstance, modalParams, Guest, dbEnums, configService) {
+        '$timeout',
+        function ($scope, $modalInstance, modalParams, Guest, dbEnums, configService, $timeout) {
           console.log("guestFormModal controller fired")
           $scope.err = '';
-          $scope.errSHow= false;
+          $scope.errSave= false;
+          $scope.errLoad = false;
+          $scope.hide = false;
+          $scope.actionMsg = '';
           $scope.saveTxt = configService.loctxt.add;
           $scope.cancelTxt = configService.loctxt.cancel;
           $scope.txt = configService.loctxt;
@@ -76,7 +81,7 @@ define(['./module'], function (controllers) {
           // Determine CRUD mode of form.
           // For all but 'C' the query can be by id or by the unique_name property.
           var mode = modalParams.mode.substring(0, 1).toLowerCase();
-          var qry = parseInt(modalParams.data) ? {'_id': modalParams.data} : {'unique_name': modalParams.data};
+          var qry = parseInt(modalParams.data) ? {'_id': parseInt(modalParams.data)} : {'unique_name': modalParams.data};
           switch (mode) {
             case 'c':
               $scope.title = configService.loctxt.guest_titleCreate;
@@ -108,7 +113,7 @@ define(['./module'], function (controllers) {
               Guest.findOne(qry, function (err, guest) {
                 if (err) {
                   $scope.err = err;
-                  $scope.errShow = true;
+                  $scope.errLoad = true;
                 }
                 else {
                   if (guest){
@@ -120,7 +125,7 @@ define(['./module'], function (controllers) {
                   }
                   else {
                     $scope.err = configService.loctxt.item_notFound;
-                    $scope.errShow = true;
+                    $scope.errLoad = true;
                   }
                   $scope.$apply();
                 }
@@ -132,7 +137,7 @@ define(['./module'], function (controllers) {
               Guest.findOne(qry, function (err, guest) {
                 if (err) {
                   $scope.err = err;
-                  $scope.errShow = true;
+                  $scope.errLoad = true;
                 }
                 else {
                   if (guest) {
@@ -144,7 +149,7 @@ define(['./module'], function (controllers) {
                   }
                   else {
                     $scope.err = configService.loctxt.item_notFound;
-                    $scope.errShow = true;
+                    $scope.errLoad = true;
                   }
                   $scope.$apply();
                 }
@@ -156,7 +161,7 @@ define(['./module'], function (controllers) {
               Guest.findOne(qry, function (err, guest) {
                 if (err) {
                   $scope.err = err;
-                  $scope.errShow = true;
+                  $scope.errLoad = true;
                 }
                 else {
                   if (guest){
@@ -170,7 +175,7 @@ define(['./module'], function (controllers) {
                   }
                   else {
                     $scope.err = configService.loctxt.item_notFound;
-                    $scope.errShow = true;
+                    $scope.errLoad = true;
                   }
                   $scope.$apply();
                 }
@@ -214,8 +219,19 @@ define(['./module'], function (controllers) {
           };
           $scope.dateFormat = "dd.MM.yyyy";
 
+          // auto close after successful action methods
+          var timer = null; // used for timer to auto close modal after a delay when a C, U or D operation occurs
+          var autoClose = function(msg, val){
+            $scope.hide = true;
+            $scope.actionMsg = msg;
+            $scope.$apply();
+            timer = $timeout(function (){
+              $modalInstance.close(val);
+            }, configService.constants.autoCloseTime)
+          };
 
           // modal button click methods
+          // save button handler
           $scope.save = function () {
             //perform any pre save form validation here
             //save guest and return
@@ -223,30 +239,32 @@ define(['./module'], function (controllers) {
               if (err) {
                 console.log('Guest save error: ' + err);
                 $scope.err = err;
-                $scope.errShow = true;
+                $scope.errSave = true;
                 $scope.$apply();
               }
               else {
-                console.log('New Guest saved: ' + $scope.guest._id.id)
-                $modalInstance.close($scope.guest);
+                var msg = (mode === 'c' ? configService.loctxt.guest  +  configService.loctxt.success_saved :
+                    configService.loctxt.success_changes_saved);
+                autoClose(msg,$scope.guest);
               }
             });
           };
 
           // Delete btn handler
           $scope.delete = function (err) {
-            if (err){
-              console.log('Guest delete error: ' + err);
-              $scope.err = err;
-              $scope.errShow = true;
-              $scope.$apply();
-            }
-            else {
-              var id = $scope.guest._id.id;
-              $scope.guest.remove(function(err) {
-                $modalInstance.close(id);
-              });
-            }
+            var id = $scope.guest._id.id;
+            $scope.guest.remove(function(err) {
+              if (err){
+                console.log('Guest delete error: ' + err);
+                $scope.err = err;
+                $scope.errSave = true;
+                $scope.$apply();
+              }
+              else {
+                var msg = configService.loctxt.guest  +  configService.loctxt.success_deleted
+                autoClose(msg,id);
+              }
+            });
           };
 
           // Cancel btn handler
@@ -256,7 +274,7 @@ define(['./module'], function (controllers) {
 
           // Error msg close handler
           $scope.hideErr = function() {
-            $scope.errShow = false;
+            $scope.errSave = false;
           };
 
         }]);

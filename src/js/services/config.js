@@ -17,14 +17,18 @@ define(['./module'], function (services) {
       return $q.when(localStorage.setItem(key, val));
     };
 
+    // Object that contains system-wide constants
+    this.constants = {
+      autoCloseTime: 2000
+    }
     // Added an object that contains the various text strings for the UI views, forms and directives
     // The purpose is to have the standard text items all in one place.
 
     this.loctxt = {
       //'': '',
       'add': 'Hinzufügen',
-      'address1': 'Addresse 1',
-      'address2': 'Addresse 2',
+      'address1': 'Adresse 1',
+      'address2': 'Adresse 2',
       'arrive': 'Ankunft',
       'birthday': 'Geburtstag',
       'cancel': 'Abbrechen',
@@ -42,19 +46,19 @@ define(['./module'], function (services) {
       'email': 'E-Mail',
       'firmName': 'Firma Name',
       'firm': 'Firma',
-      'firm_titleCreate': 'Erstellen Firma Informationen',
-      'firm_titleDelete': 'Löschen Firma Informationen',
+      'firm_titleCreate': 'Firma Informationen Erstellen',
+      'firm_titleDelete': 'Firma Informationen Löschen',
       'firm_titleRead': 'Informationen zur Firma',
-      'firm_titleUpdate': 'Bearbeiten Firma Informationen',
+      'firm_titleUpdate': 'Firma Informationen Bearbeiten',
       'firstName': 'Vorname',
       'free': 'Frei',
       'from': 'Von',
       'guest': 'Gast',
       'guests': 'Gäste',
       'guestCount': 'Gäste Anzahl',
-      'guest_titleCreate': 'Erstellen Gast Informationen',
-      'guest_titleDelete': 'Löschen Gast Informationen',
-      'guest_titleEdit': 'Bearbeiten Gast Informationen',
+      'guest_titleCreate': 'Gast Informationen Erstellen',
+      'guest_titleDelete': 'Gast Informationen Löschen',
+      'guest_titleEdit': 'Gast Informationen Bearbeiten',
       'guest_titleRead': 'Informationen zur Gast',
       'insurance': 'Krankenkasse',
       'item_notFound': 'Artikel nicht gefunden',
@@ -64,6 +68,7 @@ define(['./module'], function (services) {
       'no': 'Kein',
       'noParkPlace': 'Kein Parkplatz',
       'noRoom': 'Kein Zimmer',
+      'notFound': 'nicht gefunden',
       'ok': 'Ok',
       'open': 'Öffnen',
       'parkPlace': 'Parkplatz',
@@ -71,6 +76,10 @@ define(['./module'], function (services) {
       'price': 'Preis',
       'priceSymbol': '€',
       'reservation': 'Reservierung',
+      'reservation_titleCreate': 'Reservierung Informationen Erstellen',
+      'reservation_titleDelete': 'Reservierung Informationen Löschen',
+      'reservation_titleEdit': 'Reservierung Informationen Bearbeiten',
+      'reservation_titleRead': 'Informationen zur Reservierung',
       'reservationType': 'Res. Typ',
       'room': 'Zimmer',
       'roomNumber': 'Zimmernummer',
@@ -84,7 +93,12 @@ define(['./module'], function (services) {
       'selectRoom': 'Zimmer auswählen',
       'selectRoomPlan': 'Zimmer plan auswählen',
       'single': 'Einzel',
+      'source': 'Quelle',
+      'status': 'Status',
       'stay': 'Bleiben',
+      'success_deleted': ' erfolgreich gelöscht',
+      'success_saved': ' erfolgreich gespeichert',
+      'success_changes_saved': 'Veränderungen erfolgreich gespeichert',
       'telephone': 'Telefonnummer',
       'today': 'Heute',
       'until': 'Bis',

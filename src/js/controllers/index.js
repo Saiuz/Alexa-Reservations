@@ -14,5 +14,6 @@ define([
     './addresse',
     './liste',
   './guestFormModal',
-  './firmFormModal'
+  './firmFormModal',
+  './reservationFormModal'
 ], function () {});

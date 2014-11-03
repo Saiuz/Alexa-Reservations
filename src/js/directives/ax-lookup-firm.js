@@ -15,6 +15,7 @@ define(['./module'], function (directives) {
       scope.axfirm = '';
       scope.selectedFirm = {};
       scope.notFound = false;
+      scope.canClear = false;
 
       scope.getFirms = function (val) {
         scope.loading = true;
@@ -28,14 +29,25 @@ define(['./module'], function (directives) {
           }
           scope.loading = false;
           scope.notFound = (names.length === 0);
+          scope.canClear = !scope.notFound;
           return names;
         });
+      };
+
+      scope.clearFirm = function () {
+        ignoreWatch = true;
+        scope.axfirm = '';
+        scope.selectedFirm = {};
+        scope.notFound = false;
+        scope.canClear = false;
+        scope.firm = '';
       };
 
       scope.firmChanged = function ($item, $model, $label) {
         ignoreWatch = true;
         scope.firm = $item.name;
         scope.selectedFirm = $item;
+        scope.canClear = true;
         //_updateTitle();
       };
 
@@ -51,6 +63,7 @@ define(['./module'], function (directives) {
           scope.selectedFirm = {};
           scope.axfirm = '';
           scope.notFound = false;
+          scope.canClear = false;
         }
         else {
           var found = false;
@@ -61,6 +74,7 @@ define(['./module'], function (directives) {
                 scope.axfirm = names[j].name;
                 scope.notFound = false;
                 found = true;
+                scope.canClear = true;
               }
             }
           }
@@ -72,6 +86,7 @@ define(['./module'], function (directives) {
                 scope.selectedFirm = names[0];
                 scope.axfirm = names[0].name;
                 scope.notFound = false;
+                scope.canClear = true;
               }
             });
           }
@@ -85,7 +100,7 @@ define(['./module'], function (directives) {
         if (names.length !== 0 && scope.axfirm) {
           return;
         }
-
+        scope.canClear = true;
         var modalInstance = $modal.open({
           templateUrl: './templates/firmFormModal.html',
           controller: 'FirmFormModalCtrl',
@@ -95,16 +110,18 @@ define(['./module'], function (directives) {
               return {
                 data: scope.axfirm,
                 mode: 'Create' //CRUD mode: 'Create', 'Read', 'Update', 'Delete'
-            };
+              };
             }
           }
         });
 
         modalInstance.result.then(function (result) {
           console.log("Firm Modal returned: " + result);
-          names = [{name: result.firm_name, id: result._id}];
+          names = [
+            {name: result.firm_name, id: result._id}
+          ];
           scope.selectedFirm = names[0]
-          scope.axfirm =  result.firm_name;
+          scope.axfirm = result.firm_name;
           scope.firm = result.firm_name;
           scope.notFound = false;
         });

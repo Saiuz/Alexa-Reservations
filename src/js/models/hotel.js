@@ -17,7 +17,7 @@ define(['./module'], function (model) {
   // enums used in Reservation Schema
   var resStatusEnum = ['Sicher', 'Vorreservation'];
   var resSourceEnum = ['Phone', 'Booking.Com'];
-  var resInsuranceEnum = ['VDAK', 'AOK & Andere', 'Privat'];
+  var resInsuranceEnum = ['','VDAK', 'AOK & Andere', 'Privat'];
   var resTypeEnum = ['Std.', 'Bus.', 'Kur', 'Group'];
   // enum for Resource Schema
   var resourceTypeEnum = ['Parkplatz','Konferenzraum'];

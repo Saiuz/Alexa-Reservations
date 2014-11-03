@@ -41,14 +41,23 @@ define(['./module'], function (directives) {
       scope.isCollapsed = true;
       scope.selectTitle = '';
       scope.resourceCount = 0;
+      scope.displayOnly = false;
       updateTitle();
 
       var ignoreWatch = true; //on initialization, do not remove any resources
 
+      // for read only mode we just need refresh when we get the resources
+      scope.$watchCollection('[readOnly,resources]', function(newvals){
+        scope.displayOnly = (newvals[0] === 'true');
+        if (scope.displayOnly && (newvals[1] && newvals[1].length)) {
+          scope.$apply();
+        }
+      });
       // Watch for a change in resourceList. If the list changes then we need to remove the resources currently
       // on the reservation. The resourceList will change if some other important property has changed,
       // such as start or end dates etc.
       scope.$watch('resourceList',function(newval, oldval){
+        if (scope.displayOnly) return;
         if (newval !== undefined && newval.length > 0){
           if (newval.length > 0) {
             if (newval[0].name === '') {
@@ -117,7 +126,8 @@ define(['./module'], function (directives) {
         resources: '=',
         resourceCount: '=',
         resourceType: '@',
-        resourceTitle: '@'
+        resourceTitle: '@',
+        readOnly: '@'
       }
     };
   }]);

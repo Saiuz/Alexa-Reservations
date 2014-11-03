@@ -1,0 +1,175 @@
+<div class="modal-header">
+    <h3 class="modal-title">{{title}}</h3>
+</div>
+<div class="modal-body">
+    <div class="form-horizontal" ng-show="!errLoad && !hide">
+        <div class="form-group">
+            <label class="control-label col-xs-4">{{txt.reservation}}</label>
+            <div class="col-xs-8">
+                <p class="form-control-static">{{rvm.res.reservation_number}}: {{res.title}}</p>
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="control-label col-xs-4">{{txt.reservationType}}</label>
+            <div class="col-xs-8" ng-show="read">
+                <p class="form-control-static">{{rvm.res.type}}</p>
+            </div>
+            <div class="col-xs-8" ng-show="edit">
+                <radio-button-group model="rvm.res.type" options="rvm.resTypeOptions" callback="rvm.resTypeChange" id="value"
+                                    name="text" suffix="default"></radio-button-group>
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="control-label col-xs-4">{{txt.roomPlan}}</label>
+            <div class="col-xs-8" ng-show="read">
+                <p class="form-control-static">{{rvm.res.plan}}</p>
+            </div>
+            <div class="col-xs-8" ng-show="edit">
+                <select class="form-control" ng-model="rvm.selectedPlan"
+                        ng-options="z as z.name for z in rvm.roomPlans"
+                        ng-change="rvm.roomPlanChanged()"></select>
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="control-label col-xs-4">{{txt.from}}</label>
+            <div class="col-xs-8" ng-show="read">
+                <p class="form-control-static">{{rvm.res.start_date}}</p>
+            </div>
+            <div class="col-xs-8" ng-show="edit">
+            <span class="input-group">
+                <input class="form-control" type="text" date-fix datepicker-popup="dd.MM.yyyy" is-open="openedStart"
+                       ng-model="start_date" datepicker-options="dateOptions" ng-required="true" close-text="OK"
+                       current-text="Heute" clear-text="Löschen" date-fix/>
+                <span class="input-group-btn">
+                    <button class="btn btn-default" type="button" ng-click="openStart($event)"><i
+                            class="glyphicon glyphicon-calendar"></i></button>
+                </span>
+            </span>
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="control-label col-xs-4">{{txt.until}}</label>
+            <div class="col-xs-8" ng-show="read">
+                <p class="form-control-static">{{rvm.res.end_date}}</p>
+            </div>
+            <div class="col-xs-8" ng-show="edit">
+            <span class="input-group">
+                <input class="form-control" type="text" date-fix datepicker-popup="dd.MM.yyyy" is-open="openedEnd"
+                       ng-model="end_date" datepicker-options="dateOptions" ng-required="true" close-text="OK"
+                       current-text="Heute" clear-text="Löschen"/>
+                <span class="input-group-btn">
+                    <button class="btn btn-default" type="button" ng-click="openEnd($event)"><i
+                            class="glyphicon glyphicon-calendar"></i></button>
+                </span>
+            </span>
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="control-label col-xs-4">{{txt.nights}}</label>
+            <div class="col-xs-8" ng-show="read">
+                <p class="form-control-static">{{rvm.res.nights}}</p>
+            </div>
+            <div class="col-xs-8" ng-show="edit">
+                <input class="form-control" type="number" min="1" ng-model="rvm.nights"/>
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="control-label col-xs-4">{{txt.guestCount}}</label>
+            <div class="col-xs-8" ng-show="read">
+                <p class="form-control-static">{{rvm.res.occupants}}</p>
+            </div>
+            <div class="col-xs-8" ng-show="edit">
+                <span class="col-xs-5"><radio-button-group data-toggle="buttons-radio" model="rvm.res.occupants"
+                                                           options="rvm.occupantOptions" id="value" name="text"
+                                                           suffix="default"></radio-button-group> </span>
+                <span class="col-xs-3" ng-show="rvm.res.occupants >2"><input class="form-control" type="number"
+                                                                         ng-model="rvm.res.occupants"/></span>
+            </div>
+        </div>
+        <div class="form-group" ng-show="rvm.showFirm">
+            <label class="control-label col-xs-4">{{txt.firm}}</label>
+            <div class="col-xs-8" ng-show="read">
+                <p class="form-control-static">{{rvm.res.firm}}</p>
+            </div>
+            <div class="col-xs-8" ng-show="edit">
+                <ax-lookup-firm firm="rvm.res.firm"></ax-lookup-firm>
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="control-label col-xs-4">{{txt.guest}}</label>
+            <div class="col-xs-8" ng-show="read">
+                <p class="form-control-static">{{rvm.res.guest.name}}</p>
+            </div>
+            <div class="col-xs-8" ng-show="edit">
+                <ax-lookup-guest guest="rvm.res.guest" firm="rvm.res.firm"></ax-lookup-guest>
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="control-label col-xs-4">{{txt.room}}</label>
+
+            <div class="col-xs-8">
+                <ax-room-select room-list="rvm.availableRooms" rooms="rvm.res.rooms" guest="{{rvm.res.guest.name}}"
+                                plan-price="{{planPrice}}" room-count="roomCount" read-only="{{read}}"></ax-room-select>
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="control-label col-xs-4">{{txt.parkPlace}}</label>
+
+            <div class="col-xs-8">
+                <ax-resource-select resource-list="rvm.availableResources" resources="rvm.res.resources"
+                                    resource-type="{{txt.parkPlace}}" resource-title="{{txt.parkPlace}}"
+                                    resource-count="resourceCount" read-only="{{read}}"></ax-resource-select>
+            </div>
+        </div>
+        <div class="form-group" ng-show="rvm.showInsurance">
+            <label class="control-label col-xs-4">{{txt.insurance}}</label>
+            <div class="col-xs-8" ng-show="read">
+                <p class="form-control-static">{{rvm.res.insurance}}</p>
+            </div>
+            <div class="col-xs-8" ng-show="edit">
+                <select class="form-control" ng-model="rvm.res.insurance"
+                        ng-options="r for r in rvm.insuranceList"></select>
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="control-label col-xs-4">{{txt.status}}</label>
+            <div class="col-xs-8" ng-show="read">
+                <p class="form-control-static">{{rvm.res.status}}</p>
+            </div>
+            <div class="col-xs-8" ng-show="edit">
+                <select class="form-control" ng-model="rvm.res.status" ng-options="r  for r in rvm.statusList"></select>
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="control-label col-xs-4">{{txt.source}}</label>
+            <div class="col-xs-8" ng-show="read">
+                <p class="form-control-static">{{rvm.res.source}}</p>
+            </div>
+            <div class="col-xs-8" ng-show="edit">
+                <select class="form-control" ng-model="rvm.res.source" ng-options="r  for r in rvm.sourceList"></select>
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="control-label col-xs-4">{{txt.comments}}</label>
+            <div class="col-xs-8" ng-show="read">
+                <p class="form-control-static">{{rvm.res.comments}}</p>
+            </div>
+            <div class="col-xs-8" ng-show="edit">
+                <textarea class="form-control" ng-model="rvm.res.comments"></textarea>
+            </div>
+        </div>
+    </div>
+    <div class="alert alert-danger" ng-show="errLoad || errSave">
+        <a class="close" ng-click="hideErr()" ng-show="!errLoad">&times;</a>
+        <strong>Error!</strong> {{err}}
+    </div>
+    <div class="alert alert-success" ng-show="hide">
+        <strong>{{actionMsg}}</strong>
+    </div>
+</div>
+<div class="modal-footer">
+    <label class="btn  btn-primary" ng-show="deleteMode && !hide"><input type="checkbox" ng-model="confirmed" />{{txt.confirmDelete}}</label>
+    <button class="btn btn-danger" ng-click="delete()" ng-show="!errLoad && deleteMode && confirmed && !hide">{{saveTxt}}</button>
+    <button class="btn btn-primary" ng-click="save()" ng-show="!errLoad && edit && !hide">{{saveTxt}}</button>
+    <button class="btn btn-warning" ng-click="cancel()">{{cancelTxt}}</button>
+</div>

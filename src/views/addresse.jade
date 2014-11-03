@@ -15,29 +15,45 @@ include nav_common.jade
               .col-xs-7
                 button(ng-click="testFirm('c')") New
                 button(ng-click="testFirm('r')") Read
-                button(ng-click="testFirm('u')") Update Name
-                button(ng-click="testFirm('u2')") Update ID
+                button(ng-click="testFirm('u')") Update Name/ID
                 button(ng-click="testFirm('d')") Delete
+                span Firm:
+                  input(type="text" ng-model="testFid")
             .form-group
-              label.control-label.col-xs-4 Test Firm Results:
+              label.control-label.col-xs-4 Results:
               .col-xs-8
-                div {{firmTestResult}}
+                div {{firmTestResult | json}}
+              hr
             .form-group
               label.control-label.col-xs-4 Test Guest
               .col-xs-8
                 button(ng-click="testGuest('c')") New
                 button(ng-click="testGuest('r')") Read
-                button(ng-click="testGuest('u')") Update Name
-                button(ng-click="testGuest('u2')") Update ID
+                button(ng-click="testGuest('u')") Update Name/ID
                 button(ng-click="testGuest('d')") Delete
+                span Guest:
+                  input(type="text" ng-model="testGid")
             .form-group
-              label.control-label.col-xs-4 Test Guest Results:
+              label.control-label.col-xs-4 Results:
               .col-xs-8
-                div {{guestTestResult}}
-
+                div {{guestTestResult | json}}
+              hr
+            .form-group
+              label.control-label.col-xs-4 Test Reservation
+              .col-xs-8
+                button(ng-click="testRes('c')") New
+                button(ng-click="testRes('r')") Read
+                button(ng-click="testRes('u')") Update Res. No.
+                button(ng-click="testRes('d')") Delete
+                span Res No:
+                  input(type="number" ng-model="testRid")
+              .form-group
+                label.control-label.col-xs-4 Results:
+                .col-xs-8
+                  div {{resTestResult | json}}
     .col-md-6
       .panel.panel-default
         .panel-heading Reservation {{reservationNumber}}
         .panel-body(ng-show="showRes")
-           ax-reservation(reservation-number="reservationNumber")
+           //ax-reservation(reservation-number="reservationNumber")
 

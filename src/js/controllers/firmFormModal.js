@@ -8,8 +8,9 @@
  *    modalParams.data - A property that identifies the instance of the Firm collection to work with or an optional
  *                       firm name that will be placed in the firm_name input when creating a new instance (mode 'C').
  *
- * Successful closing of the form returns the Firm instance or the id of the Firm instance in the case of a delete
- * operation.
+ * For 'C', 'U' and 'D' operations, successful completion, after pressing the save button, the form will display a
+ * success message then automatically close after a pre-defined delay. The form will return the new or updated
+ * instance object. In the case of a delete operation, the _id of the deleted object will be returned.
  *
  * The form is activated, and any returned results are handled by the following code:
  *        var modalInstance = $modal.open({
@@ -38,10 +39,15 @@ define(['./module'], function (controllers) {
         'modalParams',
         'Firm',
         'configService',
-        function ($scope, $modalInstance, modalParams, Firm, configService) {
-          console.log("FirmFormModal controller fired")
+        '$timeout',
+        function ($scope, $modalInstance, modalParams, Firm, configService, $timeout) {
+          console.log("FirmFormModal controller fired");
+
           $scope.err = '';
-          $scope.errSHow= false;
+          $scope.errSave = false;
+          $scope.errLoad = false;
+          $scope.hide = false;
+          $scope.actionMsg = '';
           $scope.saveTxt = configService.loctxt.add;
           $scope.cancelTxt = configService.loctxt.cancel;
           $scope.txt = configService.loctxt;
@@ -51,7 +57,7 @@ define(['./module'], function (controllers) {
           // Determine CRUD mode of form.
           // For all but 'C' the query can be by id or by the firm_name property which is also unique.
           var mode = modalParams.mode.substring(0, 1).toLowerCase();
-          var qry = parseInt(modalParams.data) ? {'_id': modalParams.data} : {'firm_name': modalParams.data};
+          var qry = parseInt(modalParams.data) ? {'_id': parseInt(modalParams.data)} : {'firm_name': modalParams.data};
           switch (mode) {
             case 'c':
               $scope.title = configService.loctxt.firm_titleCreate;
@@ -66,7 +72,7 @@ define(['./module'], function (controllers) {
               Firm.findOne(qry, function (err, firm) {
                 if (err) {
                   $scope.err = err;
-                  $scope.errShow = true;
+                  $scope.errLoad = true;
                 }
                 else {
                   if (firm) {
@@ -77,7 +83,7 @@ define(['./module'], function (controllers) {
                   }
                   else {
                     $scope.err = configService.loctxt.item_notFound;
-                    $scope.errShow = true;
+                    $scope.errLoad = true;
                   }
                   $scope.$apply();
                 }
@@ -88,18 +94,18 @@ define(['./module'], function (controllers) {
               Firm.findOne(qry, function (err, firm) {
                 if (err) {
                   $scope.err = err;
-                  $scope.errShow = true;
+                  $scope.errLoad = true;
                 }
                 else {
                   if (firm) {
-                  $scope.firm = firm;
-                  $scope.edit = true;
-                  $scope.read = false;
-                  $scope.saveTxt = configService.loctxt.update;
+                    $scope.firm = firm;
+                    $scope.edit = true;
+                    $scope.read = false;
+                    $scope.saveTxt = configService.loctxt.update;
                   }
                   else {
-                    $scope.err = configService.loctxt.item.notFound;
-                    $scope.errShow = true;
+                    $scope.err = configService.loctxt.item_notFound;
+                    $scope.errLoad = true;
                   }
                   $scope.$apply();
                 }
@@ -110,7 +116,7 @@ define(['./module'], function (controllers) {
               Firm.findOne(qry, function (err, firm) {
                 if (err) {
                   $scope.err = err;
-                  $scope.errShow = true;
+                  $scope.errLoad = true;
                 }
                 else {
                   if (firm) {
@@ -123,7 +129,7 @@ define(['./module'], function (controllers) {
                   }
                   else {
                     $scope.err = configService.loctxt.item_notFound;
-                    $scope.errShow = true;
+                    $scope.errLoad = true;
                   }
                   $scope.$apply();
                 }
@@ -131,48 +137,67 @@ define(['./module'], function (controllers) {
               break;
           }
 
+          // auto close after successful action methods
+          var timer = null; // used for timer to auto close modal after a delay when a C, U or D operation occurs
+          var autoClose = function (msg, val) {
+            $scope.hide = true;
+            $scope.actionMsg = msg;
+            $scope.$apply();
+            timer = $timeout(function () {
+              $modalInstance.close(val);
+            }, configService.constants.autoCloseTime)
+          };
+
           // modal button click methods
+          // save button handler
           $scope.save = function () {
-            //perform any pre save form validation here
+            //perform any pre save form validation or logic here
+
             //save/update firm and return
             $scope.firm.save(function (err) {
               if (err) {
                 console.log('Firm save error: ' + err);
                 $scope.err = err;
-                $scope.errShow = true;
+                $scope.errSave = true;
                 $scope.$apply();
               }
               else {
-                console.log('Firm, saved: ' + $scope.firm._id.id)
-                $modalInstance.close($scope.firm);
+                var msg = (mode === 'c' ? configService.loctxt.firm + configService.loctxt.success_saved :
+                    configService.loctxt.success_changes_saved);
+                autoClose(msg, $scope.firm);
               }
             });
           };
 
           // Delete btn handler
           $scope.delete = function (err) {
-            if (err){
-              console.log('Firm delete error: ' + err);
-              $scope.err = err;
-              $scope.errShow = true;
-              $scope.$apply();
-            }
-            else {
-              var id = $scope.firm._id.id;
-              $scope.firm.remove(function(err) {
-                $modalInstance.close(id);
-              });
-            }
+            var id = $scope.firm._id.id;
+            var name = ' ' + $scope.firm.firm_name;
+            $scope.firm.remove(function (err) {
+              if (err) {
+                console.log('Firm delete error: ' + err);
+                $scope.err = err;
+                $scope.errSave = true;
+                $scope.$apply();
+              }
+              else {
+                var msg = configService.loctxt.firm + configService.loctxt.success_deleted
+                autoClose(msg, id);
+              }
+            });
           };
 
           // Cancel btn handler
           $scope.cancel = function () {
+            if (timer) {
+              $timeout.cancel(timer);
+            }
             $modalInstance.dismiss('cancel');
           };
 
-          // Error msg close handler
-          $scope.hideErr = function() {
-            $scope.errShow = false;
+          // Error msg close handler for save/delete error only
+          $scope.hideErr = function () {
+            $scope.errSave = false;
           };
         }]);
 });

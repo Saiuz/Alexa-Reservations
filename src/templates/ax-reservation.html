@@ -79,14 +79,25 @@
         </div>
     </div>
     <div class="form-group">
-        <label class="control-label col-xs-4">{{txt.xxx}}</label>
+        <label class="control-label col-xs-4">{{txt.status}}</label>
         <div class="col-xs-8">
-            <span>{{res.guest.name}} -- {{res.firm}} </span>
+            <select class="form-control" ng-model="res.status" ng-options="r  for r in rvm.statusList"></select>
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-xs-4">{{txt.source}}</label>
+        <div class="col-xs-8">
+            <select class="form-control" ng-model="res.source" ng-options="r  for r in rvm.sourceList"></select>
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-xs-4">{{txt.comments}}</label>
+        <div class="col-xs-8">
+            <textarea class="form-control" ng-model="res.comments"></textarea>
         </div>
     </div>
 
 </div>
-
 <div class="modal-footer">
     <button class="btn btn-primary" ng-click="save()" ng-show="!errShow && edit">{{saveTxt}}</button>
     <button class="btn btn-warning" ng-click="cancel()">{{cancelTxt}}</button>
