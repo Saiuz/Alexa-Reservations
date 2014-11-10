@@ -53,7 +53,6 @@ define(['./module'], function (controllers) {
         function ($scope, $modalInstance, modalParams, Reservation, ReservationVM, configService, $timeout) {
           console.log("ReservationFormModal controller fired");
 
-          var excecuteWatch = false;
           $scope.err = '';
           $scope.errSave = false;
           $scope.errLoad = false;
@@ -64,7 +63,6 @@ define(['./module'], function (controllers) {
           $scope.txt = configService.loctxt;
           $scope.deleteMode = false;
           $scope.confirmed = false;
-          $scope.planPrice = 0;
           $scope.roomCount = 0;
           $scope.resourceCount = 0;
           $scope.txt = configService.loctxt;
@@ -73,6 +71,8 @@ define(['./module'], function (controllers) {
           // For all but 'C' the query can be by reservation_number property which is unique.
           var mode = modalParams.mode.substring(0, 1).toLowerCase();
           var resNumber = parseInt(modalParams.data);// ? {'_id': modalParams.data} : {'firm_name': modalParams.data};
+          var excecuteWatch = false;
+          var firstload = false;
           switch (mode) {
             case 'c':
               $scope.title = configService.loctxt.reservation_titleCreate;
@@ -82,7 +82,6 @@ define(['./module'], function (controllers) {
                 $scope.rvm = resVM
                 $scope.start_date = new Date(resVM.res.start_date);
                 $scope.end_date = new Date(resVM.res.end_date);
-                $scope.planPrice = resVM.planPrice;
                 excecuteWatch = true;
               });
               break;
@@ -101,22 +100,22 @@ define(['./module'], function (controllers) {
               break;
 
             case 'u':
-              $scope.title = configService.loctxt.reservation_titleUpdate;
+              firstload = true;
+              $scope.title = configService.loctxt.reservation_titleEdit;
               ReservationVM.getReservationVM(resNumber).then(function (resVM) {
                 $scope.rvm = resVM;
                 $scope.start_date = new Date(resVM.res.start_date);
                 $scope.end_date = new Date(resVM.res.end_date);
                 $scope.availableRooms = resVM.availableRooms;
                 $scope.availableResources = resVM.availableResources;
-                $scope.planPrice = resVM.planPrice;
                 $scope.edit = true;
                 $scope.read = false;
                 $scope.saveTxt = configService.loctxt.update;
                 excecuteWatch = true;
+
               }, function (err) {
                 $scope.err = err;
                 $scope.errLoad = true;
-                //$scope.$apply();
               });
               break;
 
@@ -143,7 +142,6 @@ define(['./module'], function (controllers) {
           $scope.$watchCollection('[start_date, end_date, rvm.nights, rvm.res.occupants, rvm.res.type, rvm.res.firm]', function (newvars, oldvars) {
             console.log("Watch collection fired " + excecuteWatch);
             if (excecuteWatch) {
-
               var varIndex = (oldvars[5] !== newvars[5]) ? 5 : (oldvars[4] !== newvars[4]) ? 4 : (oldvars[3] !== newvars[3]) ? 3 : (oldvars[2] !== newvars[2]) ? 2 : (oldvars[1] !== newvars[1]) ? 1 : (oldvars[0] !== newvars[0]) ? 0 : -1;
               console.log("watch index: " + varIndex);
               if (varIndex === -1 || varIndex === ignoreIndex) {
@@ -172,7 +170,7 @@ define(['./module'], function (controllers) {
                   $scope.rvm.res.end_date = $scope.end_date;
                   rdates = $scope.rvm.calculateNights($scope.rvm.res.start_date, $scope.rvm.res.end_date);
                   //scope.res.end_date = rdates.end;
-                  $scope.rvm.updateAvailableRoomsAndResources(rdates, $scope.rvm.res.occupants === 2).then(function (cnt) {
+                  $scope.rvm.updateAvailableRoomsAndResources(rdates, $scope.rvm.double_only).then(function (cnt) {
                     $scope.availableRooms = $scope.rvm.availableRooms;
                     $scope.availableResources = $scope.rvm.availableResources;
                   });
@@ -184,7 +182,7 @@ define(['./module'], function (controllers) {
                   rdates = $scope.rvm.calculateEndDate($scope.rvm.res.start_date);
                   $scope.rvm.res.end_date = rdates.end;
                   $scope.end_date = rdates.end;
-                  $scope.rvm.updateAvailableRoomsAndResources(rdates, $scope.rvm.res.occupants === 2).then(function (cnt) {
+                  $scope.rvm.updateAvailableRoomsAndResources(rdates, $scope.rvm.double_only).then(function (cnt) {
                     $scope.availableRooms = $scope.rvm.availableRooms;
                     $scope.availableResources = $scope.rvm.availableResources;
                   });
@@ -203,7 +201,7 @@ define(['./module'], function (controllers) {
                   }
                   rdates = $scope.rvm.cleanResDates();
                   // Update only the room not the resources since the dates are not changing
-                  $scope.rvm.updateAvailableRoomsAndResources(rdates, $scope.rvm.res.occupants === 2, true).then(function (cnt) {
+                  $scope.rvm.updateAvailableRoomsAndResources(rdates, $scope.rvm.double_only, true).then(function (cnt) {
                     //$scope.availableRooms = $scope.rvm.availableRooms;
                     //$scope.availableResources = $scope.rvm.availableResources;
                   });
@@ -214,18 +212,20 @@ define(['./module'], function (controllers) {
                     console.log("res. type changed");
                     ignoreIndex = -1; // no watched variables changed
                     $scope.rvm.reservationTypeChanged();
-
-                    // If there is a plan price then it is assumed to be a per person price so we multiply by the number of occupants
-                    // If there is only one person then we add any single person up-charge.
-                    $scope.planPrice = $scope.rvm.planPrice + ($scope.rvm.res.occupants === 1 ? $scope.rvm.singleSurcharge : 0) * $scope.rvm.res.occupants;
                   }
                   break;
 
                 case 5:
                   // if firm changes and has a new value (not empty) then we must clear the guest field since
-                  // guests are filtered by and associated with firms.
+                  // guests are filtered by and associated with firms. However, we should not do this if the
+                  // firm change is due to loading an existing reservation with a firm. Thus the firstload
+                  // parameter.
+                  if (firstload) {
+                    firstload = false;
+                    return;
+                  }
                   console.log("Firm changed");
-                  if ($scope.rvm.showFirm && $scope.rvm.res.firm && $scope.rvm.res.guest.name){
+                  if ($scope.rvm.showFirm && $scope.rvm.res.firm && $scope.rvm.res.guest.name) {
                     $scope.rvm.res.guest.name = '';
                   }
                   break;

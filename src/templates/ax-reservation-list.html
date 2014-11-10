@@ -1,0 +1,13 @@
+<div ng-if="reservations.length > 0">
+    <dl class="dl-horizontal">
+        <dt ng-repeat-start="res in reservations"><span class="text-success glyphicon glyphicon-check"
+                                                        ng-show="res.reservation_number === selectedReservation"></span>
+            <span>Zimmer {{res.roomNumber}}</span><span ng-show="res.multiroom">...</span>
+        </dt>
+        <dd class="btn-link" ng-repeat-end ng-click="resSelected(res.reservation_number)">
+            <span>{{res.title}}</span><span ng-if="show">&nbsp&nbsp({{res.end_date | date:'dd.MM.yyyy'}})</span>
+            <span ng-if="res.checked_in" class="glyphicon glyphicon-saved"></span>
+        </dd>
+    </dl>
+</div>
+<div ng-if="reservations.length == 0"><span>{{txt.loctxt.no_lc}}</span></div>

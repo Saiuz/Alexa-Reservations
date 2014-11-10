@@ -1,0 +1,70 @@
+<div class="modal-header">
+    <h4 class="modal-title">{{txt.reservation}} {{rvm.res.reservation_number}}: {{rvm.res.title}}</h4>
+</div>
+<div class="modal-body">
+    <div class="form-horizontal" ng-if="hasResults">
+        <div class="form-group">
+            <label class="control-label col-xs-4">{{txt.reservationType}}</label>
+            <div class="col-xs-8">
+                <p class="form-control-static">{{rvm.res.type}} - {{rvm.res.plan}}</p>
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="control-label col-xs-4">{{txt.from}} - {{txt.until}}</label>
+            <div class="col-xs-8">
+                <p class="form-control-static">
+                    {{rvm.res.start_date | date:'dd.MM.yyyy'}} - {{rvm.res.end_date | date:'dd.MM.yyyy'}}
+                    ({{rvm.res.nights}})<span ng-if="rvm.res.nights > 1"> {{txt.nights}}</span><span ng-if="rvm.res.nights === 1"> {{txt.night}}</span>
+                </p>
+            </div>
+        </div>
+        <div class="form-group" ng-show="rvm.showFirm">
+            <label class="control-label col-xs-4">{{txt.firm}}</label>
+
+            <div class="col-xs-8">
+                <p class="form-control-static">{{rvm.res.firm}}</p>
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="control-label col-xs-4" ng-if="!rvm.isGroup">{{txt.guest}}</label>
+            <label class="control-label col-xs-4" ng-if="rvm.isGroup">{{txt.contact}}</label>
+            <div class="col-xs-8">
+                <p class="form-control-static">{{rvm.res.guest.name}}</p>
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="control-label col-xs-4">{{txt.room}}</label>
+            <div class="col-xs-8">
+                <ul class="list-unstyled form-control-static" ng-show="rvm.res.rooms.length">
+                    <li  ng-if="!rvm.oneRoom" ng-repeat="room in rvm.res.rooms">
+                        {{room.number}} ({{rvm.generateRoomAbbrv(room)}}) <i>{{room.guest}}</i> {{room.price | currency: '€'}}
+                        <button  class="btn-xs btn-default" type="button" ng-if="rvm.res.canCheckIn && !room.isCheckedIn" ng-click="checkin(room.number)">{{txt.checkin}}</button>
+                        <button  class="btn-xs btn-default" type="button" ng-if="rvm.res.canCheckOut && !room.isCheckedOut" ng-click="checkout(room.number)">{{txt.checkout}}</button>
+                    </li>
+                    <li  ng-if="rvm.oneRoom">
+                        {{rvm.res.rooms[0].number}} ({{rvm.generateRoomAbbrv(rvm.res.rooms[0])}}) {{rvm.res.rooms[0].price | currency: '€'}}
+                    </li>
+                </ul>
+                <span ng-show="!rvm.res.rooms.length">{{txt.noRoom}}</span>
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="control-label col-xs-4">{{}}</label>
+
+            <div class="col-xs-8">
+                <p class="form-control-static">{{}}</p>
+            </div>
+        </div>
+    </div>
+    <div ng-if="!hasResults">No reservation selected</div>
+    <div  class="alert alert-danger" ng-if="errSave || errLoad">
+        <strong>Error!</strong> {{err}}
+    </div>
+</div>
+<div class="modal-footer">
+    <div class="btn-group">
+        <button class="btn btn-default" type="button" ng-click="toggleEditButton()">{{txt.edit}}</button>
+        <a class="btn btn-default" href="#/charges/{{rvm.res.reservation_number}}"
+           ng-if="rvm.res.canCheckOut && !edit">{{checkText}}</a>
+    </div>
+</div>

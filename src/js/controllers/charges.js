@@ -1,7 +1,7 @@
 /**
  * Created by Owner on 05.08.2014.
  *
- * Controller for charges
+ * Controller for charges  todo - make viewmodel or extend ReservationVM for any business logic
  */
 define(['./module'], function (controllers) {
   'use strict';
@@ -21,7 +21,6 @@ define(['./module'], function (controllers) {
           $scope.url = $state.current.url;
           $scope.pageHeading = "Gebühren";
 
-          $scope.rvm = ReservationVM;
           $scope.showCharges = false;
           // for reservation-list directive
           $scope.selectedReservation = 0;
@@ -35,13 +34,14 @@ define(['./module'], function (controllers) {
           });
 
           $scope.$watch('selectedReservation', function (newval) {
-            ReservationVM.getReservation(newval).then(function (res) {
-              if(res) {
-                $scope.res = res;
+            ReservationVM.getReservationVM(newval, true).then(function (resVM) {
+              if(resVM.res) {
+                $scope.rvm = resVM;
+                $scope.res = resVM.res;
                 $scope.showCharges = true;
                 $scope.expenses = [];   // for testing, get the reservations expenses
-                var newitem = res.expenses.create({name: 'test'});
-                $scope.expenses.push(newitem);
+                //var newitem = resVM.res.expenses.create({name: 'test'});
+                //$scope.expenses.push(newitem);
               }
             });
           });

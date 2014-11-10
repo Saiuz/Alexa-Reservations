@@ -18,9 +18,46 @@
  */
 define(['./module'], function (directives) {
   'use strict';
-  directives.directive('reservationList', ['Reservation', 'dashboard', function (Reservation, dashboard) {
+  directives.directive('axReservationList', ['Reservation', 'dashboard', 'configService',
+    function (Reservation, dashboard, configService) {
+    // Private function to build the reservation list. It will separate group reservations that
+    // require individual checkins and bills.
+    var buildList = function(resList){
+       var rlist = [];
+      var rlistItem = {};
+      angular.forEach(resList,function (res) {
+        if (res.rooms.length > 1 && res.individualBill) {
+           // list res under each room with name defined in room list
+          angular.forEach(res.rooms, function(room){
+            rlistItem = {
+              roomNumber: room.number,
+              title: res.firm + ' (' + room.guest + ')',
+              reservation_number: res.reservation_number,
+              multiroom: false,
+              end_date: res.end_date
+            };
+            rlist.push(rlistItem);
+          });
+        }
+        else {
+          //only one room or single bill
+          rlistItem = {
+            roomNumber: res.rooms[0].number,
+            title: res.title,
+            reservation_number: res.reservation_number,
+            multiroom: res.rooms.length > 1,
+            end_date: res.end_date
+          };
+          rlist.push(rlistItem);
+        }
+      });
+      return rlist;
+    };
 
     var linker = function (scope, element, attrs) {
+
+      scope.txt = configService;
+
       // read the listDate attribute to determine the dashboard method to call. Expected
       // values are arrival, departure, upcomming (departure within 2 days of date) and current.
       var listType = (attrs.listMode ? attrs.listMode.toLowerCase().substring(0, 1) : 'a');
@@ -35,7 +72,7 @@ define(['./module'], function (directives) {
       scope.getCurrent = function () {
         scope.show = true;
         dashboard.getCurrentReservations().then(function (result) {
-              scope.reservations = result;
+              scope.reservations = buildList(result);
             },
             function (err) {
               scope.reservations = err;
@@ -51,7 +88,7 @@ define(['./module'], function (directives) {
           switch (listType) {
             case 'a':
               dashboard.getArrivals(newval).then(function (result) {
-                    scope.reservations = result;
+                    scope.reservations = buildList(result);
                   },
                   function (err) {
                     scope.reservations = err;
@@ -60,7 +97,7 @@ define(['./module'], function (directives) {
 
             case 'd':
               dashboard.getDepartures(newval).then(function (result) {
-                    scope.reservations = result;
+                    scope.reservations = buildList(result);
                   },
                   function (err) {
                     scope.reservations = err;
@@ -70,7 +107,7 @@ define(['./module'], function (directives) {
             case 'u':
               scope.show = true;
               dashboard.getUpcomming(newval).then(function (result) {
-                    scope.reservations = result;
+                    scope.reservations = buildList(result);
                   },
                   function (err) {
                     scope.reservations = err;
@@ -79,7 +116,7 @@ define(['./module'], function (directives) {
 
             default:
               dashboard.getDepartures(new Date(2014, 7, 18)).then(function (result) {
-                    scope.reservations = result;
+                    scope.reservations = buildList(result);
                   },
                   function (err) {
                     scope.reservations = err;
@@ -91,9 +128,9 @@ define(['./module'], function (directives) {
     };
 
     return {
-      restrict: 'A',
+      restrict: 'AE',
       link: linker,
-      templateUrl: './templates/reservationlist.html',
+      templateUrl: './templates/ax-reservation-list.html',
       scope: {
         theDate: '=listDate',
         selectedReservation: '='

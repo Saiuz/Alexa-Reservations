@@ -15,7 +15,8 @@
                 <p class="form-control-static">{{rvm.res.type}}</p>
             </div>
             <div class="col-xs-8" ng-show="edit">
-                <radio-button-group model="rvm.res.type" options="rvm.resTypeOptions" callback="rvm.resTypeChange" id="value"
+                <radio-button-group model="rvm.res.type" options="rvm.resTypeOptions" callback="rvm.resTypeChange"
+                                    id="value"
                                     name="text" suffix="default"></radio-button-group>
             </div>
         </div>
@@ -33,7 +34,7 @@
         <div class="form-group">
             <label class="control-label col-xs-4">{{txt.from}}</label>
             <div class="col-xs-8" ng-show="read">
-                <p class="form-control-static">{{rvm.res.start_date}}</p>
+                <p class="form-control-static">{{rvm.res.start_date | date:'dd.MM.yyyy'}}</p>
             </div>
             <div class="col-xs-8" ng-show="edit">
             <span class="input-group">
@@ -50,7 +51,7 @@
         <div class="form-group">
             <label class="control-label col-xs-4">{{txt.until}}</label>
             <div class="col-xs-8" ng-show="read">
-                <p class="form-control-static">{{rvm.res.end_date}}</p>
+                <p class="form-control-static">{{rvm.res.end_date | date:'dd.MM.yyyy'}}</p>
             </div>
             <div class="col-xs-8" ng-show="edit">
             <span class="input-group">
@@ -69,7 +70,7 @@
             <div class="col-xs-8" ng-show="read">
                 <p class="form-control-static">{{rvm.res.nights}}</p>
             </div>
-            <div class="col-xs-8" ng-show="edit">
+            <div class="col-xs-3" ng-show="edit">
                 <input class="form-control" type="number" min="1" ng-model="rvm.nights"/>
             </div>
         </div>
@@ -78,12 +79,12 @@
             <div class="col-xs-8" ng-show="read">
                 <p class="form-control-static">{{rvm.res.occupants}}</p>
             </div>
-            <div class="col-xs-8" ng-show="edit">
-                <span class="col-xs-5"><radio-button-group data-toggle="buttons-radio" model="rvm.res.occupants"
+            <div class="col-xs-3" ng-show="edit">
+                <span ng-if="rvm.oneRoom"><radio-button-group data-toggle="buttons-radio" model="rvm.res.occupants"
                                                            options="rvm.occupantOptions" id="value" name="text"
                                                            suffix="default"></radio-button-group> </span>
-                <span class="col-xs-3" ng-show="rvm.res.occupants >2"><input class="form-control" type="number"
-                                                                         ng-model="rvm.res.occupants"/></span>
+                <span ng-if="!rvm.oneRoom"><input class="form-control" type="number"
+                                                                             ng-model="rvm.res.occupants"/></span>
             </div>
         </div>
         <div class="form-group" ng-show="rvm.showFirm">
@@ -92,11 +93,12 @@
                 <p class="form-control-static">{{rvm.res.firm}}</p>
             </div>
             <div class="col-xs-8" ng-show="edit">
-                <ax-lookup-firm firm="rvm.res.firm"></ax-lookup-firm>
+                <ax-lookup-firm firm="rvm.res.firm" firm-price="rvm.firmPrice"></ax-lookup-firm>
             </div>
         </div>
         <div class="form-group">
-            <label class="control-label col-xs-4">{{txt.guest}}</label>
+            <label class="control-label col-xs-4" ng-if="!rvm.isGroup">{{txt.guest}}</label>
+            <label class="control-label col-xs-4" ng-if="rvm.isGroup">{{txt.contact}}</label>
             <div class="col-xs-8" ng-show="read">
                 <p class="form-control-static">{{rvm.res.guest.name}}</p>
             </div>
@@ -106,10 +108,11 @@
         </div>
         <div class="form-group">
             <label class="control-label col-xs-4">{{txt.room}}</label>
-
             <div class="col-xs-8">
-                <ax-room-select room-list="rvm.availableRooms" rooms="rvm.res.rooms" guest="{{rvm.res.guest.name}}"
-                                plan-price="{{planPrice}}" room-count="roomCount" read-only="{{read}}"></ax-room-select>
+                <ax-room-select room-list="rvm.availableRooms" rooms="rvm.res.rooms" name="{{rvm.res.guest.name}}"
+                                firm="{{rvm.res.firm}}" guest-lookup="{{rvm.guestLookup}}" one-room="{{rvm.oneRoom}}"
+                                plan-price="{{rvm.planPrice}}" firm-price="{{rvm.firmPrice}}" room-count="roomCount"
+                                read-only="{{read}}"></ax-room-select>
             </div>
         </div>
         <div class="form-group">
@@ -168,8 +171,10 @@
     </div>
 </div>
 <div class="modal-footer">
-    <label class="btn  btn-primary" ng-show="deleteMode && !hide"><input type="checkbox" ng-model="confirmed" />{{txt.confirmDelete}}</label>
-    <button class="btn btn-danger" ng-click="delete()" ng-show="!errLoad && deleteMode && confirmed && !hide">{{saveTxt}}</button>
+    <label class="btn  btn-primary" ng-show="deleteMode && !hide"><input type="checkbox" ng-model="confirmed"/>{{txt.confirmDelete}}</label>
+    <button class="btn btn-danger" ng-click="delete()" ng-show="!errLoad && deleteMode && confirmed && !hide">
+        {{saveTxt}}
+    </button>
     <button class="btn btn-primary" ng-click="save()" ng-show="!errLoad && edit && !hide">{{saveTxt}}</button>
     <button class="btn btn-warning" ng-click="cancel()">{{cancelTxt}}</button>
 </div>

@@ -37,7 +37,7 @@ define(['./module'], function (directives) {
         });
       };
 
-      scope.clearFirm = function () {
+      scope.clearGuest = function () {
         ignoreWatch = true;
         scope.axguest = '';
         scope.selectedGuest = {};

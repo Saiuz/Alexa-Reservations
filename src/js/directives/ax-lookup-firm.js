@@ -24,7 +24,7 @@ define(['./module'], function (directives) {
           names = [];
           if (result.length > 0) {
             for (var i = 0; i < result.length; i++) {  // using native for for speed
-              names.push({name: result[i].firm_name, id: result[i]._id});
+              names.push({name: result[i].firm_name, id: result[i]._id, price: result[i].room_price});
             }
           }
           scope.loading = false;
@@ -47,6 +47,7 @@ define(['./module'], function (directives) {
         ignoreWatch = true;
         scope.firm = $item.name;
         scope.selectedFirm = $item;
+        scope.firmPrice = $item.price;
         scope.canClear = true;
         //_updateTitle();
       };
@@ -62,6 +63,7 @@ define(['./module'], function (directives) {
         if (newval === undefined || newval === '') {
           scope.selectedFirm = {};
           scope.axfirm = '';
+          scope.firmPrice = 0;
           scope.notFound = false;
           scope.canClear = false;
         }
@@ -72,6 +74,7 @@ define(['./module'], function (directives) {
               if (names[j].name === scope.firm) {
                 scope.selectedFirm = names[j];
                 scope.axfirm = names[j].name;
+                scope.firmPrice = names[j].price;
                 scope.notFound = false;
                 found = true;
                 scope.canClear = true;
@@ -82,9 +85,10 @@ define(['./module'], function (directives) {
             dashboard.getFirmByName(scope.firm).then(function (result) {
               names = [];
               if (result) {
-                names.push({name: result.firm_name, id: result._id});
+                names.push({name: result.firm_name, id: result._id, price: result.room_price});
                 scope.selectedFirm = names[0];
                 scope.axfirm = names[0].name;
+                scope.firmPrice = names[0].price;
                 scope.notFound = false;
                 scope.canClear = true;
               }
@@ -123,6 +127,7 @@ define(['./module'], function (directives) {
           scope.selectedFirm = names[0]
           scope.axfirm = result.firm_name;
           scope.firm = result.firm_name;
+          scope.firmPrice = result.room_price;
           scope.notFound = false;
         });
       };
@@ -134,6 +139,7 @@ define(['./module'], function (directives) {
       templateUrl: './templates/ax-lookup-firm.html',
       scope: {
         firm: '=', // the value of the input field (firm)
+        firmPrice: '=', // the negotiated room price of the selected firm
         displayOnly: '='
       }
     };

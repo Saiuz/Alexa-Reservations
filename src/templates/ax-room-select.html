@@ -1,7 +1,10 @@
 <div ng-show="displayOnly">
-    <ul class="list-unstyled" ng-show="rooms.length">
-        <li ng-repeat="room in prooms">
-           Zimmer {{room.number}} ({{room.room_type}}) <i>{{room.guest}}</i> {{room.price | currency: '€'}}
+    <ul class="list-unstyled form-control-static" ng-show="rooms.length">
+        <li  ng-if="!oneRoomB" ng-repeat="room in prooms">
+            Zimmer {{room.number}} ({{room.room_type}}) <i>{{room.guest}}</i> {{room.price | currency: '€'}}
+        </li>
+        <li  ng-if="oneRoomB" ng-repeat="room in prooms">
+            Zimmer {{room.number}} ({{room.room_type}}) {{room.price | currency: '€'}}
         </li>
     </ul>
     <span ng-show="!rooms.length">{{selectTitle}}</span>
@@ -14,21 +17,24 @@
         </div>
         <div class="panel-body" collapse="isCollapsed">
             <table class="small">
-                <tr>
+                <tr ng-show="showRooms">
                     <th>{{txt.roomsFree}}</th>
                 </tr>
-                <tr>
+                <tr ng-show="showRooms">
                     <td>
                         <select ng-model="roomSelect" ng-change="onRoomSelect(roomSelect)"
                                 ng-options="r.display_name for r in roomList | filter:filterAlreadySelected"></select>
                     </td>
                 </tr>
-                <tr ng-show="roomSelect.number">
+                <tr ng-show="roomSelect.number  && !oneRoom">
                     <th>{{txt.guest}}</th>
                 </tr>
-                <tr ng-show="roomSelect.number">
-                    <td>
-                        <input type="text" ng-model="roomName"/>
+                <tr ng-show="roomSelect.number && !oneRoomB">
+                    <td ng-if="!guestLookupB">
+                        <input type="text" ng-model="roomData.name"/>
+                    </td>
+                    <td ng-if="guestLookupB">
+                        <ax-lookup-guest guest="roomData.name" firm="firm"></ax-lookup-guest>
                     </td>
                 </tr>
                 <tr ng-show="roomSelect.number">
@@ -36,7 +42,7 @@
                 </tr>
                 <tr ng-show="roomSelect.number">
                     <td>
-                        <input class="col-xs-4" type="number" ng-model="roomPrice"/>&nbsp;
+                        <input class="col-xs-4" type="number" ng-model="roomData.price"/>&nbsp;
                         <button ng-click="addRoom()">{{txt.add}}</button>
                     </td>
                 </tr>
@@ -45,7 +51,7 @@
                 <tr>
                     <th></th>
                     <th colspan="2">{{txt.room}}</th>
-                    <th>{{txt.guest}}</th>
+                    <th ng-if="!oneRoomB">{{txt.guest}}</th>
                     <th>{{txt.price}}</th>
                 </tr>
                 <tr ng-repeat="room in prooms">
@@ -56,7 +62,7 @@
                     </td>
                     <td>{{room.number}}</td>
                     <td>{{room.room_type}}</td>
-                    <td>{{room.guest}}</td>
+                    <td ng-if="!oneRoomB">{{room.guest}}</td>
                     <td>{{room.price | currency: '€'}}</td>
                 </tr>
             </table>

@@ -40,7 +40,12 @@ define(['./module'], function (model) {
     this.showInsurance = false; // viewmodel property that is true if the reservation requires insurance.
     this.single_only = false; // viewmodel property that is true if the selected room plan is a single room only plan.
     this.double_only = false; // viewmodel property that is true if the selected room plan is a double room only plan.
-    this.planPrice = 0; //set by room plan selection.
+    this.isGroup = false; //viewmodel property that is true if the selected plan is a group plan with multiple rooms.
+    this.oneBill = false; // viewmodel property that is true if the selected plan is a group plan and requires a single bill.
+    this.oneRoom = true; // viewmodel property that is true if the selected plan has the
+    this.guestLookup = false; // If true then quest name associated with room must be in guest database.
+    this.planPrice = 0; //set by room plan selection
+    this.firmPrice = 0; // set by selection of a firm with a negotiated price
     this.planNights = 0; //set by room plan selection
     this.singleSurcharge = 0; // set by room plan selection.
     this.nights = 0; //property of the viewmodel since the Reservation schema property is calculated.
@@ -56,10 +61,14 @@ define(['./module'], function (model) {
      this.occupantOptions = [
        {value: 1, text: '1'},
        {value: 2, text: '2'},
-       {value: 3, text: '3+'}
      ];
 
       // *** Public methods assigned to VM ***
+
+    // Utility method to return a room type abbreviation from a reservedRoom item
+    this.generateRoomAbbrv = function (rrObj) {
+      return dbEnums.getRoomDisplayAbbr(rrObj);
+    }
 
     // Respond to change of reservation type from UI. This requires room plan filtering
     this.reservationTypeChanged = function () {
@@ -76,15 +85,19 @@ define(['./module'], function (model) {
       console.log("Room plan changed. ID: " + this.selectedPlan.value);
       var plan = _findSelectedPlan();
       if (plan) {
-        // Update reservation with plan information
+        // Update reservation fields with plan information
         this.res.plan = plan.name;
         this.res.plan_code = plan._id.id;
+        this.res.individualBill = (plan.is_group && !plan.one_bill);
         // Set public boolean properties based on plan
         this.showFirm = plan.needs_firm;
         this.showInsurance = plan.needs_insurance;
         this.single_only = plan.single_only;
         this.double_only = plan.double_only;
-
+        this.isGroup = plan.is_group;
+        this.oneBill = plan.one_bill;
+        this.oneRoom = plan.one_room;
+        this.guestLookup = (this.isGroup && ! this.oneBill);
         // now implement logic that removes content from hidden Model properties
         if (!this.showFirm) {
           this.res.firm = '';
@@ -130,6 +143,7 @@ define(['./module'], function (model) {
         this.res.plan_code = 0;
       }
     };
+
 
     // Returns an object with a the provided reservation start date and a new end date in response to a change in a
     // reservation start date or the number of nights (nights property of the VM) in the UI
@@ -239,6 +253,7 @@ define(['./module'], function (model) {
       function _filterRoomPlans (resType, curPlanCode) {
         var firstItem = {value: 0, name: that.roomPlanFirstText};
         var errorItem = {value: 0, name: '*** ERROR ***'};
+        var defIndex = 0;
         var rPlans = []; //filtered list based on reservation type
         if (that.roomPlansAll && that.roomPlansAll.length > 0) {
           if (that.roomPlanFirstText.length) {
@@ -252,6 +267,9 @@ define(['./module'], function (model) {
               if (curPlanCode && pobj.value === curPlanCode) {
                 selected = pobj;
               }
+              if (plan.is_default) {
+                defIndex = rPlans.length -1;
+              }
             }
           });
 
@@ -264,7 +282,7 @@ define(['./module'], function (model) {
           rPlans.push(errorItem);
         }
         that.roomPlans = rPlans;
-        that.selectedPlan = selected ? selected : that.roomPlans[0];
+        that.selectedPlan = selected ? selected : that.roomPlans[defIndex];
         that.roomPlanChanged(); //update certain VM model properties based on plan.
         //todo - may need to add business logic that prevents zimmer plan change for an existing res
       };

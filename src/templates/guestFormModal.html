@@ -93,6 +93,15 @@
                 <input class="form-control" ng-model="guest.city" type="text"/>
             </div>
         </div>
+        <div class="form-group" ng-show="!guest.firm">
+            <label class="control-label col-xs-4">{{txt.country}}</label>
+            <div class="col-xs-8" ng-show="!edit">
+                <p class="form-control-static">{{guest.country}}</p>
+            </div>
+            <div class="col-xs-8" ng-show="edit">
+                <input class="form-control" ng-model="guest.country" type="text"/>
+            </div>
+        </div>
         <div class="form-group">
             <label class="control-label col-xs-4">{{txt.telephone}}</label>
             <div class="col-xs-8" ng-show="!edit">

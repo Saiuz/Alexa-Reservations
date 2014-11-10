@@ -8,7 +8,7 @@ include nav_common.jade
             button.btn.btn-small.pull-right(type="button" ng-click="findRes()")
               i.glyphicon.glyphicon-search
         .panel-body
-          div(reservation-list list-mode="c" list-date="theDate" selected-reservation="selectedReservation")
+          ax-reservation-list(list-mode="c" list-date="theDate" selected-reservation="selectedReservation")
     .col-md-8
       .panel.panel-default
         .panel-heading Gebühren&nbsp;

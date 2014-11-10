@@ -21,7 +21,6 @@ define(['./module'], function (controllers) {
           $scope.url = $state.current.url;
           $scope.pageHeading = "Rechnungen";
 
-          $scope.rvm = ReservationVM;
           $scope.showCharges = false;
           // for reservation-list directive
           $scope.selectedReservation = 0;
@@ -29,9 +28,10 @@ define(['./module'], function (controllers) {
 
 
           $scope.$watch('selectedReservation', function (newval) {
-            ReservationVM.getReservation(newval).then(function (res) {
-              if(res) {
-                $scope.res = res;
+            ReservationVM.getReservationVM(newval, true).then(function (resVM) {
+              if(resVM.res) {
+                $scope.rvm = resVM;
+                $scope.res = resVM.res;
                 $scope.showCharges = true;
               }
             });

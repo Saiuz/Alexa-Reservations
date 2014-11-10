@@ -5,7 +5,7 @@
  */
 define(['./module'], function (directives) {
   'use strict';
-  directives.directive('reservationStats', ['Reservation', 'dashboard', 'datetime', function (Reservation, dashboard, datetime) {
+  directives.directive('axReservationStats', ['Reservation', 'dashboard', 'datetime', function (Reservation, dashboard, datetime) {
 
     var linker = function (scope, element, attrs) {
       scope.stats = [
@@ -35,7 +35,7 @@ define(['./module'], function (directives) {
     return {
       restrict: 'A',
       link: linker,
-      templateUrl: './templates/reservationStats.html',
+      templateUrl: './templates/ax-reservation-stats.html',
       scope: {
         dateInWeek: '='
       }
