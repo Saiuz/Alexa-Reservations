@@ -44,9 +44,10 @@ define(['./module'], function (controllers) {
         'dbEnums',
         'configService',
         '$timeout',
-        function ($scope, $modalInstance, modalParams, Guest, dbEnums, configService, $timeout) {
+        'utility',
+        function ($scope, $modalInstance, modalParams, Guest, dbEnums, configService, $timeout, utility) {
           console.log("guestFormModal controller fired")
-          $scope.err = '';
+          $scope.err = {};
           $scope.errSave= false;
           $scope.errLoad = false;
           $scope.hide = false;
@@ -82,6 +83,7 @@ define(['./module'], function (controllers) {
           // For all but 'C' the query can be by id or by the unique_name property.
           var mode = modalParams.mode.substring(0, 1).toLowerCase();
           var qry = parseInt(modalParams.data) ? {'_id': parseInt(modalParams.data)} : {'unique_name': modalParams.data};
+          var notFound = configService.loctxt.guest + ' "' + modalParams.data + '" ' + configService.loctxt.notFound;
           switch (mode) {
             case 'c':
               $scope.title = configService.loctxt.guest_titleCreate;
@@ -112,7 +114,7 @@ define(['./module'], function (controllers) {
               $scope.title = configService.loctxt.guest_titleRead;
               Guest.findOne(qry, function (err, guest) {
                 if (err) {
-                  $scope.err = err;
+                  $scope.err =  new utility.errObj(err);
                   $scope.errLoad = true;
                 }
                 else {
@@ -124,7 +126,7 @@ define(['./module'], function (controllers) {
                   $scope.cancelTxt = configService.loctxt.close;
                   }
                   else {
-                    $scope.err = configService.loctxt.item_notFound;
+                    $scope.err = new utility.errObj(notFound);
                     $scope.errLoad = true;
                   }
                   $scope.$apply();
@@ -136,7 +138,7 @@ define(['./module'], function (controllers) {
               $scope.title = configService.loctxt.guest_titleUpdate;
               Guest.findOne(qry, function (err, guest) {
                 if (err) {
-                  $scope.err = err;
+                  $scope.err =  new utility.errObj(err);
                   $scope.errLoad = true;
                 }
                 else {
@@ -148,7 +150,7 @@ define(['./module'], function (controllers) {
                     $scope.saveTxt = configService.loctxt.update;
                   }
                   else {
-                    $scope.err = configService.loctxt.item_notFound;
+                    $scope.err = new utility.errObj(notFound);
                     $scope.errLoad = true;
                   }
                   $scope.$apply();
@@ -160,7 +162,7 @@ define(['./module'], function (controllers) {
               $scope.title = configService.loctxt.guest_titleDelete;
               Guest.findOne(qry, function (err, guest) {
                 if (err) {
-                  $scope.err = err;
+                  $scope.err =  new utility.errObj(err);
                   $scope.errLoad = true;
                 }
                 else {
@@ -174,7 +176,7 @@ define(['./module'], function (controllers) {
                     $scope.saveTxt = configService.loctxt.delete;
                   }
                   else {
-                    $scope.err = configService.loctxt.item_notFound;
+                    $scope.err = new utility.errObj(notFound);
                     $scope.errLoad = true;
                   }
                   $scope.$apply();
@@ -256,7 +258,7 @@ define(['./module'], function (controllers) {
             $scope.guest.remove(function(err) {
               if (err){
                 console.log('Guest delete error: ' + err);
-                $scope.err = err;
+                $scope.err =  new utility.errObj(err);
                 $scope.errSave = true;
                 $scope.$apply();
               }

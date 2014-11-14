@@ -132,7 +132,10 @@
     </div>
     <div class="alert alert-danger" ng-show="errLoad || errSave">
         <a class="close" ng-click="hideErr()" ng-show="!errLoad">&times;</a>
-        <strong>Error!</strong> {{err}}
+        <h3>Error!</h3>
+        <ul>
+            <li ng-repeat="e in err.errors()">{{e}}</li>
+        </ul>
     </div>
     <div class="alert alert-success" ng-show="hide">
         <strong>{{actionMsg}}</strong>

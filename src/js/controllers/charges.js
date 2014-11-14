@@ -25,12 +25,8 @@ define(['./module'], function (controllers) {
           // for reservation-list directive
           $scope.selectedReservation = 0;
           $scope.listDate = new Date();
-          dashboard.getItemTypeListExcept('Zimmer Plan').then(function(items){
+          dashboard.getItemTypeListExcept('').then(function(items){
             $scope.itemTypes = items;
-            $scope.expenses = []; // for testing only
-            var temp = new Reservation();
-            var newitem = temp.expenses.create({name: items[0].item_name, count: 1, price: items[0].default_unit_price})
-            $scope.expenses.push(newitem);
           });
 
           $scope.$watch('selectedReservation', function (newval) {
@@ -47,9 +43,12 @@ define(['./module'], function (controllers) {
           });
 
           if ($stateParams.resNum && $stateParams.resNum > 0){
-             ReservationVM.getReservation($stateParams.resNum).then(function (res){
-               $scope.res = res;
-               $scope.showCharges = true;
+             ReservationVM.getReservationVM($stateParams.resNum, true).then(function (resVM){
+               if(resVM.res) {
+                 $scope.rvm = resVM;
+                 $scope.res = resVM.res;
+                 $scope.showCharges = true;
+               }
              });
           }
         }]);

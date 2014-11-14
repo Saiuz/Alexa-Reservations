@@ -4,6 +4,7 @@
 
 define(['./module'], function (model) {
   'use strict';
+  console.log('Creating hotel model');
   // ** enums used to control fields in various schemas **
   // Salutaion enum for Guest
   var salutationEnum = ['Dr.', 'Frau', 'Familie', 'Herr', 'Herrn'];
@@ -51,14 +52,20 @@ define(['./module'], function (model) {
     }
   });
 
-  // define a child schema for expense_items. Used in RoomPlan and Reservation schema
-  model.factory('ExpenseItem', function (db){
+  // define a child schema for expense_items. Used in RoomPlan and Reservation models as embedded document properties.
+  // The schema is also used in the ExpenseType model.
+  // This schema is very similar to the ExpenseType's schema.
+  model.factory('ExpenseItem', function (db, convert){
     var expenseItem = new db.Schema({
       name: {type: String, required: true },  //comes from ItemTypes schema collection
       category: {type: String, enum: itemTypeEnum},  // the expense item type category
       code: Number, // comes from ItemTypes definition
+      room: Number, // the room number the expense is associated with.
+      per_room: Boolean, // If true then this item should be duplicated for each room. Used by room plan items.
       no_delete: Boolean, // If true then the item can not be deleted from a reservation or RoomPlan
       day_count: Boolean, // If true then the count value will equal the number of days of the reservation. If false then count is an item count.
+      one_count: Boolean, // If true then day_count flag is ignored and item has no count option in the UI, count of one (only one item per reservation)
+                          // this is used to represent a plan price or fixed price item.
       edit_name: Boolean,  //If true then the item_name stored in the reservation for this type can be edited.
       per_person: Boolean, //If true then the item is multiplied by the number of people.
       type_id: Number, // the id of the ItemTypes document that created this ExpenseItem document.
@@ -66,28 +73,79 @@ define(['./module'], function (model) {
       display_order: Number, // used for display order of lists item names
       taxable_rate: Number,  // percent taxed e.g 7 or 19 (%)
       price: Number, //either single item price or total price if isPlanPrice true.
-      count: Number   //number of days or item count
+      count: Number   //number of days or item count or the default count value in the case of the ExpenseType collection.
     });
+
+    // ** Virtual readonly properties
+    // Returns the total cost of the item, if not a plan price then it returns price * count
     expenseItem.virtual('item_total').get(function(){
-      if (this.count && (this.unit_price || this.plan_price)) {
-        if (this.plan_price) {
-          return this.plan_price;
-        }
-        else {
-          return (this.unit_price * this.count);
-        }
+      if (this.count && this.price) {
+        var val = this.one_count ? this.price : (this.price * this.count);
+          return convert.roundp(val,2);
       }
       else {
         return 0;
       }
     });
+
+    // Returns the amount of the total price that is the tax portion. The formula assumes that the taxable_rate value
+    // is in percent.
     expenseItem.virtual('item_tax').get(function(){
-      if (this.taxable_rate) {
+      if (this.taxable_rate && this.count && this.price) {
         var taxconv = 1.0 - 1.0/(1 + (this.taxable_rate/100.0));  // expects tax_rate to be in % (e.g. 19 for 19%)
-        return this.plan_price ? this.plan_price * taxconv : this.unit_price ? this.unit_price * count * taxconv : 0;
+        var val = this.one_count ? (this.price * taxconv) : (this.price * this.count * taxconv);
+        return convert.roundp(val,2);
       }
       else {
         return 0;
+      }
+    });
+
+    // Returns the net amount of the item, total price - tax
+    expenseItem.virtual('item_net').get(function(){
+      if (this.taxable_rate && this.count && this.price) {
+        var taxconv = 1.0 - 1.0/(1 + (this.taxable_rate/100.0));  // expects tax_rate to be in % (e.g. 19 for 19%)
+        var total = this.one_count ? this.price : (this.price * this.count);
+        var tax = total * taxconv;
+        var val = total - (total * tax);
+        return convert.roundp(val,2);
+      }
+      else {
+        return 0;
+      }
+    });
+
+    // ** Instance method, copies the ExpenseItem embedded document
+    //    to a new ExpenseItem DocumentArray in some other model.
+    //    the _id property is not copied, rather the origin id value
+    //    is placed in the 'code' field of the new document.
+    //    if the price and or count parameters are provided then they will
+    //    override the values in the original item.
+    expenseItem.method('addThisToDocArray', function(docArray, price, count) {
+      if (docArray) {
+        var newDoc = {};
+        var plist = [];
+        var idval;
+
+        this.schema.eachPath(function (p) {
+          plist.push(p);
+        });
+        plist.forEach(function (p){
+          if (p !== '_id') { //don't copy id
+            newDoc[p] = this[p];
+            if (price && p === 'price') {
+              newDoc[p] = price;
+            }
+            if (count && p === 'count'){
+              newDoc[p] = count;
+            }
+          }
+          else {
+            idval = this[p].id;
+          }
+        },this);
+        newDoc['code'] = idval;
+        docArray.push(newDoc);
       }
     });
 
@@ -167,24 +225,10 @@ define(['./module'], function (model) {
     return db.model('guest', schema);
   });
 
-  // ItemTypes Schema - schema that define expense item types
+  // ItemTypes Model - Based on the ItemList schema that define expense item types
   // This collection will be populated with the allowed expense item types.
-  model.factory('Itemtype', function(db) {
-    var schema = new db.Schema({
-      name: {type: String, required: true },  //comes from ItemTypes schema collection
-      category: {type: String, enum: itemTypeEnum},  // the expense item type category
-      code: Number, // comes from ItemTypes definition
-      no_delete: Boolean, // If true then the item can not be deleted from a reservation or RoomPlan
-      day_count: Boolean, // If true then the count value will equal the number of days of the reservation. If false then count is an item count.
-      edit_name: Boolean,  //If true then the item_name stored in the reservation for this type can be edited.
-      per_person: Boolean, //If true then the item is multiplied by the number of people.
-      display_string: String, //Formatting display string using custom format symbols (to be worked out) comes from ItemTypes
-      display_order: Number, // used for display order of lists item names
-      taxable_rate: Number,  // percent taxed e.g 7 or 19 (%)
-      default_unit_price: Number
-    });
-
-    return db.model('itemtype', schema);
+  model.factory('Itemtype', function(db, ExpenseItem) {
+    return db.model('itemtype', ExpenseItem);
   }) ;
 
   model.factory('RoomPlan', function (db, ExpenseItem){

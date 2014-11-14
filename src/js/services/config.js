@@ -1,3 +1,7 @@
+/*
+ * Configuration service. Provides methods to get and set local storage variables. Also provides objects containing
+ * global constants and text strings for the UI.
+ */
 define(['./module'], function (services) {
   'use strict';
 
@@ -20,10 +24,10 @@ define(['./module'], function (services) {
     // Object that contains system-wide constants
     this.constants = {
       autoCloseTime: 2000
-    }
-    // Added an object that contains the various text strings for the UI views, forms and directives
-    // The purpose is to have the standard text items all in one place.
+    };
 
+    // An object that contains the various text strings for the UI views, forms and directives
+    // The purpose is to have the standard text items all in one place.
     this.loctxt = {
       //'': '',
       'add': 'Hinzufügen',
@@ -89,6 +93,7 @@ define(['./module'], function (services) {
       'reservation_titleRead': 'Informationen zur Reservierung',
       'reservationType': 'Res. Typ',
       'room': 'Zimmer',
+      'roomAbrv': 'Zi.',
       'roomNumber': 'Zimmernummer',
       'roomPlan': 'Zimmer Plan',
       'roomPrice': 'Zimmer Preis',
@@ -110,8 +115,13 @@ define(['./module'], function (services) {
       'today': 'Heute',
       'until': 'Bis',
       'update': 'Aktualisieren',
+      'val_invalidPlan': 'You must select a Room Plan',
+      'val_invalidGuest': 'Missing or invalid Guest',
+      'val_invalidFirm': 'Missing or invalid Firm',
+      'val_invalidRoom': 'At least one room is required',
+      'val_invalidDates': 'Missing or invalid Reservation dates',
+
       'xxx': '***'
     };
-
   }]);
 });

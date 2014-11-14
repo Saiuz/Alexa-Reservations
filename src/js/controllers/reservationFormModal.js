@@ -50,10 +50,11 @@ define(['./module'], function (controllers) {
         'ReservationVM',
         'configService',
         '$timeout',
-        function ($scope, $modalInstance, modalParams, Reservation, ReservationVM, configService, $timeout) {
+        'utility',
+        function ($scope, $modalInstance, modalParams, Reservation, ReservationVM, configService, $timeout, utility) {
           console.log("ReservationFormModal controller fired");
 
-          $scope.err = '';
+          $scope.err = {};
           $scope.errSave = false;
           $scope.errLoad = false;
           $scope.hide = false;
@@ -83,6 +84,10 @@ define(['./module'], function (controllers) {
                 $scope.start_date = new Date(resVM.res.start_date);
                 $scope.end_date = new Date(resVM.res.end_date);
                 excecuteWatch = true;
+              }, function (err) {
+                console.log('Create Error: ' + err);
+                $scope.err = err; // returns an error object
+                $scope.errLoad = true;
               });
               break;
             case 'r':
@@ -94,7 +99,7 @@ define(['./module'], function (controllers) {
                 $scope.rvm = resVM;
               }, function (err) {
                 console.log('Read Error: ' + err);
-                $scope.err = err;
+                $scope.err = err; // returns an error object
                 $scope.errLoad = true;
               });
               break;
@@ -114,7 +119,7 @@ define(['./module'], function (controllers) {
                 excecuteWatch = true;
 
               }, function (err) {
-                $scope.err = err;
+                $scope.err = err; // returns an error object
                 $scope.errLoad = true;
               });
               break;
@@ -130,7 +135,7 @@ define(['./module'], function (controllers) {
                 $scope.rvm = resVM;
               }, function (err) {
                 console.log('Read Error: ' + err);
-                $scope.err = err;
+                $scope.err = err; // returns an error object
                 $scope.errLoad = true;
               });
               break;
@@ -269,27 +274,27 @@ define(['./module'], function (controllers) {
           // modal button click methods
           // save button handler
           $scope.save = function () {
-            //perform any pre save form validation  or logic here todo--move to VM, create vm save method
-            // generate title (required field)
-            if ($scope.rvm.res.firm) {
-              $scope.rvm.res.title = $scope.rvm.res.firm + ' (' + $scope.rvm.res.guest.name + ')';
-            }
-            else {
-              $scope.rvm.res.title = $scope.rvm.res.guest.name;
-            }
-            //save/update firm and return
-            $scope.rvm.res.save(function (err) {
-              if (err) {
-                console.log('Reservation save error: ' + err);
-                $scope.err = err;
-                $scope.errSave = true;
-                $scope.$apply();
-              }
-              else {
-                var msg = (mode === 'c' ? configService.loctxt.reservation + configService.loctxt.success_saved :
-                    configService.loctxt.success_changes_saved);
-                autoClose(msg, $scope.rvm.res);
-              }
+            //perform any pre save logic and form validation
+            $scope.rvm.beforeSave().then(function () {
+              $scope.rvm.res.save(function (err) {
+                if (err) {
+                  console.log('Reservation save error: ' + err);
+                  $scope.err = $scope.rvm.getErrorObj(err);
+                  $scope.errSave = true;
+                  $scope.$apply();
+                }
+                else {
+                  var msg = (mode === 'c' ? configService.loctxt.reservation + configService.loctxt.success_saved :
+                      configService.loctxt.success_changes_saved);
+                  autoClose(msg, $scope.rvm.res);
+                }
+              });
+
+            }, function (err) { //pre-save error including validation errors
+              console.log('Reservation pre-save error: ' + err);
+              $scope.err = err; //err is an error object with a errors array.
+              $scope.errSave = true;
+              $scope.$apply();
             });
           };
 
@@ -299,12 +304,12 @@ define(['./module'], function (controllers) {
             $scope.rvm.res.remove(function (err) {
               if (err) {
                 console.log('Reservation delete error: ' + err);
-                $scope.err = err;
+                $scope.err = $scope.rvm.getErrorObj(err);
                 $scope.errSave = true;
                 $scope.$apply();
               }
               else {
-                var msg = configService.loctxt.res + configService.loctxt.success_deleted
+                var msg = configService.loctxt.res + configService.loctxt.success_deleted;
                 autoClose(msg, id);
               }
             });

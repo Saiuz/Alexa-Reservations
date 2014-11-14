@@ -18,8 +18,8 @@
  */
 define(['./module'], function (directives) {
   'use strict';
-  directives.directive('axReservationList', ['Reservation', 'dashboard', 'configService',
-    function (Reservation, dashboard, configService) {
+  directives.directive('axReservationList', ['Reservation', 'dashboard', 'configService', 'datetime',
+    function (Reservation, dashboard, configService, datetime) {
     // Private function to build the reservation list. It will separate group reservations that
     // require individual checkins and bills.
     var buildList = function(resList){
@@ -34,7 +34,9 @@ define(['./module'], function (directives) {
               title: res.firm + ' (' + room.guest + ')',
               reservation_number: res.reservation_number,
               multiroom: false,
-              end_date: res.end_date
+              end_date: res.end_date,
+              isCheckedIn: room.isCheckedIn,
+              isCheckedOut: room.isCheckedOut
             };
             rlist.push(rlistItem);
           });
@@ -46,7 +48,9 @@ define(['./module'], function (directives) {
             title: res.title,
             reservation_number: res.reservation_number,
             multiroom: res.rooms.length > 1,
-            end_date: res.end_date
+            end_date: res.end_date,
+            isCheckedIn: datetime.isDate(res.checked_in),
+            isCheckedOut: datetime.isDate(res.checked_out)
           };
           rlist.push(rlistItem);
         }
@@ -56,7 +60,7 @@ define(['./module'], function (directives) {
 
     var linker = function (scope, element, attrs) {
 
-      scope.txt = configService;
+      scope.txt = configService.loctxt;
 
       // read the listDate attribute to determine the dashboard method to call. Expected
       // values are arrival, departure, upcomming (departure within 2 days of date) and current.

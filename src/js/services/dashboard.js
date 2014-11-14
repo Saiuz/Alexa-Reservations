@@ -318,16 +318,31 @@ define(['./module'], function (services) {
       // retrieve the room plan types filtering will be done in the vm or UI
       getRoomPlanList: function () {
         var deferred = $q.defer();
-        //var qryobj = isBusiness ? {item_category: 'Zimmer Plan', business_allowed: true} : {item_category: 'Zimmer Plan'};
         RoomPlan.find()
             .sort({display_order: 1})
-            .exec(function (err, itemtypes) {
+            .exec(function (err, plans) {
               if (err) {
                 deferred.reject(err);
-                console.log("getCurrentReservations query failed: " + err);
+                console.log("getRoomPlanList query failed: " + err);
               }
               else {
-                deferred.resolve(itemtypes);
+                deferred.resolve(plans);
+              }
+            });
+        return deferred.promise;
+      },
+
+      // retrieve the room plan types filtering will be done in the vm or UI
+      getRoomPlanById: function (id) {
+        var deferred = $q.defer();
+        RoomPlan.findById(id)
+            .exec(function (err, plan) {
+              if (err) {
+                deferred.reject(err);
+                console.log("getRoomPlanById query failed: " + err);
+              }
+              else {
+                deferred.resolve(plan);
               }
             });
         return deferred.promise;
@@ -367,7 +382,6 @@ define(['./module'], function (services) {
       },
 
       // Get all item types of a specific catagory.
-      // retrieve the room plan types, filter if business reservation
       getItemTypeList: function (itemType) {
         var deferred = $q.defer();
 

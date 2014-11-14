@@ -13,14 +13,33 @@ define(['./module'], function (controllers) {
         'dashboard',
         'datetime',
         'Reservation',
+        'ExpenseItem',
         '$modal',
         '$document',
-        function ($scope, $state, $rootScope, dashboard, datetime, Reservation, $modal, $document) {
+        function ($scope, $state, $rootScope, dashboard, datetime, Reservation, ExpenseItem, $modal, $document) {
           console.log("Addresse  controller fired")
           $scope.appTitle = $rootScope.appTitle;
           $scope.appBrand = $rootScope.appBrand;
           $scope.url = $state.current.url;
           $scope.showRes = true;
+
+          $scope.eiProperties = [];
+          ExpenseItem.eachPath(function(value) {
+             $scope.eiProperties.push(value);
+          });
+
+          var roomplans = [];
+          var res = new Reservation();
+          dashboard.getRoomPlanList().then(function(list){
+            $scope.planName = list[0].name;
+            var item = list[0].required_items[0];
+            $scope.riProperties = [];
+            angular.forEach($scope.eiProperties, function (pname) {
+               var rip = {name: pname, value: item[pname]};
+              $scope.riProperties.push(rip);
+            });
+            list[0].required_items[0].addThisToDocArray(res.expenses)
+          });
           $scope.reservationNumber = undefined;
           $scope.curRes=function(){
             $scope.reservationNumber = 1400101;

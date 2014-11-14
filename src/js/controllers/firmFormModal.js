@@ -40,10 +40,11 @@ define(['./module'], function (controllers) {
         'Firm',
         'configService',
         '$timeout',
-        function ($scope, $modalInstance, modalParams, Firm, configService, $timeout) {
+        'utility',
+        function ($scope, $modalInstance, modalParams, Firm, configService, $timeout, utility) {
           console.log("FirmFormModal controller fired");
 
-          $scope.err = '';
+          $scope.err = {};
           $scope.errSave = false;
           $scope.errLoad = false;
           $scope.hide = false;
@@ -58,6 +59,7 @@ define(['./module'], function (controllers) {
           // For all but 'C' the query can be by id or by the firm_name property which is also unique.
           var mode = modalParams.mode.substring(0, 1).toLowerCase();
           var qry = parseInt(modalParams.data) ? {'_id': parseInt(modalParams.data)} : {'firm_name': modalParams.data};
+          var notFound = configService.loctxt.firm + ' "' + modalParams.data + '" ' + configService.loctxt.notFound;
           switch (mode) {
             case 'c':
               $scope.title = configService.loctxt.firm_titleCreate;
@@ -71,7 +73,7 @@ define(['./module'], function (controllers) {
               $scope.title = configService.loctxt.firm_titleRead;
               Firm.findOne(qry, function (err, firm) {
                 if (err) {
-                  $scope.err = err;
+                  $scope.err = new utility.errObj(err);
                   $scope.errLoad = true;
                 }
                 else {
@@ -82,7 +84,7 @@ define(['./module'], function (controllers) {
                     $scope.cancelTxt = configService.loctxt.close;
                   }
                   else {
-                    $scope.err = configService.loctxt.item_notFound;
+                    $scope.err = new utility.errObj(notFound);
                     $scope.errLoad = true;
                   }
                   $scope.$apply();
@@ -93,7 +95,7 @@ define(['./module'], function (controllers) {
               $scope.title = configService.loctxt.firm_titleUpdate;
               Firm.findOne(qry, function (err, firm) {
                 if (err) {
-                  $scope.err = err;
+                  $scope.err = new utility.errObj(err);
                   $scope.errLoad = true;
                 }
                 else {
@@ -104,7 +106,7 @@ define(['./module'], function (controllers) {
                     $scope.saveTxt = configService.loctxt.update;
                   }
                   else {
-                    $scope.err = configService.loctxt.item_notFound;
+                    $scope.err = new utility.errObj(notFound);
                     $scope.errLoad = true;
                   }
                   $scope.$apply();
@@ -115,7 +117,7 @@ define(['./module'], function (controllers) {
               $scope.title = configService.loctxt.firm_titleDelete;
               Firm.findOne(qry, function (err, firm) {
                 if (err) {
-                  $scope.err = err;
+                  $scope.err = new utility.errObj(err);
                   $scope.errLoad = true;
                 }
                 else {
@@ -128,7 +130,7 @@ define(['./module'], function (controllers) {
                     $scope.saveTxt = configService.loctxt.delete;
                   }
                   else {
-                    $scope.err = configService.loctxt.item_notFound;
+                    $scope.err = new utility.errObj(notFound);
                     $scope.errLoad = true;
                   }
                   $scope.$apply();
@@ -157,7 +159,7 @@ define(['./module'], function (controllers) {
             $scope.firm.save(function (err) {
               if (err) {
                 console.log('Firm save error: ' + err);
-                $scope.err = err;
+                $scope.err = new utility.errObj(err);
                 $scope.errSave = true;
                 $scope.$apply();
               }
@@ -176,7 +178,7 @@ define(['./module'], function (controllers) {
             $scope.firm.remove(function (err) {
               if (err) {
                 console.log('Firm delete error: ' + err);
-                $scope.err = err;
+                $scope.err = new utility.errObj(err);
                 $scope.errSave = true;
                 $scope.$apply();
               }

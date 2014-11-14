@@ -63,8 +63,9 @@
 </div>
 <div class="modal-footer">
     <div class="btn-group">
-        <button class="btn btn-default" type="button" ng-click="toggleEditButton()">{{txt.edit}}</button>
+        <button ng-if="rvm.res.canCheckIn && rvm.oneRoom" class="btn btn-info" type="button" ng-click="checkin(rvm.res.rooms[0].number)">{{txt.checkin}}</button>
+        <button class="btn btn-default" type="button" ng-click="edit()">{{txt.edit}}</button>
         <a class="btn btn-default" href="#/charges/{{rvm.res.reservation_number}}"
-           ng-if="rvm.res.canCheckOut && !edit">{{checkText}}</a>
+           ng-if="rvm.res.canCheckOut && rvm.oneRoom">{{txt.checkout}}</a>
     </div>
 </div>

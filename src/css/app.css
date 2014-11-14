@@ -6363,3 +6363,6 @@ body {
 .ovh {
   overflow: hidden;
 }
+.text-delete {
+  text-decoration: line-through;
+}

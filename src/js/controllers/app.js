@@ -29,7 +29,7 @@ define(['./module'], function (controllers) {
                 display_string: '%count% %name% à € %unitprice%',
                 display_order: 1,
                 taxable_rate: 19,
-                default_unit_price: 4.80
+                price: 4.80
               },function(err, count){if (err)console.log(err)});
               Itemtype.create({
                 name: 'Kurtaxe',
@@ -41,7 +41,7 @@ define(['./module'], function (controllers) {
                 display_string: '%count% %name% à € %unitprice%',
                 display_order: 1,
                 taxable_rate: 7,
-                default_unit_price: 3
+                price: 3
               },function(err, count){if (err)console.log(err)});
               Itemtype.create({
                 name: 'Parkplatz',
@@ -53,7 +53,7 @@ define(['./module'], function (controllers) {
                 display_string: '%count% %name% à € %unitprice%',
                 display_order: 1,
                 taxable_rate: 19,
-                default_unit_price: 3
+                price: 3
               },function(err, count){if (err)console.log(err)});
               Itemtype.create({
                 name: 'Telephone',
@@ -65,7 +65,7 @@ define(['./module'], function (controllers) {
                 display_string: '',
                 display_order: 1,
                 taxable_rate: 19,
-                default_unit_price: 3
+                price: 3
               },function(err, count){if (err)console.log(err)});
               Itemtype.create({
                 name: 'Pauschale',
@@ -77,7 +77,7 @@ define(['./module'], function (controllers) {
                 display_string: '%name% à € %price%',
                 display_order: 1,
                 taxable_rate: 19,
-                default_unit_price: 0
+                price: 0
               },function(err, count){if (err)console.log(err)});
               Itemtype.create({
                 name: 'Classic Mineralwasser 0,2l',
@@ -89,7 +89,7 @@ define(['./module'], function (controllers) {
                 display_string: '%count% %name% à € %unitprice%',
                 display_order: 1,
                 taxable_rate: 19,
-                default_unit_price: 1.5
+                price: 1.5
               },function(err, count){if (err)console.log(err)});
               Itemtype.create({
                 name: 'Distelhäuser Landbier dunkel 0,5l',
@@ -101,7 +101,7 @@ define(['./module'], function (controllers) {
                 display_string: '%count% %name% à € %unitprice%',
                 display_order: 1,
                 taxable_rate: 19,
-                default_unit_price: 2.1
+                price: 2.1
               },function(err, count){if (err)console.log(err)});
               Itemtype.create({
                 name: 'Kuchen',
@@ -113,7 +113,7 @@ define(['./module'], function (controllers) {
                 display_string: '%count% %name% à € %unitprice%',
                 display_order: 1,
                 taxable_rate: 19,
-                default_unit_price: 2.0
+                price: 2.0
               },function(err, count){if (err)console.log(err)});
               Itemtype.create({
                 name: 'Erdnüsse',
@@ -125,7 +125,7 @@ define(['./module'], function (controllers) {
                 display_string: '%count% %name% à € %unitprice%',
                 display_order: 1,
                 taxable_rate: 19,
-                default_unit_price: 1.0
+                price: 1.0
               },function(err, count){if (err)console.log(err)});
               Itemtype.create({
                 name: 'Halbpension',
@@ -137,7 +137,7 @@ define(['./module'], function (controllers) {
                 display_string: '%count% %name% à € %unitprice%',
                 display_order: 1,
                 taxable_rate: 19,
-                default_unit_price: 19.0
+                price: 19.0
               },function(err, count){if (err)console.log(err)});
               Itemtype.create({
                 name: 'Vollpension',
@@ -149,7 +149,7 @@ define(['./module'], function (controllers) {
                 display_string: '%count% %name% à € %unitprice%',
                 display_order: 1,
                 taxable_rate: 19,
-                default_unit_price: 29.0
+                price: 29.0
               },function(err, count){if (err)console.log(err)});
               Itemtype.create({
                 name: 'X1501 Fangopackungen',
@@ -161,7 +161,7 @@ define(['./module'], function (controllers) {
                 display_string: '%count% %name% à € %unitprice%',
                 display_order: 1,
                 taxable_rate: 19,
-                default_unit_price: 8.19
+                price: 8.19
               },function(err, count){if (err)console.log(err)});
               Itemtype.create({
                 name: 'X1712 Gashaltiges Bad mit Zusatz',
@@ -173,7 +173,7 @@ define(['./module'], function (controllers) {
                 display_string: '%count% %name% à € %unitprice%',
                 display_order: 1,
                 taxable_rate: 19,
-                default_unit_price: 15.5
+                price: 15.5
               },function(err, count){if (err)console.log(err)});
               Itemtype.create({
                 name: 'X0106 Klassische Massage',
@@ -185,7 +185,7 @@ define(['./module'], function (controllers) {
                 display_string: '%count% %name% à € %unitprice%',
                 display_order: 1,
                 taxable_rate: 19,
-                default_unit_price: 14.06
+                price: 14.06
               },function(err, count){if (err)console.log(err)});
 /*
               Itemtype.create({
@@ -193,7 +193,7 @@ define(['./module'], function (controllers) {
                 category: '',
                 display_string: '',
                 taxable_rate: 19,
-                default_unit_price: 0,
+                price: 0,
                 default_plan_price: 0,
                 business_allowed: true,
                 edit_name: false,
@@ -223,9 +223,9 @@ define(['./module'], function (controllers) {
                  needs_insurance: false,
                  display_string: '%day% Tage %name% à € %roomprice%',
                  required_items: [
-                   {name: 'Zimmer', category: 'Plan', count: -1, price: -1, no_delete: true, day_count: true, taxable_rate: 7},
-                   {name: 'Frühstück', category: 'Plan', count: -1, price: 5, no_delete: true, day_count: true, taxable_rate: 19},
-                   {name: 'Kurtaxe', category: 'Plan', count: -1, price: 3.15, canDelete: false, dayCount: true, taxable_rate: 19}
+                   {name: 'Zimmer', category: 'Plan', count: -1, price: -1, no_delete: true, per_room: true,  per_person: false,day_count: true, taxable_rate: 7},
+                   {name: 'Frühstück', category: 'Plan', count: -1, price: 5, no_delete: true, per_room: true, per_person: true,  day_count: true, taxable_rate: 19},
+                   {name: 'Kurtaxe', category: 'Plan', count: -1, price: 3.15, canDelete: false, dayCount: true, per_room: true, per_person: true, taxable_rate: 19}
                  ]
                });
               RoomPlan.create({
@@ -242,7 +242,8 @@ define(['./module'], function (controllers) {
                 display_string: '%day% Tage %name% à € %roomprice%',
                 required_items: [
                   {name: 'Zimmer', category: 'Plan', count: -1, price: -1, no_delete: true, day_count: true, taxable_rate: 7},
-                  {name: 'Frühstück', category: 'Plan', count: -1, price: 5, no_delete: true, day_count: true, taxable_rate: 19}
+                  {name: 'Frühstück', category: 'Plan', count: -1, price: 5, no_delete: true, day_count: true, taxable_rate: 19},
+                  {name: 'Kurtaxe', category: 'Plan', count: -1, price: 3.15, canDelete: false, dayCount: true, taxable_rate: 19}
                 ]
               });
               RoomPlan.create({
@@ -304,7 +305,7 @@ define(['./module'], function (controllers) {
                 needs_insurance: false,
                 display_string: '%day% Tage %name% à € %roomprice%',
                 required_items: [
-                  {name: 'Zimmer', count: -1, price: -1, no_delete: true, day_count: true, taxable_rate: 19}
+                  {name: 'Zimmer', count: -1, price: -1, no_delete: true, day_count: true, taxable_rate: 7}
                 ]
               });
               RoomPlan.create({
@@ -320,7 +321,7 @@ define(['./module'], function (controllers) {
                 needs_insurance: false,
                 display_string: '%day% Tage %name% à € %roomprice%',
                 required_items: [
-                  {name: 'Zimmer', count: -1, price: -1, no_delete: true, day_count: true, taxable_rate: 19}
+                  {name: 'Zimmer', count: -1, price: -1, no_delete: true, day_count: true, taxable_rate: 7}
                 ]
               });
               RoomPlan.create({
@@ -339,7 +340,7 @@ define(['./module'], function (controllers) {
                 duration: 6,
                 display_string: '%duration% Tage %name%',
                 required_items: [
-                  {name: 'Zimmer', count: -1, price: -1, no_delete: true, day_count: true, taxable_rate: 19}
+                  {name: 'Zimmer', count: -1, price: -1, no_delete: true, day_count: true, taxable_rate: 7}
                 ]
               });
               RoomPlan.create({
@@ -356,7 +357,7 @@ define(['./module'], function (controllers) {
                 needs_insurance: false,
                 display_string: '%day% Tage %name% à € %roomprice%',
                 required_items: [
-                  {name: 'Zimmer', count: -1, price: -1, no_delete: true, day_count: true, taxable_rate: 19}
+                  {name: 'Zimmer', count: -1, price: -1, no_delete: true, day_count: true, taxable_rate: 7}
                 ]
               });
               RoomPlan.create({
@@ -372,7 +373,7 @@ define(['./module'], function (controllers) {
                 needs_insurance: false,
                 display_string: '%day% Tage %name% à € %roomprice%',
                 required_items: [
-                  {name: 'Zimmer', count: -1, price: -1, no_delete: true, day_count: true, taxable_rate: 19}
+                  {name: 'Zimmer', count: -1, price: -1, no_delete: true, day_count: true, taxable_rate: 7}
                 ]
               });
             }

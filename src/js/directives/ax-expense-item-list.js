@@ -27,7 +27,7 @@ define(['./module'], function (directives) {
       scope.calculateTotals = function() {
         var sum = 0;
         angular.forEach(scope.expenseItemArray, function (item) {
-          if (item.item_type === scope.itemType) {
+          if (item.category === scope.itemType) {
             sum += (item.count * item.price);
           }
         });
@@ -44,7 +44,7 @@ define(['./module'], function (directives) {
 
       // function that builds the initial (filtered) expense item array
       var buildInitialList = function () {
-        scope.itemList = $filter('filter')(scope.itemTypeArray, {item_category: attrs.itemType}, true);
+        scope.itemList = $filter('filter')(scope.itemTypeArray, {category: attrs.itemType}, true);
         filterOutExistingItems();
       };
 
@@ -60,7 +60,8 @@ define(['./module'], function (directives) {
         return found;
       };
 
-
+      // add the selected expense item to the reservation
+      //
       scope.addExpenseItem = function () {
         var temp = new Reservation();
         var ix = scope.selected;

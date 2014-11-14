@@ -55,5 +55,11 @@ include nav_common.jade
       .panel.panel-default
         .panel-heading Reservation {{reservationNumber}}
         .panel-body(ng-show="showRes")
+          h3 ExpenseItem Properties
+          ul
+            li(class='list-unstyled' ng-repeat='p in eiProperties') {{p}}
+          h3 {{planName}} R-I Properties
+          ul
+            li(class='list-unstyled' ng-repeat='p in riProperties') {{p.name}}: {{p.value}}
            //ax-reservation(reservation-number="reservationNumber")
 
