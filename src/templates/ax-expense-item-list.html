@@ -4,7 +4,7 @@
         <thead>
         <tr>
             <th>
-                <span>{{col1Title}}</span><span class="glyphicon glyphicon-plus-sign"
+                <span>{{col1Title}}&nbsp;</span><span class="glyphicon glyphicon-plus-sign"
                                                 ng-show="itemList.length > 0"></span><span
                     ng-show="itemList.length > 0"> <select ng-model="selected"
                                                            ng-options="i as i.name for i in itemList"
@@ -16,15 +16,16 @@
         </tr>
         </thead>
         <tbody>
-        <tr ng-repeat="item in expenseItemArray | filter:{category: itemType}">
+        <tr ng-repeat="item in expenseItemArray | filter:{category: itemType}" ng-show="!item.no_display">
             <td>
                 <span>
-                    {{item.name}}
+                    {{item.name}} ({{item.room}} - {{item.guest}})
                 </span>
             </td>
             <td class="text-center">
                 <span>
-                    <a href="#" editable-number="item.count" e-min="1"
+                    <span ng-if="item.day_count">{{item.count}}</span>
+                    <a ng-if="!item.day_count" href="#" editable-number="item.count" e-min="1"
                        onaftersave="calculateTotals()">{{item.count}}</a>
                 </span>
             </td>
@@ -35,7 +36,7 @@
                 </span>
             </td>
             <td class="text-center">
-                <span class="glyphicon glyphicon-remove" ng-click="removeItem($index)"></span>
+                <span ng-if="!item.no_delete" class="glyphicon glyphicon-remove" ng-click="removeItem($index)"></span>
             </td>
         </tr>
         </tbody>

@@ -9,12 +9,12 @@ define(['./module'], function (model) {
   // Salutaion enum for Guest
   var salutationEnum = ['Dr.', 'Frau', 'Familie', 'Herr', 'Herrn'];
   // item type enum used in ExpenseItem and ItemType schema
-  var itemTypeEnum =['Plan','Allgemein', 'Speisen', 'Getränke', 'VDAK', 'AOK & Andere', 'Privat'];
+  var itemTypeEnum =['Plan', 'Allgemein', 'Speisen', 'Getränke', 'VDAK', 'AOK & Andere', 'Privat'];
   // enums used in Room and ReservedRoom schemas
   var roomTypeEnum = ['Einzelzimmer', 'Doppelzimmer', 'Suite'];
   var roomTypeAbbrEnum = ['EZ', 'DZ', 'SU', '']
-  var roomClassEnum = ['Economy', 'Komfort', 'Balkon', ''];
-  var roomClassAbbrEnum=['Econ', 'Komf', 'BK', ''];
+  var roomClassEnum = ['Economy', 'Standart', 'Komfort', 'Balkon', ''];
+  var roomClassAbbrEnum=['Econ', 'Std', 'Komf', 'BK', ''];
   // enums used in Reservation Schema
   var resStatusEnum = ['Sicher', 'Vorreservation'];
   var resSourceEnum = ['Phone', 'Booking.Com'];
@@ -26,17 +26,17 @@ define(['./module'], function (model) {
   //service (model) that exposes methods to retrieve the various schema enums and some other utility methods
   model.factory('dbEnums', function(){
     return {
-      getSalutationEnum: function (){return salutationEnum.slice(0)},
-      getItemTypeEnum: function (){return itemTypeEnum.slice(0)},
-      getRoomTypeEnum: function (){return roomTypeEnum.slice(0)},
-      getRoomTypeAbbrEnum: function (){return roomTypeAbbrEnum.slice(0)},
-      getRoomClassEnum: function (){return roomClassEnum.slice(0)},
-      getRoomClassAbbrEnum: function (){return roomClassAbbrEnum.slice(0)},
-      getReservationStatusEnum:  function (){return resStatusEnum.slice(0)},
-      getReservationSourceEnum: function (){return resSourceEnum.slice(0)},
-      getReservationInsuranceEnum: function (){return resInsuranceEnum.slice(0)},
-      getReservationTypeEnum: function (){return resTypeEnum.slice(0)},
-      getResourceTypeEnum: function (){return resourceTypeEnum.slice(0)},
+      getSalutationEnum: function (){return salutationEnum.slice(0);},
+      getItemTypeEnum: function (){return itemTypeEnum.slice(0);},
+      getRoomTypeEnum: function (){return roomTypeEnum.slice(0);},
+      getRoomTypeAbbrEnum: function (){return roomTypeAbbrEnum.slice(0);},
+      getRoomClassEnum: function (){return roomClassEnum.slice(0);},
+      getRoomClassAbbrEnum: function (){return roomClassAbbrEnum.slice(0);},
+      getReservationStatusEnum:  function (){return resStatusEnum.slice(0);},
+      getReservationSourceEnum: function (){return resSourceEnum.slice(0);},
+      getReservationInsuranceEnum: function (){return resInsuranceEnum.slice(0);},
+      getReservationTypeEnum: function (){return resTypeEnum.slice(0);},
+      getResourceTypeEnum: function (){return resourceTypeEnum.slice(0);},
       getRoomDisplayAbbr: function(rmobj){
         if (rmobj && 'room_type' in rmobj && 'room_class' in rmobj) {
           var tix = roomTypeEnum.indexOf(rmobj.room_type);
@@ -48,36 +48,64 @@ define(['./module'], function (model) {
         else {
           return '***';
         }
-      }
+      },
+      //some specific plan types
+      itemTypePlan: function() {return itemTypeEnum.slice(0)[0];}
     }
+  });
+
+  // Model for constants collection. This collection contains constants that are used throughout the application but
+  // the UI will expose the values so that the user can update the values. The UI should not let the user add or delete
+  // constants. A constant can have either a numeric value or string value.
+  model.factory('AppConstants', function(db) {
+    var schema = new db.Schema({
+      name: String,
+      display_name: String,
+      nvalue: Number,
+      svalue: String,
+      unit: String
+    });
+
+    return db.model('AppConstants', schema);
   });
 
   // define a child schema for expense_items. Used in RoomPlan and Reservation models as embedded document properties.
   // The schema is also used in the ExpenseType model.
   // This schema is very similar to the ExpenseType's schema.
-  model.factory('ExpenseItem', function (db, convert){
+  model.factory('ExpenseItem', function (db, convert, configService){
     var expenseItem = new db.Schema({
-      name: {type: String, required: true },  //comes from ItemTypes schema collection
+      name: {type: String, required: true },  //Name of item type, often used to display on bill
       category: {type: String, enum: itemTypeEnum},  // the expense item type category
-      code: Number, // comes from ItemTypes definition
-      room: Number, // the room number the expense is associated with.
+      guest: String, // The guest name the expense item is associated with.
+      room: Number, // the room number the expense item is associated with.
+      date_added: Date, // Date-time stamp for when this item was added to the room.
+      is_room: Boolean, // True if this expense item represents an actual room expense for a reservation.
+      //included_in_room: Boolean, // True if the price of this item is included in the room price associated with the reservation
       per_room: Boolean, // If true then this item should be duplicated for each room. Used by room plan items.
+      per_person: Boolean, //If true then the item should be  duplicated for each person in a room room
       no_delete: Boolean, // If true then the item can not be deleted from a reservation or RoomPlan
+      no_display: Boolean, // If true then the item is not displayed but is used as part of the bill calculation
       day_count: Boolean, // If true then the count value will equal the number of days of the reservation. If false then count is an item count.
       one_count: Boolean, // If true then day_count flag is ignored and item has no count option in the UI, count of one (only one item per reservation)
                           // this is used to represent a plan price or fixed price item.
       edit_name: Boolean,  //If true then the item_name stored in the reservation for this type can be edited.
-      per_person: Boolean, //If true then the item is multiplied by the number of people.
-      type_id: Number, // the id of the ItemTypes document that created this ExpenseItem document.
-      display_string: String, //Formatting display string using custom format symbols (to be worked out) comes from ItemTypes
+      edit_count: Boolean, // If true then the UI allows the count value to be edited.
+      bus_pauschale: Boolean, // If true this expense item  can be rolled up along with others like it into one expense item on the bill "Business Pauschale"
+      low_tax_rate: Boolean, // If true then tax calculations will use the low (room tax rate) vs the normal sales tax rate.
+      //type_id: Number, // the id of the ItemTypes document that created this ExpenseItem document.
+      display_string: String, //Formatting display string using custom format symbols (to be worked out)
       display_order: Number, // used for display order of lists item names
-      taxable_rate: Number,  // percent taxed e.g 7 or 19 (%)
-      price: Number, //either single item price or total price if isPlanPrice true.
+      double_price: Number, // Specific to package plan room items represents the daily room price for a double room
+      taxable_price: Number, // If a non 0 value is provided, then this number is used to calculate the tax while the
+                             // value of the price field will be used as a displayed value on the bill, otherwise the
+                             // value of price is used in the tax calculation.
+      single_price: Number,
+      price: Number, //either single item/unit price or total price if one_count true.
       count: Number   //number of days or item count or the default count value in the case of the ExpenseType collection.
     });
 
     // ** Virtual readonly properties
-    // Returns the total cost of the item, if not a plan price then it returns price * count
+    // Returns the total cost of the item, if not a one-off item then it returns price * count, else returns just price.
     expenseItem.virtual('item_total').get(function(){
       if (this.count && this.price) {
         var val = this.one_count ? this.price : (this.price * this.count);
@@ -88,12 +116,15 @@ define(['./module'], function (model) {
       }
     });
 
-    // Returns the amount of the total price that is the tax portion. The formula assumes that the taxable_rate value
-    // is in percent.
+    // Returns the amount of the total (taxable) price that is the tax portion. The formula assumes that the
+    // taxable_rate value is in percent.
     expenseItem.virtual('item_tax').get(function(){
       if (this.taxable_rate && this.count && this.price) {
-        var taxconv = 1.0 - 1.0/(1 + (this.taxable_rate/100.0));  // expects tax_rate to be in % (e.g. 19 for 19%)
-        var val = this.one_count ? (this.price * taxconv) : (this.price * this.count * taxconv);
+        var price = this.taxable_price ? this.taxable_price : this.price;
+        var tax_rate = this.low_tax_rate ? configService.constants.roomTax : configService.constants.salesTax;
+        tax_rate = tax_rate > 1.0 ? tax_rate / 100.0 : tax_rate;
+        var taxconv = 1.0 - 1.0/(1 + tax_rate);
+        var val = this.one_count ? (price * taxconv) : (price * this.count * taxconv);
         return convert.roundp(val,2);
       }
       else {
@@ -101,11 +132,14 @@ define(['./module'], function (model) {
       }
     });
 
-    // Returns the net amount of the item, total price - tax
+    // Returns the net amount of the item, total (taxable) price - tax
     expenseItem.virtual('item_net').get(function(){
       if (this.taxable_rate && this.count && this.price) {
-        var taxconv = 1.0 - 1.0/(1 + (this.taxable_rate/100.0));  // expects tax_rate to be in % (e.g. 19 for 19%)
-        var total = this.one_count ? this.price : (this.price * this.count);
+        var price = this.taxable_price ? this.taxable_price : this.price;
+        var tax_rate = this.low_tax_rate ? configService.constants.roomTax : configService.constants.salesTax;
+        tax_rate = tax_rate > 1.0 ? tax_rate / 100.0 : tax_rate;
+        var taxconv = 1.0 - 1.0/(1 + tax_rate);
+        var total = this.one_count ? price : (price * this.count);
         var tax = total * taxconv;
         var val = total - (total * tax);
         return convert.roundp(val,2);
@@ -158,14 +192,23 @@ define(['./module'], function (model) {
       number: Number, // the room number
       room_type: String, //the room type from the room table
       room_class: String, //the room class from the room table
-      guest: String,  // the guest associated with the room
-      price: String,  // the room price
+      guest: String,  // the name of the primary guest associated with the room
+      guest2: String, // name of secondary guest associated with a double room, used for room plans that require
+                      // separate bills for each person in a room
+      guest_count: Number, // the number of guests in the room. Needed of group plans that don't require a separate
+                           // bill for each guest but have required expense items for each person.
+      default_price: Number, // The default room price before user adjustments or firm prices. Used by logic to add
+                             // extra days to a package plan. This is populated from the original room price field.
+      price: Number,  // the room price
       isCheckedIn: Boolean, // true when the guest in this room has checked in.
       isCheckedOut: Boolean, // true when the guest in this room has been checked out.
       isBilled: Boolean // true when the bill for this room is created and guest checked out.
     });
     schema.virtual('display_type').get(function() {
       return this.room_class + (this.room_class === '' ? "" : "-") + this.room_type;
+    });
+    schema.virtual('max_occupants').get(function() {
+      return this.room_type === roomTypeEnum[0] ? 1 : 2;
     });
     return schema;
   });
@@ -243,12 +286,14 @@ define(['./module'], function (model) {
       single_only: Boolean, // True if room plan only applies to single rooms
       double_only: Boolean, // True if room plan only applies to double rooms and suites.
       needs_firm: Boolean, //True if plan requires a firm name as part of the reservation.
+      second_guest: Boolean, //True if plan requires a separate bill for a second guest in a double room
       needs_insurance: Boolean, //True if plan requires an insurance provider as part of the reservation.
-      pp_price: Number, // Per person price based on Double Room
-      single_surcharge: Number, // Extra amount paid by single person
+      includes_breakfast: Boolean, //True if the plan includes breakfast in the room or package price
+      pp_price: Number, // Per person price based on Double Room used by package plans
+      single_surcharge: Number, // Extra amount paid by single person, used by package plans
       duration: Number, //Number of days the plan covers
-      display_string: String,
-      required_items: [ExpenseItem] // A list of required expense items that are associated with a room plan.
+      display_string: String, //Formatted string that is displayed on the bill for the plan. (special formatting)
+      required_items: [String] // A list of required expense items that are associated with a room plan.
     });
 
     return db.model('roomplan', schema);
@@ -260,7 +305,10 @@ define(['./module'], function (model) {
       reservation_number: {type: Number, required: true, unique: true, index: true},   //generated by app contains the year as part of the number e.g.1400001
       type: {type: String, enum: resTypeEnum},  // determines if business, standard, group etc.
       title: { type: String, required: true}, //name of reservation - individual or firm
-      guest: {name: String, id: db.Schema.Types.ObjectId}, //primary guest or contact from Guests list
+      guest: {name: String, id: db.Schema.Types.ObjectId}, //primary guest or contact from Address collection list
+      guest2: {name: String, id: db.Schema.Types.ObjectId}, //optional second guest in a double room from Address
+                                                            // collection list, used for plans that require separate bills
+                                                            // for each guest in a double room.
       firm: String,
       start_date: { type: Date, required: true},
       end_date: { type: Date, required: true},
@@ -349,6 +397,13 @@ define(['./module'], function (model) {
         return "<Zimmer auswählen>";
       }
     });
+
+    // virtual method that returns the maximum number of occupants for the room. Currently doubles and suites can
+    // only have 2 occupants, singles 1.
+    schema.virtual('max_occupants').get(function() {
+      return this.room_type === roomTypeEnum[0] ? 1 : 2;
+    });
+
     // virtual method that generates an abbreviated display name which concatenates the type with the class. Used for UI
     // display objects.
     schema.virtual('display_abbr').get(function() {

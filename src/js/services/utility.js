@@ -21,6 +21,49 @@ define(['./module'], function (services) {
         var a = [1, 10, 100, 1000, 10000, 100000, 1000000, 10000000, 100000000, 1000000000, 10000000000];
         return Math.round(x * a[p]) / a[p];
       };
+
+    // method that takes in an object with a 'display_string' property and returns the formated string
+    // making substitutions for key words that are capped by '%' characters. The key words are either properties
+    // on the object or a properties of the extras object.
+    this.formatDisplayString = function (mainObj, extras) {
+
+      // Initialize, check for the existence of the extras object, create it if it does not exit.
+      // Check if the mainObj is a Mongoose document. If so, then we perform property checking differently. (Need to
+      // check the prototype for properties.)
+      var result = '';
+      if (!extras) {
+        extras = {};
+      }
+      var mongoose = ('_id' in mainObj); //is this a Mongoose document?
+
+      // search mainObj for a property called 'display_string' if not there we return empty string.
+      var dStr = mainObj['display_string']
+      if (dStr) {
+        //find all of the keywords in the string and match them to properties in the main object.
+        // if they are not found then we assume the missing properties are in the extras object.
+        // we add the properties from the mainObject to the extra object. However, if the extra
+        // object already has the property then we do not override it!
+         var keywords = dStr.match(/%[^%]*%/g);
+        keywords.forEach( function (val){
+          var prop = val.replace(/%/g, '');
+          if (mongoose ?  (prop in mainObj) :  mainObj.hasOwnProperty(prop)) {
+            if (!extras.hasOwnProperty(prop)) {
+              extras[prop] = mainObj[prop];
+            }
+          }
+        });
+
+        // now replace the keywords in the display string with the values of the matching properties
+        result = dStr;
+        keywords.forEach(function(key) {
+          var prop = key.replace(/%/g, '');
+          var value = extras[prop];
+          result = result.replace(new RegExp(key,'gi'), value);
+        });
+      }
+
+      return result;
+    }
   }]);
 
   services.service('utility', [function () {

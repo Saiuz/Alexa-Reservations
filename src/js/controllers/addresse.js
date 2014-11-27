@@ -29,7 +29,7 @@ define(['./module'], function (controllers) {
           });
 
           var roomplans = [];
-          var res = new Reservation();
+/*          var res = new Reservation();
           dashboard.getRoomPlanList().then(function(list){
             $scope.planName = list[0].name;
             var item = list[0].required_items[0];
@@ -39,7 +39,7 @@ define(['./module'], function (controllers) {
               $scope.riProperties.push(rip);
             });
             list[0].required_items[0].addThisToDocArray(res.expenses)
-          });
+          });*/
           $scope.reservationNumber = undefined;
           $scope.curRes=function(){
             $scope.reservationNumber = 1400101;

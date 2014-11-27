@@ -5,8 +5,8 @@
 define(['./module'], function (services) {
   'use strict';
 
-  services.service('configService', ['$q', function ($q) {
-
+  services.service('configService', ['$q', 'AppConstants', function ($q, AppConstants) {
+    var _this = this;
     this.get = function (key, defVal) {
       var _this = this;
       var val = localStorage.getItem(key);
@@ -21,9 +21,21 @@ define(['./module'], function (services) {
       return $q.when(localStorage.setItem(key, val));
     };
 
-    // Object that contains system-wide constants
+    // Object that contains system-wide constants, any constants that are programatic and can't be changed by the user
+    // Are defined here first. This object is then updated by a call to the AppConstants collection. That collection
+    // contains the application constants that the UI exposes for update proposes.
     this.constants = {
-      autoCloseTime: 2000
+      autoCloseTime: 2000,
+
+      // Method to retrieve value of the specified constant. (For programmatic retrieval of constant value.)
+      get: function (constName) {
+        if (this.hasOwnProperty(constName)) {
+          return this[constName];
+        }
+        else {
+          return undefined;
+        }
+      }
     };
 
     // An object that contains the various text strings for the UI views, forms and directives
@@ -35,11 +47,15 @@ define(['./module'], function (services) {
       'address2': 'Adresse 2',
       'arrive': 'Ankunft',
       'birthday': 'Geburtstag',
+      'breakfast': 'Frühstück',
+      'breakfastInc': 'FrühstückInc',
       'cancel': 'Abbrechen',
       'charges': 'Gebühren',
+      'chargesFor': 'Gebühren für',
       'checkin': 'Check-in',
       'checkout': 'Kasse',
       'city': 'Ort',
+      'cityTax': 'Kurtaxe',
       'clear': 'Löschen',
       'close': 'Schließen',
       'comments': 'Bemerkung',
@@ -53,6 +69,8 @@ define(['./module'], function (services) {
       'double': 'Doppel',
       'edit': 'Bearbeiten',
       'email': 'E-Mail',
+      'extra_day': 'tag Extra',
+      'extra_days': 'tage Extra',
       'firmName': 'Firma Name',
       'firm': 'Firma',
       'firm_titleCreate': 'Firma Informationen Erstellen',
@@ -60,9 +78,11 @@ define(['./module'], function (services) {
       'firm_titleRead': 'Informationen zur Firma',
       'firm_titleUpdate': 'Firma Informationen Bearbeiten',
       'firstName': 'Vorname',
+      'forTwoPeople': 'für 2 Personen',
       'free': 'Frei',
       'from': 'Von',
       'guest': 'Gast',
+      'guest2': 'Gast 2',
       'guests': 'Gäste',
       'guestCount': 'Gäste Anzahl',
       'guest_titleCreate': 'Gast Informationen Erstellen',
@@ -81,8 +101,10 @@ define(['./module'], function (services) {
       'noRoom': 'Kein Zimmer',
       'notFound': 'nicht gefunden',
       'ok': 'Ok',
+      'onlyOneInRoom': 'Nur ein im Doppelzimmer',
       'open': 'Öffnen',
       'parkPlace': 'Parkplatz',
+      'perPersonAbrv': 'p.P.',
       'postCode': 'PLZ',
       'price': 'Preis',
       'priceSymbol': '€',
@@ -94,7 +116,9 @@ define(['./module'], function (services) {
       'reservationType': 'Res. Typ',
       'room': 'Zimmer',
       'roomAbrv': 'Zi.',
+      'roommate': 'Zimmergenosse',
       'roomNumber': 'Zimmernummer',
+      'roomNumberAbrv': 'ZN',
       'roomPlan': 'Zimmer Plan',
       'roomPrice': 'Zimmer Preis',
       'roomsFree': 'Frei Zimmer',
@@ -123,5 +147,25 @@ define(['./module'], function (services) {
 
       'xxx': '***'
     };
+
+    // Constructor actions - populate the constants object with the constants defined in the AppConstants collection
+    // This action gives precedence to the string value of a constant. If it is defined then it is choosen, else the
+    // numeric value is chosen.
+    AppConstants.find()
+        .exec(function (err, constants) {
+          if (err) {
+            console.log("Failed to retrieve constants!"); //Major error program will not function correctly!!!
+          }
+          else {
+            angular.forEach(constants, function (constant){
+              if (constant.svalue) {
+                _this.constants[constant.name] = constant.svalue;
+              }
+              else {
+                _this.constants[constant.name] = constant.nvalue;
+              }
+            });
+          }
+        });
   }]);
 });

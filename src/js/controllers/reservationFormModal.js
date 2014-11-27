@@ -64,7 +64,6 @@ define(['./module'], function (controllers) {
           $scope.txt = configService.loctxt;
           $scope.deleteMode = false;
           $scope.confirmed = false;
-          $scope.roomCount = 0;
           $scope.resourceCount = 0;
           $scope.txt = configService.loctxt;
 
@@ -163,8 +162,8 @@ define(['./module'], function (controllers) {
                   $scope.rvm.res.end_date = rdates.end;
                   $scope.end_date = rdates.end;
                   $scope.rvm.updateAvailableRoomsAndResources(rdates, $scope.rvm.res.occupants === 2).then(function (cnt) {
-                    $scope.availableRooms = $scope.rvm.availableRooms;
-                    $scope.availableResources = $scope.rvm.availableResources;
+                    //$scope.availableRooms = $scope.rvm.availableRooms;
+                    //$scope.availableResources = $scope.rvm.availableResources;
                   });
 
                   break;
@@ -176,8 +175,8 @@ define(['./module'], function (controllers) {
                   rdates = $scope.rvm.calculateNights($scope.rvm.res.start_date, $scope.rvm.res.end_date);
                   //scope.res.end_date = rdates.end;
                   $scope.rvm.updateAvailableRoomsAndResources(rdates, $scope.rvm.double_only).then(function (cnt) {
-                    $scope.availableRooms = $scope.rvm.availableRooms;
-                    $scope.availableResources = $scope.rvm.availableResources;
+                    //$scope.availableRooms = $scope.rvm.availableRooms;
+                    //$scope.availableResources = $scope.rvm.availableResources;
                   });
                   break;
 
@@ -188,8 +187,8 @@ define(['./module'], function (controllers) {
                   $scope.rvm.res.end_date = rdates.end;
                   $scope.end_date = rdates.end;
                   $scope.rvm.updateAvailableRoomsAndResources(rdates, $scope.rvm.double_only).then(function (cnt) {
-                    $scope.availableRooms = $scope.rvm.availableRooms;
-                    $scope.availableResources = $scope.rvm.availableResources;
+                    //$scope.availableRooms = $scope.rvm.availableRooms;
+                    //$scope.availableResources = $scope.rvm.availableResources;
                   });
                   break;
 
@@ -197,18 +196,22 @@ define(['./module'], function (controllers) {
                   console.log("occupants changed");
                   ignoreIndex = -1; // no watched variables changed
                   // check to see if the plan that is selected is compatible with the current occupancy. If not
-                  // then reset the occupants
+                  // then reset the occupants. Allow 1 occupant in a double room
                   if ($scope.rvm.single_only && $scope.rvm.res.occupants === 2) {
                     $scope.rvm.res.occupants = 1;
+                    return;
                   }
-                  else if ($scope.rvm.double_only && $scope.rvm.res.occupants === 1) {
-                    $scope.rvm.res.occupants = 2;
-                  }
-                  rdates = $scope.rvm.cleanResDates();
+                  //else if ($scope.rvm.double_only && $scope.rvm.res.occupants === 1) {
+                  //  $scope.rvm.res.occupants = 2;
+                  //}
+                  //rdates = $scope.rvm.cleanResDates();
                   // Update only the room not the resources since the dates are not changing
-                  $scope.rvm.updateAvailableRoomsAndResources(rdates, $scope.rvm.double_only, true).then(function (cnt) {
+                  //$scope.rvm.updateAvailableRoomsAndResources(rdates, $scope.rvm.double_only, true).then(function (cnt) {
                     //$scope.availableRooms = $scope.rvm.availableRooms;
                     //$scope.availableResources = $scope.rvm.availableResources;
+                  //});
+                  $scope.rvm.occupantsChanged().then(function(cnt){
+                    // just need to wait for completion
                   });
                   break;
 

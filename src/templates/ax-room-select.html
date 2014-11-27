@@ -1,10 +1,10 @@
 <div ng-show="displayOnly">
     <ul class="list-unstyled form-control-static" ng-show="rooms.length">
         <li  ng-if="!oneRoomB" ng-repeat="room in prooms">
-            Zimmer {{room.number}} ({{room.room_type}}) <i>{{room.guest}}</i> {{room.price | currency: '€'}}
+            Zimmer {{room.number}} ({{room.room_type}}) <i>{{room.guest}}</i> <i ng-if="room.guest2">/{{room.guest2}}</i> {{room.price | currency: '€'}}
         </li>
         <li  ng-if="oneRoomB" ng-repeat="room in prooms">
-            Zimmer {{room.number}} ({{room.room_type}}) {{room.price | currency: '€'}}
+            Zimmer {{room.number}} ({{room.room_type}}) {{room.price | currency: '€'}} <i ng-if="planPrice">({{txt.perPersonAbrv}})</i>
         </li>
     </ul>
     <span ng-show="!rooms.length">{{selectTitle}}</span>
@@ -12,7 +12,7 @@
 <div ng-show="!displayOnly">
     <div class="panel panel-default panel-tight">
         <div class="panel-heading">
-            <span ng-click="isCollapsed = !isCollapsed">{{selectTitle}} <i class="glyphicon"
+            <span ng-click="isCollapsed = !isCollapsed">{{selectTitle}} <i>{{guestCountStr}}</i> <i class="glyphicon"
                                                                            ng-class="{'glyphicon-chevron-down': !isCollapsed, 'glyphicon-chevron-right': isCollapsed}"></i></span>
         </div>
         <div class="panel-body" collapse="isCollapsed">
@@ -26,8 +26,9 @@
                                 ng-options="r.display_name for r in roomList | filter:filterAlreadySelected"></select>
                     </td>
                 </tr>
-                <tr ng-show="roomSelect.number  && !oneRoom">
-                    <th>{{txt.guest}}</th>
+                <tr ng-show="roomSelect.number  && !oneRoomB">
+                    <th ng-if="!secondGuestB">{{txt.guest}}&nbsp;&nbsp; <span ng-if="roomData.showOneCnt"><input type="checkbox" ng-model="roomData.oneInDZ" ng-change="onOneInDZ()" /> {{txt.onlyOneInRoom}}</span></th>
+                    <th ng-if="secondGuestB">{{txt.guests}}&nbsp;&nbsp; <span ng-if="roomData.showOneCnt"><input type="checkbox" ng-model="roomData.oneInDZ" ng-change="onOneInDZ()" /> {{txt.onlyOneInRoom}}</span></th>
                 </tr>
                 <tr ng-show="roomSelect.number && !oneRoomB">
                     <td ng-if="!guestLookupB">
@@ -37,8 +38,19 @@
                         <ax-lookup-guest guest="roomData.name" firm="firm"></ax-lookup-guest>
                     </td>
                 </tr>
+ <!--               <tr ng-show="roomSelect.number  && !oneRoom  && secondGuestB">
+                    <th>{{txt.guest2}}</th>
+                </tr>-->
+                <tr ng-show="roomSelect.number && !oneRoomB && secondGuestB && !roomData.oneInDZ">
+                    <td ng-if="!guestLookupB">
+                        <input type="text" ng-model="roomData.name2"/>
+                    </td>
+                    <td ng-if="guestLookupB">
+                        <ax-lookup-guest guest="roomData.name2" firm="firm"></ax-lookup-guest>
+                    </td>
+                </tr>
                 <tr ng-show="roomSelect.number">
-                    <th>{{txt.price}} {{txt.priceSymbol}}</th>
+                    <th>{{txt.price}} <i ng-if="planPrice">({{txt.perPersonAbrv}})</i> {{txt.priceSymbol}}</th>
                 </tr>
                 <tr ng-show="roomSelect.number">
                     <td>
@@ -62,7 +74,7 @@
                     </td>
                     <td>{{room.number}}</td>
                     <td>{{room.room_type}}</td>
-                    <td ng-if="!oneRoomB">{{room.guest}}</td>
+                    <td ng-if="!oneRoomB">{{room.guest}}<span ng-if="room.guest2">/{{room.guest2}}</span></td>
                     <td>{{room.price | currency: '€'}}</td>
                 </tr>
             </table>

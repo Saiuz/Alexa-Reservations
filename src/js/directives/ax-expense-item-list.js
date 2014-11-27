@@ -2,7 +2,8 @@
  * Directive to create a table of Expense items of a particular type. That can be edited and new items created.
  * todo- calculate and display running total amount for items of the specific type
  * todo- add a default value to the item list and  value for when item list is empty (more attributes?)
- * todo- callback function when item has been added (so controller/model can save values in db)
+ * todo- callback function when item has been added/edited (so controller/model can save values in db)
+ * TODO- fix add logic, add button to add item not on change of item selection
  */
 define(['./module'], function (directives) {
   'use strict';
@@ -16,11 +17,15 @@ define(['./module'], function (directives) {
       scope.col1Title = attrs.itemTitle ? attrs.itemTitle : 'Item';
       scope.col2Title = attrs.countTitle ? attrs.countTitle : 'Count';
       scope.col3Title = attrs.priceTitle ? attrs.priceTitle : 'Price';
-      scope.$watchCollection('[itemTypeArray, itemType, expenseItemArray]', function (newvals) {
+      scope.hideB = false;  //todo-need button that shows if this is true that will allow the toggling of hidden items.
+      scope.$watchCollection('[itemTypeArray, itemType, expenseItemArray, hide]', function (newvals) {
         console.log("axExpenseItemList filter fired");
         if (newvals[0] && newvals[1] && newvals[2]) {
           buildInitialList();
           scope.calculateTotals();
+        }
+        if (newvals[3]) {
+          scope.hideB = newvals[3] === 'true';
         }
       });
 
@@ -36,36 +41,39 @@ define(['./module'], function (directives) {
 
       // removes items from the displayed item types list that have already been added to
       // the expenseItems array.
-      var filterOutExistingItems = function () {
-        scope.itemList = $filter('filter')(scope.itemList, {_id: 0}, function (actual) {
-          return isNotIn(actual);
-        });
-      };
+      //var filterOutExistingItems = function () {
+      //  scope.itemList = $filter('filter')(scope.itemList, {_id: 0}, function (actual) {
+      //    return isNotIn(actual);
+      //  });
+      //};
 
       // function that builds the initial (filtered) expense item array
       var buildInitialList = function () {
-        scope.itemList = $filter('filter')(scope.itemTypeArray, {category: attrs.itemType}, true);
-        filterOutExistingItems();
+        //scope.itemList = $filter('filter')(scope.itemTypeArray, {category: attrs.itemType, no_display: false}, true);
+        scope.itemList = $filter('filter')(scope.itemTypeArray,function(item, index){
+         return (item.category === attrs.itemType && !item.no_display);
+        });
+        //filterOutExistingItems();
       };
 
       // function that checks that a particular expense item type is not already added to
       // the expense items array
-      var isNotIn = function (id) {
-        var found = true;
-        angular.forEach(scope.expenseItemArray, function (item) {
-          if (item.type_id === id) {
-            found = false;
-          }
-        });
-        return found;
-      };
+      //var isNotIn = function (id) {
+      //  var found = true;
+      //  angular.forEach(scope.expenseItemArray, function (item) {
+      //    if (item.type_id === id) {
+      //      found = false;
+      //    }
+      //  });
+      //  return found;
+      //};
 
       // add the selected expense item to the reservation
       //
       scope.addExpenseItem = function () {
         var temp = new Reservation();
         var ix = scope.selected;
-        var item = temp.expenses.create(
+        var item = temp.expenses.create(   //todo-change to use the item copy method
             {
               name: ix.item_name,
               code: ix.item_code,
@@ -81,7 +89,7 @@ define(['./module'], function (directives) {
         scope.expenseItemArray.push(item);
         scope.calculateTotals();
         // now remove the added item from the list of item types
-        filterOutExistingItems();
+        //filterOutExistingItems();
       };
 
       scope.removeItem = function (index) {
@@ -105,8 +113,8 @@ define(['./module'], function (directives) {
         maxCount: '@',
         itemTitle: '@',
         countTitle: '@',
-        priceTitle: '@'
-        // todo-extend for count and plan price logic
+        priceTitle: '@',
+        hide: '@'
       }
     };
   }]);

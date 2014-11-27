@@ -11,7 +11,7 @@ define(['./module'], function (services) {
 
   services.factory(
       'dashboard',
-      function (Reservation, Guest, Room, RoomPlan, Resource, Itemtype, Firm, datetime, $q, configService) {
+      function (Reservation, Guest, Room, RoomPlan, Resource, Itemtype, Firm, dbEnums, datetime, $q, configService) {
     return {
       getNextDaysDate: function (dateval) {
         return datetime.dateOnly(dateval, 1);
@@ -385,7 +385,7 @@ define(['./module'], function (services) {
       getItemTypeList: function (itemType) {
         var deferred = $q.defer();
 
-        Itemtype.find({item_category: itemType})
+        Itemtype.find({category: itemType})
             .sort({display_order: 1})
             .exec(function (err, itemtypes) {
               if (err) {
@@ -403,12 +403,32 @@ define(['./module'], function (services) {
       getItemTypeListExcept: function (itemType) {
         var deferred = $q.defer();
 
-        Itemtype.find({item_category: {$ne: itemType}})
-            .sort({itemType: 1, display_order: 1})
+        Itemtype.find({category: {$ne: itemType}})
+            .sort({category: 1, display_order: 1})
             .exec(function (err, itemtypes) {
               if (err) {
                 deferred.reject(err);
-                console.log("getCurrentReservations query failed: " + err);
+                console.log("getItemTypeListExcept query failed: " + err);
+              }
+              else {
+                deferred.resolve(itemtypes);
+              }
+            });
+        return deferred.promise;
+      },
+      // Retrieve all item types specified in the list of the specified type. If the category is not specified
+      // it will default to the first item in the itemTypeEnum ('Plan')
+      getItemTypesInList: function (itemTypeList, category) {
+        var deferred = $q.defer();
+        if (!category) {
+          category = dbEnums.getItemTypeEnum()[0];
+        }
+        Itemtype.find({name: {$in: itemTypeList}, category: category})
+            .sort({display_order: 1})
+            .exec(function (err, itemtypes) {
+              if (err) {
+                deferred.reject(err);
+                console.log("getItemTypesInList query failed: " + err);
               }
               else {
                 deferred.resolve(itemtypes);

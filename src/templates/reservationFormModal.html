@@ -106,13 +106,22 @@
                 <ax-lookup-guest guest="rvm.res.guest" firm="rvm.res.firm"></ax-lookup-guest>
             </div>
         </div>
+        <div class="form-group" ng-show="rvm.showSecondGuest">
+            <label class="control-label col-xs-4" ng-if="!rvm.isGroup">{{txt.guest2}}</label>
+            <div class="col-xs-8" ng-show="read">
+                <p class="form-control-static">{{rvm.res.guest2.name}}</p>
+            </div>
+            <div class="col-xs-8" ng-show="edit">
+                <ax-lookup-guest guest="rvm.res.guest2" firm="rvm.res.firm"></ax-lookup-guest>
+            </div>
+        </div>
         <div class="form-group">
             <label class="control-label col-xs-4">{{txt.room}}</label>
             <div class="col-xs-8">
-                <ax-room-select room-list="rvm.availableRooms" rooms="rvm.res.rooms" name="{{rvm.res.guest.name}}"
+                <ax-room-select room-list="rvm.availableRooms" rooms="rvm.res.rooms" name="{{rvm.res.guest.name}}" name2="{{rvm.res.guest2.name}}"
                                 firm="{{rvm.res.firm}}" guest-lookup="{{rvm.guestLookup}}" one-room="{{rvm.oneRoom}}"
-                                plan-price="{{rvm.planPrice}}" firm-price="{{rvm.firmPrice}}" room-count="roomCount"
-                                read-only="{{read}}"></ax-room-select>
+                                plan-price="{{rvm.planPrice}}" firm-price="{{rvm.firmPrice}}" guest-count="{{rvm.res.occupants}}"
+                                read-only="{{read}}" second-guest="{{rvm.secondGuest}}"></ax-room-select>
             </div>
         </div>
         <div class="form-group">

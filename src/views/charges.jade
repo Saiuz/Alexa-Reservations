@@ -11,8 +11,8 @@ include nav_common.jade
           ax-reservation-list(list-mode="c" list-date="theDate" selected-reservation="selectedReservation")
     .col-md-8
       .panel.panel-default
-        .panel-heading Gebühren&nbsp;
-          span(ng-show="showCharges") für: {{rvm.res.guest.name}} - Zimmer {{rvm.res.room}}, Abfahrt {{rvm.res.end_date | date:'shortDate'}}, {{rvm.res.nights}} Nöchte
+        .panel-heading {{txt.charges}}&nbsp;
+          span(ng-show="showCharges") für: {{guest}} - {{txt.roomAbrv}} {{room}}, Abfahrt {{rvm.res.end_date | date:'dd.MM.yyyy'}}, {{rvm.res.nights}} {{txt.nights}}
           a.btn.btn-default.btn-small.pull-right(ng-show="showCharges" href="#/rechnung/{{rvm.res.reservation_number}}")
             span(class="glyphicon glyphicon-arrow-right" ng-show="showCharges") &nbsp;Zu Rechnung
         .panel-body
@@ -22,9 +22,9 @@ include nav_common.jade
                 tab(heading="Allgemein")
                   .form-horizontal
                     .form-group.left
-                      label.control-label.col-xs-4 Zimmer:
+                      label.control-label.col-xs-4 {{txt.roomPlan}}:
                       .col-xs-8
-                        p.form-control-static  {{rvm.res.nights}} Tage {{rvm.res.plan}} à {{rvm.res.room_price | currency: '€'}}
+                        p.form-control-static  {{planText}}
                     .form-group.left
                       label.control-label.col-xs-4 Parkgebühr:
                       .col-xs-8
