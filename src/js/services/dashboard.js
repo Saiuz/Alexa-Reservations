@@ -230,7 +230,10 @@ define(['./module'], function (services) {
       // If forlist is true then an empty Room object is added at the top of the list
       // with a room number of 0. This will create a Room object that returns a default display_name
       // value as determined in the Room schema.
-      findAvailableRooms: function (start, end, doubleOnly, forlist) {
+      // The currentResNumber parameter, if provided will exclude any rooms from the booked list that
+      // are currently associated with the reservation. Technically a reservations booked rooms should
+      // be available to itself.
+      findAvailableRooms: function (start, end, doubleOnly, forlist, currentResNumber) {
         var deferred = $q.defer();
         Reservation.find({start_date: {$lt: end}, end_date: {$gt: start}})
             .exec(function (err, res) {
@@ -243,9 +246,11 @@ define(['./module'], function (services) {
                 var booked = [];
                 if (res.length > 0) {
                   angular.forEach(res, function (item) {
-                    angular.forEach(item.rooms, function (room){
-                      booked.push(room.number);
-                    });
+                    if (!currentResNumber || currentResNumber !== item.reservation_number) { //skip current res's rooms
+                      angular.forEach(item.rooms, function (room) {
+                        booked.push(room.number);
+                      });
+                    }
                   });
                 }
                 console.log("Booked: " + booked.length);
@@ -270,9 +275,8 @@ define(['./module'], function (services) {
             });
         return deferred.promise;
       },
-
       // find bookable resources such as parking places available between the specified dates
-      findAvailableResources: function (start, end, resType, forlist) {
+      findAvailableResources: function (start, end, resType, forlist, currentResNumber) {
         var deferred = $q.defer();
         Reservation.find({start_date: {$lt: end}, end_date: {$gt: start}})
             .exec(function (err, res) {
@@ -285,11 +289,13 @@ define(['./module'], function (services) {
                 var booked = [];
                 if (res.length > 0) {
                   angular.forEach(res, function (item) {
-                    angular.forEach(item.resources, function (res){
-                      if (res.resource_type === resType) {
-                        booked.push(res.name);
-                      }
-                    });
+                    if (!currentResNumber || currentResNumber !== item.reservation_number) { //skip current res's resources
+                      angular.forEach(item.resources, function (res) {
+                        if (res.resource_type === resType) {
+                          booked.push(res.name);
+                        }
+                      });
+                    }
                   });
                 }
                 console.log(resType + " Booked: " + booked.length);
@@ -314,7 +320,6 @@ define(['./module'], function (services) {
             });
         return deferred.promise;
       },
-
       // retrieve the room plan types filtering will be done in the vm or UI
       getRoomPlanList: function () {
         var deferred = $q.defer();
@@ -331,7 +336,6 @@ define(['./module'], function (services) {
             });
         return deferred.promise;
       },
-
       // retrieve the room plan types filtering will be done in the vm or UI
       getRoomPlanById: function (id) {
         var deferred = $q.defer();
@@ -347,7 +351,6 @@ define(['./module'], function (services) {
             });
         return deferred.promise;
       },
-
       //Get the room rate based on plan, from room table
       // todo-currently only returning base rate. Need to figure out how to link rate to plan type.
       getRoomRate: function (room_number, plan) {
@@ -364,7 +367,6 @@ define(['./module'], function (services) {
             });
         return deferred.promise;
       },
-
       // Get the room rate associated with the business. Returns 0 if business not found.
       getBusinessRoomRate: function (business) {
         var deferred = $q.defer();
@@ -380,12 +382,11 @@ define(['./module'], function (services) {
             });
         return deferred.promise;
       },
-
-      // Get all item types of a specific catagory.
+      // Get all item types of a specific catagory. If no parameter specified returns all ItemType documents
       getItemTypeList: function (itemType) {
         var deferred = $q.defer();
-
-        Itemtype.find({category: itemType})
+        var qry = itemType ? {category: itemType} : null;
+        Itemtype.find(qry)
             .sort({display_order: 1})
             .exec(function (err, itemtypes) {
               if (err) {
@@ -416,8 +417,8 @@ define(['./module'], function (services) {
             });
         return deferred.promise;
       },
-      // Retrieve all item types specified in the list of the specified type. If the category is not specified
-      // it will default to the first item in the itemTypeEnum ('Plan')
+      // Retrieve all ItemType items specified in the list of names of item types to retrieve.
+      // If the category parameter is not specified it will default to the first item in the itemTypeEnum ('Plan')
       getItemTypesInList: function (itemTypeList, category) {
         var deferred = $q.defer();
         if (!category) {

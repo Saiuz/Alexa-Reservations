@@ -6,19 +6,20 @@
  *                    only one type of resource (e.g. parking places)
  *     resources - the resources array from a Reservation object. The array is of type ReservedResource. This array is
  *                 modified by the directive.
- *     resourceCount - Keeps track of the number of entries in the resources array. Can be used by the hosting UI if
- *                     needed.
+ *     rooms - Access to the reservation's rooms array, a resource must also be associated with a room.
  *     resourceType - Specifies the type of resource such as parking or conference room etc. This value should be
  *                    a value from the resourceTypeEnum array.
  *     resourceTitle - The display text for the specified resource. This value is displayed on the form.
+ *     one-room - If true then we don't display the room selector, we assign the resource to the only room.
+ *     read-only - If true then we just display the current resources.
  */
 define(['./module'], function (directives) {
   'use strict';
   directives.directive('axResourceSelect', ['configService',function (configService) {
     var linker = function (scope, element, attrs) {
       scope.txt = configService.loctxt;
-
-      //private function to update the selectTitle and the resourceCount values
+      scope.showfrm = false;
+      //private function to update the selectTitle
       var updateTitle = function () {
         if (scope.resources && scope.resources.length) {
           if (scope.resources.length === 1) {
@@ -27,30 +28,36 @@ define(['./module'], function (directives) {
           else {
             scope.selectTitle = scope.resources.length +  ' ' + scope.resourceTitle + ' ' + configService.loctxt.selected;
           }
-          scope.resourceCount = scope.resources.length;
         }
         else {
           scope.selectTitle = configService.loctxt.no + ' ' +  scope.resourceTitle;
-          scope.resourceCount = 0;
         }
       };
 
       //scope.reservation.resources = scope.reservation.resources || [];
       scope.resourceSelect = {};
+      scope.selectedRoom = {};
       scope.resourcePrice = 0;
       scope.isCollapsed = true;
       scope.selectTitle = '';
-      scope.resourceCount = 0;
       scope.displayOnly = false;
+      scope.oneRoomB = false;
       updateTitle();
 
       var ignoreWatch = true; //on initialization, do not remove any resources
 
       // for read only mode we just need refresh when we get the resources
-      scope.$watchCollection('[readOnly,resources]', function(newvals){
+      scope.$watchCollection('[readOnly,resources, rooms.length, oneRoom]', function(newvals){
         scope.displayOnly = (newvals[0] === 'true');
-        if (scope.displayOnly && (newvals[1] && newvals[1].length)) {
+        scope.showRooms = (newvals[3] !== 'true');
+        if (scope.displayOnly && (newvals[1] && newvals[1].length) && (newvals[2] && newvals[2].length)) {
           scope.$apply();
+        }
+        if (newvals[2]) {
+          scope.selectedRoom = scope.rooms[0];
+        }
+        if (newvals[3]) {
+          scope.oneRoomB = newvals[3] === 'true';
         }
       });
       // Watch for a change in resourceList. If the list changes then we need to remove the resources currently
@@ -77,8 +84,13 @@ define(['./module'], function (directives) {
       //pass in the selected value just in case the method gets called before the resourceSelect property gets updated.
       scope.onResourceSelect = function(newval) {
         scope.resourcePrice =  Number(scope.resourceSelect.price);
+        scope.showfrm = true;
       };
 
+      scope.onRoomSelect = function(room) {
+         scope.selectedRoom = room; // This is hack because the selectedRoom property is not being updated
+                                    // in ng-model on the select statement.
+      }
       // Filters out already selected resources from the resourceList select control
       scope.filterAlreadySelected = function(item) {
         for (var ix = 0; ix < scope.resources.length; ix++) {
@@ -89,18 +101,29 @@ define(['./module'], function (directives) {
         return true;
       };
 
+      scope.filterAlreadySelectedRoom = function(room) {
+        for (var ix = 0; ix < scope.resources.length; ix++) {
+          if (scope.resources[ix].room_number === room.number) {
+            return false;
+          }
+        }
+        return true;
+      };
       // function that adds resource to the reservation.resources array.
       scope.addResource = function() {
         var resource = { //same as ReservedResource schema
           name: scope.resourceSelect.name,
           resource_type: scope.resourceSelect.resource_type,
-          price: scope.resourcePrice
+          price: scope.resourcePrice,
+          room_number: scope.selectedRoom.number,
+          guest: scope.selectedRoom.guest
         }
 
         scope.resources.push(resource);
         updateTitle();
         scope.resourceSelect = scope.resourceList[0];
         scope.resourcePrice = 0;  //price for room
+        scope.showfrm = false;
       };
 
       // function that removes a room from the reservation.resources array.
@@ -124,7 +147,8 @@ define(['./module'], function (directives) {
       scope: {
         resourceList: '=',
         resources: '=',
-        resourceCount: '=',
+        rooms: '=',
+        oneRoom: '@',
         resourceType: '@',
         resourceTitle: '@',
         readOnly: '@'

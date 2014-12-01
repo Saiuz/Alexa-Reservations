@@ -22,10 +22,21 @@
                             ng-options="r.name for r in resourceList | filter:filterAlreadySelected"></select>
                 </td>
             </tr>
-            <tr ng-show="resourceSelect.price >= 0">
+            <tr ng-if="showfrm && !oneRoomB">
+                <th>
+                    {{txt.roomNumber}}
+                </th>
+            </tr>
+            <tr ng-if="showfrm && !oneRoomB">
+                <td>
+                    <select ng-model="selectedRoom" ng-change="onRoomSelect(selectedRoom)"
+                            ng-options="r.number for r in rooms | filter:filterAlreadySelectedRoom"></select>
+                </td>
+            </tr>
+            <tr ng-show="showfrm">
                 <th>{{txt.price}} {{txt.priceSymbol}}</th>
             </tr>
-            <tr ng-show="resourceSelect.price >= 0">
+            <tr ng-show="showfrm">
                 <td>
                     <input class="col-xs-4" type="number" ng-model="resourcePrice"/>&nbsp;
                     <button ng-click="addResource()">{{txt.add}}</button>

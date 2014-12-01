@@ -16,3 +16,6 @@ differentiate which person the reservation is for in a group, business reservati
 between the rooms added. e.g. add a double room, then delete, then add a single room, followed by a double room, the
 single room guest_count is 2.
 8. **BUG** reservation list directive displaying extra entry for single room in group reservation. only saw this once after adding reservation!
+9. **BUG** reservation modal form - on save button need to clear the error object to clear any previous errors.
+10. **ISSUE** Need way of editing name and price of existing rooms in reservation. If we delete room, it does not show
+up as available automatically.

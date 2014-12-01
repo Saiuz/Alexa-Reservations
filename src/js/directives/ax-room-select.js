@@ -224,7 +224,10 @@ define(['./module'], function (directives) {
         scope.isCollapsed = !scope.showRooms;
       };
 
-      // function that removes a room from the reservation.rooms array.
+      // function that removes a room from the reservation.rooms array. If we remove it, we must re-add it to the
+      // list if it is not already there. For example, editing an existing reservation, if a room is deleted, then
+      // it will not show up in the available rooms query since that room was not available when the query was
+      // executed because this reservation already had it.
       scope.removeRoom = function (roomnum) {
         for (var ix = 0; ix < scope.rooms.length; ix++) {
           if (scope.rooms[ix].number === roomnum) {

@@ -24,7 +24,7 @@ define(['./module'], function (model) {
 
     // ******* Define the View Model object
     // ******* ViewModel definition  ********
-    var reservationVM = function (reservation, roomPlanList) {
+    var reservationVM = function (reservation, roomPlanList, itemTypeList) {
       var that = this; // for internal function reference
 
       // *** public properties assigned to VM and initialization code
@@ -36,6 +36,7 @@ define(['./module'], function (model) {
       this.selectedPlan = {}; // The currently selected room plan object
       this.availableRooms = []; // A list of available rooms for a specific date range.
       this.availableResources = []; // A list of available resources for a specific date range.
+      this.expenseItemTypes = itemTypeList; // Exposes a list of all expense item types available to the reservation.
       this.showFirm = false; // viewmodel property that is true if the reservation requires a firm name.
       this.showInsurance = false; // viewmodel property that is true if the reservation requires insurance.
       this.single_only = false; // viewmodel property that is true if the selected room plan is a single room only plan.
@@ -46,6 +47,7 @@ define(['./module'], function (model) {
       this.secondGuest = false; // VM property that is true if selected plan has the second_guest flag set
       this.showSecondGuest = false; // VM property that is true if selected plan has the second_guest flag set and the
                                     // reservation has 2 guests and  and the plan has the one_room flag set
+      this.includesBreakfast = false; // True if selected plan includes breakfast.
       this.guestLookup = false; // If true then quest name associated with room must be in guest database.
       this.planPrice = 0; //set by room plan selection
       this.firmPrice = 0; // set by selection of a firm with a negotiated price
@@ -74,6 +76,7 @@ define(['./module'], function (model) {
       var lastNights;
       var lastRoomHash;
       var lastRoomInfo = [];
+      var lastResourceHash;
 
       // *** Public methods assigned to VM ***
 
@@ -97,25 +100,30 @@ define(['./module'], function (model) {
         //}
       };
 
-      // Respond to a change in the number of occupants from the UI. Returns a promise since it calls
+      // Respond to a change in the number of occupants from the UI. Returns a promise since it may call the
       // updateAvailableRoomsAndResources method
       this.occupantsChanged = function () {
         var deferred = $q.defer();
         var plan = _findSelectedPlan();
-        this.showSecondGuest = plan.second_guest && this.res.occupants === 2 && plan.one_room;
-
-        // If selected room plan has a plan price then adjust price based on the number of occupants.
-        if (plan.is_plan) {
-          this.planPrice = this.res.occupants === 1 ? plan.pp_price + plan.single_surcharge : plan.pp_price;
+        if (plan.is_group) {
+          deferred.resolve(0); // don't do anything, just resolve the promise
         }
+        else {
+          this.showSecondGuest = plan.second_guest && this.res.occupants === 2 && plan.one_room;
 
-        var rdates = this.cleanResDates();
-        var doubleOnly = this.double_only || (this.res.occupants === 2 && this.oneRoom);
-        this.updateAvailableRoomsAndResources(rdates, doubleOnly, true).then(function (cnt) {
-          deferred.resolve(cnt);
-        },function (err){
-          deferred.reject(err);
-        });
+          // If selected room plan has a plan price then adjust price based on the number of occupants.
+          if (plan.is_plan) {
+            this.planPrice = this.res.occupants === 1 ? plan.pp_price + plan.single_surcharge : plan.pp_price;
+          }
+
+          var rdates = this.cleanResDates();
+          var doubleOnly = this.double_only || (this.res.occupants === 2 && this.oneRoom);
+          this.updateAvailableRoomsAndResources(rdates, doubleOnly, true).then(function (cnt) {
+            deferred.resolve(cnt);
+          }, function (err) {
+            deferred.reject(err);
+          });
+        }
 
         return deferred.promise;
       };
@@ -138,6 +146,7 @@ define(['./module'], function (model) {
           this.oneBill = plan.one_bill;
           this.oneRoom = plan.one_room;
           this.secondGuest = plan.second_guest;
+          this.includesBreakfast = plan.includes_breakfast;
           this.showSecondGuest = plan.second_guest && this.res.occupants === 2 && plan.one_room;
           this.guestLookup = (this.isGroup && !this.oneBill);
           // now implement logic that removes content from hidden Model properties
@@ -195,14 +204,13 @@ define(['./module'], function (model) {
         };
       };
 
-      // Updates the nights property of the VM based on the start and end dates provided
-      this.calculateNights = function (start, end) {
-        start = datetime.dateOnly(new Date(start));
-        end = datetime.dateOnly(new Date(end));
-        this.nights = datetime.getNightsStayed(new Date(start), new Date(end));
+      // Updates the nights property of the VM based on the start and end dates of the reservation
+      this.calculateNights = function () {
+        var rdates = that.cleanResDates();
+        this.nights = datetime.getNightsStayed(new Date(rdates.start), new Date(rdates.end));
         return {  //returned the clean dates
-          start: start,
-          end: end
+          start: rdates.start,
+          end: rdates.end
         };
       };
 
@@ -227,20 +235,24 @@ define(['./module'], function (model) {
       // roomOnly - a flag that if true will limit the search to rooms only and not to resources.
       // The method returns a promise that resolves to the count of the rooms found. Internally, the avalableRooms and
       // the availableResources arrays are updated with the results of the search.
-      this.updateAvailableRoomsAndResources = function (datesObj, noSingles, roomOnly) {
-        var resource = 'Parkplatz'; //currently the only bookable resource type.
+      this.updateAvailableRoomsAndResources = function (roomOnly) {
+        var rdates = that.cleanResDates(); //retrieve reservation dates and clean of time portion
+        var doubleOnly = that.double_only || (that.res.occupants === 2 && that.oneRoom);
+        var resource = dbEnums.getResourceTypeEnum()[0]; //currently the only bookable resource type.
         var deferred = $q.defer();
-        if (!datesObj.start || !datesObj.end) {
+        if (!that.res.start_date || !that.res.end_date) {
           this.availableRooms = [];
           this.availableResources = [];
           deferred.resolve(0);
         }
         else {
-          dashboard.findAvailableRooms(datesObj.start, datesObj.end, noSingles, true).then(function (rooms) {
+          dashboard.findAvailableRooms(rdates.start, rdates.end, doubleOnly, true,
+                                       that.res.reservation_number).then(function (rooms) {
             console.log('%d available rooms found', rooms.length);
             that.availableRooms = rooms;
             if (!roomOnly) {
-              dashboard.findAvailableResources(datesObj.start, datesObj.end, 'Parkplatz', true).then(function (resources) {
+              dashboard.findAvailableResources(rdates.start, rdates.end, resource, true,
+                                               that.res.reservation_number).then(function (resources) {
                 console.log('%d available ' + resource + ' found', resources.length);
                 that.availableResources = resources;
                 deferred.resolve(resources.length + rooms.length);
@@ -253,44 +265,6 @@ define(['./module'], function (model) {
         }
 
         return deferred.promise;
-      };
-
-      //Retrieve available rooms based on the supplied dates
-      this.getAvailableRooms = function (datesObj, dbl) {
-        var deferred = $q.defer();
-        if (!(datesObj.start && datesObj.end)) {
-          deferred.resolve([]);
-        }
-        else {
-          dashboard.findAvailableRooms(datesObj.start, datesObj.end, dbl, true).then(function (rooms) {
-            console.log('%d available rooms found', rooms.length);
-            deferred.resolve(rooms);
-          });
-        }
-
-        return deferred;
-      };
-
-      //Retrieve available resources based on the supplied dates
-      this.getAvailableResources = function (datesObj) {
-        var deferred = $q.defer();
-        if (!(datesObj.start && datesObj.end)) {
-          deferred.resolve(0);
-        }
-        else {
-          dashboard.findAvailableResources(datesObj.start, datesObj.end, 'Parkplatz', true).then(function (resources) {
-            console.log('%d available rooms found', resources.length);
-            if (resources.length > 0) {
-              this.availableResources = resources;
-            }
-            else {
-              this.availableResources = [];
-            }
-            deferred.resolve(resources.length);
-          });
-        }
-
-        return deferred;
       };
 
       // Utility method that retrieves the room expense item in the reservation for the specified room number and guest
@@ -350,10 +324,17 @@ define(['./module'], function (model) {
             this.res.title = this.res.guest.name;
           }
 
-          // if a new reservation Copy required items from the plan, if the plan changed then
-          // remove the existing items and replace with new plan
-          _updateRequiredExpenses().then(function () {
-            // when the above promise completes, update the day count and the address information if needed.
+          // if a new reservation Copy required items from the plan, if the plan or room info changed then
+          // remove the existing items and replace with new plan, if resources changed then replace related
+          // resource expense items.
+          _updateRequiredExpenses().then(function (changes) {
+            // required expenses update then resource expenses where also updated, if no change then we still want
+            // to check for any resource changes.
+            if (!changes ) {
+              _updateResourceExpenses();
+            }
+
+            // update the day count and the address information if needed.
             _updateDayCount();
             _updateAddress().then(function () {
               deferred.resolve();
@@ -373,6 +354,53 @@ define(['./module'], function (model) {
       this.getErrorObj = function(firstErr) {
         return new utility.errObj(firstErr);
       };
+
+      // method to add an expense item and save the reservation - called by the expense item directive
+      this.addExpenseItemSave = function(item, room, guest) {
+        var deferred = $q.defer();
+        if (!item || !room || !guest){
+          deferred.reject(configService.loctxl.expenseItemErr1)
+        }
+        else {
+          item.room = room;
+          item.guest = guest;
+          item.date_added = new Date();
+          var count = item.day_count ? that.res.nights : item.count;
+          item.addThisToDocArray(that.res.expenses, null, count);
+          that.res.save(function (err) {
+            if (err) {
+              deferred.reject(err);
+            }
+            else {
+              deferred.resolve();
+            }
+          });
+        }
+        return deferred.promise;
+      };
+
+      // method to remove an existing expense item and save the reservation if it was successfully removed.
+      this.removeExpenseItemSave = function(itemID) {
+        var deferred = $q.defer();
+        var ecnt = that.res.expenses.length;
+        var doc = that.res.expenses.id(itemID).remove();
+        if (that.res.expenses.length === ecnt) {
+          deferred.reject(configService.loctxl.expenseItemErr2);
+        }
+        else {
+          that.res.save(function (err) {
+            if (err) {
+              deferred.reject(err);
+            }
+            else {
+              deferred.resolve();
+            }
+          });
+        }
+        return deferred.promise;
+      };
+
+
       // *** private methods  and constructor initialization***
 
       // This method checks critical reservation properties for validity.
@@ -420,18 +448,23 @@ define(['./module'], function (model) {
         var guestid = that.res.guest ? that.res.guest.id : 0;
         var guestid2 = that.res.guest2 ? that.res.guest2.id : 0;
         var newRoomHash = _buildRoomHash(that.res.rooms, that.res.occupants);
+        var roomsChanged = lastRoomHash !== newRoomHash;
         // If plan changed, or room hash changed the easiest thing to do is to replace all  so then we replace all plan expense items
-        if (lastPlanCode !== that.res.plan_code) {
+        if (lastPlanCode !== that.res.plan_code || roomsChanged) {
 
           // Remove the current required items, retrieve the new required Items and add them to the current reservation
           // (copy and initialize based on business logic) TODO-- Need to refine all this logic based on Billing Logic doc.
           var curPlan = that.getPlanInReservation();
-          _removeExistingRequiredExpenseItems(category);
           var requiredItems = curPlan ? curPlan.required_items : [];
+
+          _removeExistingRequiredExpenseItems(category);
+
           dashboard.getItemTypesInList(requiredItems).then(function (items) {
             if (items.length > 0) {
               _addRequiredExpenses(items, curPlan);
-              deferred.resolve(that.res.expenses.length);
+              _updateResourceExpenses();
+              _updateNonPlanExpenses(category, roomsChanged);
+              deferred.resolve(true);
             }
             else {
               deferred.reject('ERROR: Invalid or missing plan code: ' + that.res.plan_code);
@@ -440,29 +473,76 @@ define(['./module'], function (model) {
             deferred.reject("Error retrieving plan: " + err);
           });
         }
-        else if (lastRoomHash !== newRoomHash) { // no plan changes needed
-          _updateRoomExp();
-          deferred.resolve(that.res.expenses.length);
+        else {
+          deferred.resolve(false); //no changes
         }
 
         return deferred.promise;
+      }
+
+      // removes and replaces the resource releated expenses if needed.
+      function _updateResourceExpenses () {
+        var curResHash = _buildResourceHash(that.res.resources);
+        if (lastResourceHash !== curResHash) {
+          _removeExistingResourceExpenseItems();
+          _addResourceExpenses();
+        }
+      }
+
+      // Add expense items for the booked resources
+      function _addResourceExpenses() {
+        that.res.resources.forEach(function(res) {
+          var exp = new Itemtype();
+          exp.name = res.resource_type;
+          exp.category = dbEnums.getItemTypeEnum()[0];
+          exp.room = res.room_number;
+          exp.guest = res.guest;
+          exp.per_person = false;
+          exp.no_delete = true; // To remove, we must remove by editing reservation.
+          exp.no_display = false;
+          exp.day_count = true;
+          exp.display_order = 2;
+          exp.taxable_price = 0;
+          exp.addThisToDocArray(that.res.expenses, res.price, that.res.nights);
+        });
       }
 
       // Removes the existing "Plan" based expense items
       function _removeExistingRequiredExpenseItems(category){
         // first find all of the plan expense item ids
         var planExp = [];
-        angular.forEach(that.res.expenses, function(exp){
+        that.res.expenses.forEach(function(exp){
           if (exp.category === category) {
             planExp.push(exp._id);
           }
         });
 
         // now remove these items from the reservation
-        angular.forEach(planExp, function(id){
+        planExp.forEach(function(id){
           that.res.expenses.id(id).remove();
         });
       }
+
+      // Removes the existing expenses related to any booked resources (such as parking)
+      function _removeExistingResourceExpenseItems() {
+        var resExp = [];
+        var resources = dbEnums.getResourceTypeEnum();
+
+        // find all of the resource related expenses
+        that.res.expenses.forEach(function(exp) {
+            resources.forEach(function(res) {
+               if (exp.name === res) {
+                 resExp.push(exp._id);
+               }
+            });
+        });
+
+        // now remove these items from the reservation
+        resExp.forEach(function(id) {
+          that.res.expenses.id(id).remove();
+        });
+      }
+
 
       // General function that removes all embedded documents from the specified Model document array
       function _removeAllEmbeddedDocs(docArray){
@@ -522,7 +602,7 @@ define(['./module'], function (model) {
         var price;
         var count;
         var extraDays = 0;
-        var isSingleRoom = (that.res.rooms[0].room_type === dbEnums.getRoomTypeEnum()[0]);
+        var isSingleRoom = (room.room_type === dbEnums.getRoomTypeEnum()[0]);
 
         // is the plan a "package plan"?
         if (curPlan.is_plan){
@@ -584,6 +664,8 @@ define(['./module'], function (model) {
         exp.category = dbEnums.getItemTypeEnum()[0];
         exp.per_person = true;
         exp.day_count = true;
+        exp.no_delete = true;
+        exp.one_per = true;
         exp.display_string = '%count% Tage à € %price%';
         exp.display_order = 2;
         _addExpenseItem(room, exp, configService.constants.cityTax);
@@ -622,7 +704,8 @@ define(['./module'], function (model) {
       }
       //todo-figure out logic if room number changes, or guest name changes then we can just update names and
       //todo- numbers and prices. If the number of rooms changes then we need to add or subtract room expense items.
-      function _updateRoomExp() {
+      function _updateNonPlanExpenses(category, roomsChanged) {
+
        }
 
        // If the number of nights change then update the nights change then update the count of the items that
@@ -687,10 +770,23 @@ define(['./module'], function (model) {
       function _buildRoomHash(rooms, occupants) {
         var hash = 0;
         var ix = rooms.length + 2;
-        angular.forEach(rooms, function(room) {
+        rooms.forEach(function(room) {
           hash = hash + (room.number * room.price * ix * occupants);
           ix--;
         })
+        return hash;
+      }
+
+      // Builds a hash from the resources array. Used to determine if the resources have changed.
+      function _buildResourceHash(resources) {
+        var hash = 0;
+        var ix = resources.length + 2;
+        resources.forEach(function(resources) {
+          var g = resources.guest ? resources.guest.length : 1;
+          g = g + resources.name.length;
+          hash = hash + (resources.room_number * resources.price * ix * g);
+          ix--;
+        });
         return hash;
       }
 
@@ -755,8 +851,9 @@ define(['./module'], function (model) {
         lastFirm = reservation.firm ? reservation.firm : '';
         lastNights = reservation.nights;
         lastRoomHash = _buildRoomHash(reservation.rooms, reservation.occupants);
+        lastResourceHash = _buildResourceHash(reservation.resources);
         if (reservation.rooms.length) {
-          angular.forEach(reservation.rooms, function(room){
+          reservation.rooms.forEach(function(room){
              lastRoomInfo.push({
                number: room.number,
                guest: room.guest,
@@ -767,7 +864,7 @@ define(['./module'], function (model) {
           });
         }
         _filterRoomPlans(reservation.type, reservation.plan_code);
-        this.nights = reservation.nights; //The reservation model nights property is calculated and read only.
+        this.nights = reservation.nights; //The reservation model's nights property is calculated and read only.
       }
 
     }; //End of VM class
@@ -788,25 +885,32 @@ define(['./module'], function (model) {
         var rvm;
         dashboard.getRoomPlanList().then(function (roomPlanList) {
           // get a unique reservation number and create the Reservation model
-          dashboard.getNewReservationNumber().then(function (val) {
-            var reservation = new Reservation();
-            reservation.reservation_number = val;
-            reservation.start_date = datetime.dateOnly(new Date());
-            reservation.end_date = datetime.dateOnly(new Date(), 1);
-            reservation.occupants = 1;
-            rvm = new reservationVM(reservation, roomPlanList);
-            reservation.type = rvm.resTypeList[0]; //defaults to standard reservation
-            reservation.status = rvm.statusList[0];
-            reservation.source = rvm.sourceList[0];
-            rvm.reservationTypeChanged(); //force an update since we added a default type to the new reservation.
-            var resdates = rvm.cleanResDates();
-            rvm.updateAvailableRoomsAndResources(resdates, reservation.occupants === 2).then(function () {
-              console.log("Reservation " + reservation.reservation_number + " created");
-              return deferred.resolve(rvm);
+          dashboard.getItemTypeList().then(function (itemTypeList) {
+            dashboard.getNewReservationNumber().then(function (val) {
+              var reservation = new Reservation();
+              reservation.reservation_number = val;
+              reservation.start_date = datetime.dateOnly(new Date());
+              reservation.end_date = datetime.dateOnly(new Date(), 1);
+              reservation.occupants = 1;
+              rvm = new reservationVM(reservation, roomPlanList, itemTypeList);
+              reservation.type = rvm.resTypeList[0]; //defaults to standard reservation
+              reservation.status = rvm.statusList[0];
+              reservation.source = rvm.sourceList[0];
+              rvm.reservationTypeChanged(); //force an update since we added a default type to the new reservation.
+              rvm.updateAvailableRoomsAndResources().then(function () {
+                console.log("Reservation " + reservation.reservation_number + " created");
+                return deferred.resolve(rvm);
+              }, function (err) {
+                return deferred.reject(new utility.errObj(err)); //pass error up the chain.
+              });
             }, function (err) {
               return deferred.reject(new utility.errObj(err)); //pass error up the chain.
             });
+          }, function (err) {
+            return deferred.reject(new utility.errObj(err)); //pass error up the chain.
           });
+        }, function (err) {
+          return deferred.reject(new utility.errObj(err)); //pass error up the chain.
         });
 
         return deferred.promise;
@@ -821,21 +925,26 @@ define(['./module'], function (model) {
         // Get the required data from other collections for the VM, retrieve the specified Reservation and
         // create and return the VM with the reservation.
         dashboard.getRoomPlanList().then(function (roomPlanList) {
-          dashboard.getReservationByNumber(resnum).then(function (reservation) {
-            console.log("Reservation " + reservation.reservation_number + " retrieved");
-            var rvm = new reservationVM(reservation, roomPlanList);
-            if (readOnly) {
-              return deferred.resolve(rvm);
-            }
-            var resdates = rvm.cleanResDates();
-            rvm.updateAvailableRoomsAndResources(resdates, reservation.occupants === 2).then(function () {
-              return deferred.resolve(rvm);
+          dashboard.getItemTypeList().then(function (itemTypeList) {
+            dashboard.getReservationByNumber(resnum).then(function (reservation) {
+              console.log("Reservation " + reservation.reservation_number + " retrieved");
+              var rvm = new reservationVM(reservation, roomPlanList, itemTypeList);
+              if (readOnly) {
+                return deferred.resolve(rvm);
+              }
+              rvm.updateAvailableRoomsAndResources().then(function () {
+                return deferred.resolve(rvm);
+              }, function (err) {
+                return deferred.reject(new utility.errObj(err)); //pass error up the chain.
+              });
             }, function (err) {
               return deferred.reject(new utility.errObj(err)); //pass error up the chain.
             });
           }, function (err) {
             return deferred.reject(new utility.errObj(err)); //pass error up the chain.
           });
+        }, function (err) {
+          return deferred.reject(new utility.errObj(err)); //pass error up the chain.
         });
 
         return deferred.promise;

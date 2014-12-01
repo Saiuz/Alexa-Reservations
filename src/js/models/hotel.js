@@ -21,7 +21,7 @@ define(['./module'], function (model) {
   var resInsuranceEnum = ['','VDAK', 'AOK & Andere', 'Privat'];
   var resTypeEnum = ['Std.', 'Bus.', 'Kur', 'Group'];
   // enum for Resource Schema
-  var resourceTypeEnum = ['Parkplatz','Konferenzraum'];
+  var resourceTypeEnum = ['Parkplatz'];
 
   //service (model) that exposes methods to retrieve the various schema enums and some other utility methods
   model.factory('dbEnums', function(){
@@ -85,9 +85,9 @@ define(['./module'], function (model) {
       per_person: Boolean, //If true then the item should be  duplicated for each person in a room room
       no_delete: Boolean, // If true then the item can not be deleted from a reservation or RoomPlan
       no_display: Boolean, // If true then the item is not displayed but is used as part of the bill calculation
-      day_count: Boolean, // If true then the count value will equal the number of days of the reservation. If false then count is an item count.
-      one_count: Boolean, // If true then day_count flag is ignored and item has no count option in the UI, count of one (only one item per reservation)
-                          // this is used to represent a plan price or fixed price item.
+      day_count: Boolean, // If true then the item count is controlled by the number of days of the reservation
+      one_per: Boolean, // If true then only one item is allowed per person per reservation if the 'per_person' flag is
+                        // set, or only one item per room if the 'per_room' flag is set. If no_display is true then this is ignored.
       edit_name: Boolean,  //If true then the item_name stored in the reservation for this type can be edited.
       edit_count: Boolean, // If true then the UI allows the count value to be edited.
       bus_pauschale: Boolean, // If true this expense item  can be rolled up along with others like it into one expense item on the bill "Business Pauschale"
@@ -218,7 +218,9 @@ define(['./module'], function (model) {
     var schema = new db.Schema({
       name: String, // the resource name (unique)
       resource_type: String, //the resource type from the resource table
-      price: String  // the resource price
+      price: String,  // the resource price
+      room_number: Number,
+      guest: String
     });
 
     return schema;
@@ -330,7 +332,14 @@ define(['./module'], function (model) {
       post_code: Number,
       country: String,
       individualBill: Boolean, // true if is a multi-room reservation but requires an individual bill for each room
-      expenses: [ExpenseItem]
+      expenses: [ExpenseItem],
+      last_update: Date
+    });
+
+    // pre save method to update the last_update field
+    schema.pre('save', function (next) {
+      this.last_update = new Date();
+      next();
     });
 
     // virtual field to return the number of nights stayed

@@ -37,7 +37,8 @@ define(['./module'], function (controllers) {
 
           $scope.$watch('selectedReservation', function (newval) {
             if (!newval) return;
-
+            // Get reservation and prepare the room plan text and handle the special case
+            // where we have a group reservation with one bill- need to show the rooms
             ReservationVM.getReservationVM(newval.number, true).then(function (resVM) {
               if(resVM.res) {
                 $scope.rvm = resVM;
@@ -45,30 +46,39 @@ define(['./module'], function (controllers) {
                 $scope.showCharges = true;
                 $scope.room = newval.room;
                 $scope.guest = newval.guest;
+                $scope.gRooms = [];
+
                 $scope.planText = '****'
                 // logic to generate the Zimmer Plan text todo-may need to encapsulate and use for bill generation
                 var extras = null;
-                var rm = resVM.getRoomExpenseInReservation(newval.room, newval.guest);
-                if (rm) {
+                var rmExp = resVM.getRoomExpenseInReservation(newval.room, newval.guest);
+                if (rmExp) {
+                  var rmObj = resVM.getRoomInReservation(newval.room);
+                  $scope.roomGuest1 = rmObj.guest;
+                  $scope.roomGuest2 = rmObj.guest2;
                   var plan = resVM.getPlanInReservation();
                   if (resVM.isGroup && !resVM.oneBill) { //group business reservation
-                    var rmObj = resVM.getRoomInReservation(newval.room);
                     extras = {roomType: rmObj.room_type, price: rmObj.price};
-                    $scope.planText = convert.formatDisplayString(rm,extras);
+                    $scope.planText = convert.formatDisplayString(rmExp,extras);
                   }
                   else if (resVM.isGroup && resVM.oneBill) { //group tour reservation.
                    extras = {nights: resVM.res.nights, occupants: resVM.res.occupants};
                     $scope.planText = convert.formatDisplayString(plan,extras);
+
+                    // for this case we need to create buttons for each room
+                    resVM.res.rooms.forEach(function(rm) {
+                      $scope.gRooms.push({room: rm.number, guest: rm.guest});
+                    })
                   }
                   else if (resVM.oneRoom && resVM.oneBill) { //should cover standard reservations
-                    extras = {nights: resVM.res.nights, roomprice: rm.price};
+                    extras = {nights: resVM.res.nights, roomprice: rmExp.price};
                      if (plan.is_plan) {
                         extras.perPerson = resVM.res.occupants === 2 ? configService.loctxt.forTwoPeople : '';
                      }
                     $scope.planText = convert.formatDisplayString(plan,extras);
                   }
                   else if (resVM.oneRoom && !resVM.oneBill) { // covers business and kur plans
-                    extras = {nights: resVM.res.nights, roomprice: rm.price};
+                    extras = {nights: resVM.res.nights, roomprice: rmExp.price};
                     if (plan.is_plan) {
                       extras.perPerson = resVM.res.occupants === 2 ? configService.loctxt.forTwoPeople : '';
                     }
@@ -79,6 +89,10 @@ define(['./module'], function (controllers) {
               }
             });
           });
+
+          $scope.changeGuest = function(guest) {
+            $scope.guest = guest;
+          };
 
           // Todo- this is broke, if we still want to navigate here we will need the reslink info not just the number.
           if ($stateParams.resNum && $stateParams.resNum > 0){

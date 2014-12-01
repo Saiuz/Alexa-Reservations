@@ -18,6 +18,14 @@ include nav_common.jade
         .panel-body
           .col-md-12
             div.table-bordered(ng-show="showCharges")
+              .btn-group.btn-group-justified(data-toggle="buttons" ng-if="roomGuest2 && gRooms.length === 0")
+                label.btn.btn-default(ng-class="{active: guest === roomGuest1}" ng-click="changeGuest(roomGuest1)")
+                  span {{roomGuest1}}
+                label.btn.btn-default(ng-class="{active: guest === roomGuest2}" ng-click="changeGuest(roomGuest2)")
+                  span {{roomGuest2}}
+              .btn-group.btn-group-justified(date-toggle="buttons" ng-if="gRooms.length > 0")
+                label.btn.btn-default(ng-repeat="rm in gRooms" ng-class="{active: guest === rm.guest}" ng-click="changeGuest(rm.guest)")
+                  span {{txt.roomAbrv}} {{rm.room}} - {{rm.guest}}
               tabset(justified="true")
                 tab(heading="Allgemein")
                   .form-horizontal
@@ -25,17 +33,12 @@ include nav_common.jade
                       label.control-label.col-xs-4 {{txt.roomPlan}}:
                       .col-xs-8
                         p.form-control-static  {{planText}}
-                    .form-group.left
-                      label.control-label.col-xs-4 Parkgebühr:
-                      .col-xs-8
-                        p.form-control-static  {{rvm.res.nights}} Tage  à {{rvm.res.park_price | currency: '€'}}
-                  hr
-                  ax-expense-item-list(item-type-array="itemTypes" expense-item-array="rvm.res.expenses" item_type="Plan", count_title="Tage" default_count="{{rvm.res.nights}}" max_count="{{rvm.res.nights}}")
+                  ax-expense-item-list(reservation-vm="rvm" item_type="Plan" room="{{room}}" guest="{{guest}}" count_title="{{txt.days}}" default_count="{{rvm.res.nights}}" max_count="{{rvm.res.nights}}")
                 tab(heading="Getränke")
-                  ax-expense-item-list(item-type-array="itemTypes" expense-item-array="rvm.res.expenses" item_type="Getränke", count_title="Mal" )
+                  ax-expense-item-list(reservation-vm="rvm" item_type="Getränke" room="{{room}}" guest="{{guest}}")
                 tab(heading="Speisen")
-                  ax-expense-item-list(item-type-array="itemTypes" expense-item-array="rvm.res.expenses" item_type="Speisen", count_title="Mal" )
+                  ax-expense-item-list(reservation-vm="rvm" item_type="Speisen" room="{{room}}" guest="{{guest}}")
                 tab(heading="Kur & Heilmittel" ng-show="rvm.isCure")
-                  ax-expense-item-list(item-type-array="itemTypes" expense-item-array="rvm.res.expenses" item_type="{{rvm.res.insurance}}", count_title="Mal" )
+                  ax-expense-item-list(reservation-vm="rvm"  item_type="{{rvm.res.insurance}}" room="{{room}}" guest="{{guest}}" )
 
 
