@@ -1,7 +1,7 @@
 <div ng-if="reservations.length > 0">
     <dl class="dl-horizontal">
         <dt ng-repeat-start="res in reservations" ng-class="{'text-delete': res.isCheckedOut}">
-            <span class="text-success glyphicon glyphicon-check" ng-show="res.reservation_number === selectedReservation"></span>
+            <span class="text-success glyphicon glyphicon-check" ng-show="res.id === selectedResId"></span>
             <span>{{txt.roomAbrv}} {{res.roomNumber}}</span>
             <span ng-show="res.multiroom">...</span>
         </dt>

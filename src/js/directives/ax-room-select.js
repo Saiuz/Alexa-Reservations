@@ -33,6 +33,9 @@ define(['./module'], function (directives) {
   directives.directive('axRoomSelect', ['dbEnums', 'configService', function (dbEnums, configService) {
     var linker = function (scope, element, attrs) {
       scope.txt = configService.loctxt;
+      // private rooms array. Contains slightly different structure than is required by the reservation object.
+      // mimics the rooms array.
+      scope.prooms = [];
 
       //private function to update the selectTitle and the roomCount values
       var updateTitle = function () {
@@ -58,9 +61,30 @@ define(['./module'], function (directives) {
         }
       };
 
-      // private rooms array. Contains slightly different structure than is required by the reservation object.
-      // mimics the rooms array.
-      scope.prooms = [];
+      // private function that returns true if the specified room number is NOT in the available rooms list
+      var roomNotInList = function (roomNumber) {
+        for (var i = 0; i < scope.roomList.length; i++) {
+          if (scope.roomList[i].number === roomNumber) {
+            return false;
+          }
+        }
+        return true;
+      };
+
+      var buildDisplayArray = function () {
+        var parray = [];
+        angular.forEach(scope.rooms, function (item) {
+          parray.push({
+            number: item.number,
+            guest: item.guest,
+            guest2: item.guest2,
+            price: item.price,
+            max_occupants: item.max_occupants,
+            room_type: generateAbbr(item)
+          });
+        });
+        scope.prooms = parray;
+      };
 
       var generateAbbr = function (robj) {
         return dbEnums.getRoomDisplayAbbr(robj);
@@ -91,16 +115,7 @@ define(['./module'], function (directives) {
       scope.$watchCollection('[readOnly,rooms.length, guestLookup, oneRoom, secondGuest]', function (newvals) {
         scope.displayOnly = (newvals[0] === 'true');
         if (scope.displayOnly && newvals[1]) {
-          angular.forEach(scope.rooms, function (item) {
-            scope.prooms.push({
-              number: item.number,
-              guest: item.guest,
-              guest2: item.guest2,
-              price: item.price,
-              max_occupants: item.max_occupants,
-              room_type: generateAbbr(item)
-            });
-          });
+          buildDisplayArray();
         }
         else if (!scope.displayOnly && !newvals[1])  //edit mode but no existing rooms in rooms array
         {
@@ -128,27 +143,35 @@ define(['./module'], function (directives) {
       scope.$watch('roomList', function (newval) {
         if (scope.displayOnly) return;
         if (newval !== undefined && newval.length > 0) {
-          if (newval.length > 0) {
-            scope.roomSelect = newval[0];
-          }
+          scope.roomSelect = newval[0];
+
           // first time don't delete rooms and also make the prooms array match
           // the rooms array.
           if (ignoreWatch) {
             ignoreWatch = false;
-            angular.forEach(scope.rooms, function (item) {
-              scope.prooms.push({
-                number: item.number,
-                guest: item.guest,
-                guest2: item.guest2,
-                price: item.price,
-                max_occupants: item.max_occupants,
-                room_type: generateAbbr(item)
+            buildDisplayArray();
+          }
+          else { // roomList has changed because of user action
+            // First check to see if the reservation has one or more rooms, if so then check each room to see
+            // if it is still present in the list. If not then remove the room from the reservation and from
+            // prooms. If it still exists then keep it.
+            if (scope.rooms && scope.rooms.length > 0) {
+              var delrooms = [];
+              scope.rooms.forEach(function (rm){
+                if (roomNotInList(rm.number)) {
+                  delrooms.push(rm._id);
+                }
               });
-            });
-          } else {
-            scope.rooms = [];
-            scope.prooms = [];
-            scope.showRooms = true;
+              delrooms.forEach(function (id) {
+                scope.rooms.id(id).remove();
+              });
+              buildDisplayArray();
+            }
+            else {
+              scope.rooms = [];
+              scope.prooms = [];
+              scope.showRooms = true;
+            }
           }
         }
         updateTitle();

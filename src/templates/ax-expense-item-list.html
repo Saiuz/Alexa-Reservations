@@ -1,5 +1,4 @@
 <div>
-    <h4>{{title}}</h4>
     <table class="table  table-bordered table-hover table-condensed">
         <thead>
         <tr>
@@ -10,6 +9,12 @@
                 <span class="btn btn-default" ng-show="itemList.length > 0"  ng-click="addExpenseItem()">
                     <i class="glyphicon glyphicon-plus-sign"></i>&nbsp;{{txt.add}}
                 </span>
+                <span class="btn btn-default" ng-if="hasHidden && !showHidden" ng-click="toggleHidden()">
+                   <i class="glyphicon glyphicon-eye-open"></i>
+                </span>
+                <span class="btn btn-default" ng-if="hasHidden && showHidden" ng-click="toggleHidden()">
+                   <i class="glyphicon glyphicon-eye-close"></i>
+                </span>
             </th>
             <th class="text-center">{{col2Title}}</th>
             <th class="text-center">{{col3Title}}</th>
@@ -17,22 +22,25 @@
         </tr>
         </thead>
         <tbody>
-        <tr ng-repeat="item in rvm.res.expenses | filter:{category: itemType, guest: guest}" ng-show="!item.no_display">
+        <tr ng-repeat="item in rvm.res.expenses | filter:{category: itemType, guest: guest}" ng-show="!item.no_display || showHidden">
             <td>
-                <span>
+                <span ng-if="!item.edit_name">
                     {{item.name}} ({{item.room}} - {{item.guest}})
                 </span>
-            </td>
-            <td class="text-center">
-                <span>
-                    <span ng-if="item.day_count">{{item.count}}</span>
-                    <a ng-if="!item.day_count && item.edit_count" href="#" editable-number="item.count" e-min="1"
-                       onaftersave="updateExpense()">{{item.count}}</a>
+                <span ng-if="item.edit_name">
+                    <a href="#" editable-text="item.name" onaftersave="updateExpense(item._id)">{{item.name}}</a>  ({{item.room}} - {{item.guest}})
                 </span>
             </td>
             <td class="text-center">
                 <span>
-                    <a href="#" editable-text="item.price" onaftersave="updateExpense()">{{item.price | currency :
+                    <span ng-if="!item.edit_count">{{item.count}}</span>
+                    <a ng-if="item.edit_count" href="#" editable-number="item.count" e-min="1"
+                       onaftersave="updateExpense(item._id)">{{item.count}}</a>
+                </span>
+            </td>
+            <td class="text-center">
+                <span>
+                    <a href="#" editable-text="item.price" onaftersave="updateExpense(item._id)">{{item.price | currency :
                         '€'}}</a>
                 </span>
             </td>
@@ -43,7 +51,8 @@
         </tbody>
     </table>
     <div>
-        <span class="text-muted" ng-show="total > 0">{{itemType}} Total: {{total | currency : '€'}}</span>
+        <span class="text-muted" ng-show="total > 0">
+            {{itemType}} Total: {{total | currency : '€'}}<br />
+        </span>
     </div>
-
 </div>

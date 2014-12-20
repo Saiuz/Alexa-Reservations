@@ -108,7 +108,7 @@ define(['./module'], function (services) {
       getCurrentReservations: function () {
         var deferred = $q.defer();
         Reservation.find({checked_in: {$exists: true}, checked_out: {$exists: false}})
-            .sort({end_date: -1})
+            .sort({end_date: 1})
             .exec(function (err, reservations) {
               if (err) {
                 deferred.reject(err);
@@ -391,7 +391,7 @@ define(['./module'], function (services) {
             .exec(function (err, itemtypes) {
               if (err) {
                 deferred.reject(err);
-                console.log("getCurrentReservations query failed: " + err);
+                console.log("getItemTypeList query failed: " + err);
               }
               else {
                 deferred.resolve(itemtypes);

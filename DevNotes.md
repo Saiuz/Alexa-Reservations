@@ -36,8 +36,8 @@ the _updateRequiredExpenses method. left off at ~372 in reservationVM.
 **Reservation, Pre-save action (new reservation)**
 
   1. Done ~~Add the fixed expense items from the room plan.~~
-  2. **IN PROGRESS** If multiple rooms with individual bills, add the correct number of room expense items. (clone existing from plan).
-  3. For items whose counts equal the days stayed, pre-set the counts.
+  2. **Done** If multiple rooms with individual bills, add the correct number of room expense items. (clone existing from plan).
+  3. Complete rigorous testing of expense item addition, modification when a reservation is edited.
 
  **To-do items:**
 
@@ -49,4 +49,4 @@ the _updateRequiredExpenses method. left off at ~372 in reservationVM.
  3. Need to develop the checkin logic for a group reservation. For multi-bill group res need to check in the rooms
     individually.
  4. expense items must be modified to include room numbers so that expenses can be assigned to each room
- 5. Figure out how to handle the old Kur functionality where we need individual bills for two people in the same room.
+ 5. **DONE** ~~Figure out how to handle the old Kur functionality where we need individual bills for two people in the same room.~~

@@ -96,7 +96,6 @@ define(['./module'], function (services) {
           else if (typeof dateval === 'string') {
             var x = Date.parse(dateval);
             var y = dateParseDeF(dateval);
-            console.log('xx: ' + x + ' ' + y);
             return x || y ? true : false;
           }
         }

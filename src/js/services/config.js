@@ -23,9 +23,23 @@ define(['./module'], function (services) {
 
     // Object that contains system-wide constants, any constants that are programatic and can't be changed by the user
     // Are defined here first. This object is then updated by a call to the AppConstants collection. That collection
-    // contains the application constants that the UI exposes for update proposes.
+    // contains the application constants that the UI can expose for the propose of updating the constant value.
+    // The constants prefaced by 'bc' are used to sub-categorize the expenense items for display in the proper
+    // bill section.
     this.constants = {
       autoCloseTime: 2000,
+      expensesChangedEvent: 'EXP_EVENT1',
+      reservationChangedEvent: 'RES_EVENT1',
+      bcRoom: 0,
+      bcPackageItem: 1,
+      bcExtraRoom: 2,
+      bcMeals: 3,
+      bcResources: 4,
+      bcKurTax: 5,
+      bcPlanDiverses: 6,
+      bcFoodDrink: 7,
+      bcKur: 8,
+
 
       // Method to retrieve value of the specified constant. (For programmatic retrieval of constant value.)
       get: function (constName) {
@@ -42,9 +56,12 @@ define(['./module'], function (services) {
     // The purpose is to have the standard text items all in one place.
     this.loctxt = {
       //'': '',
+      'accommodation': 'Unterkunft',
       'add': 'Hinzufügen',
       'address1': 'Adresse 1',
       'address2': 'Adresse 2',
+      'aggregatePersonDisplayString': '%text% für %icount% Personen',
+      'aggregateRoomDisplayString': '%text% (%icount% Zimmer - %guestCnt% Gäste)',
       'arrive': 'Ankunft',
       'birthday': 'Geburtstag',
       'breakfast': 'Frühstück',
@@ -65,9 +82,14 @@ define(['./module'], function (services) {
       'contact_name': 'Kontakt Name',
       'contact_tel': 'Kontakt Tf.',
       'country': 'Land',
+      'cureAndTreatment': 'Kur-und Heilmittel',
+      'currentReservations': 'Aktuelle Reservierungen',
+      'cure': 'Kur',
       'day': 'Tag',
       'days': 'Tage',
+      'daysTimes': 'Tage / Mal',
       'delete': 'Löschen',
+      'DietAndAccommodation': 'Diätkost und Unterkunft',
       'double': 'Doppel',
       'edit': 'Bearbeiten',
       'email': 'E-Mail',
@@ -75,6 +97,7 @@ define(['./module'], function (services) {
       'expenseItemErr2': 'Expense Artikel nicht gefunden',
       'extra_day': 'tag Extra',
       'extra_days': 'tage Extra',
+      'extra_days_item': 'Extra Tage',
       'firmName': 'Firma Name',
       'firm': 'Firma',
       'firm_titleCreate': 'Firma Informationen Erstellen',
@@ -85,6 +108,8 @@ define(['./module'], function (services) {
       'forTwoPeople': 'für 2 Personen',
       'free': 'Frei',
       'from': 'Von',
+      'fullPension': 'Vollpension',
+      'fullPensionInc': 'VollpensionInc',
       'guest': 'Gast',
       'guest2': 'Gast 2',
       'guests': 'Gäste',
@@ -93,11 +118,14 @@ define(['./module'], function (services) {
       'guest_titleDelete': 'Gast Informationen Löschen',
       'guest_titleEdit': 'Gast Informationen Bearbeiten',
       'guest_titleRead': 'Informationen zur Gast',
+      'halfPension': 'Halbpension',
+      'halfPensionInc': 'HalbpensionInc',
       'insurance': 'Krankenkasse',
       'item': 'Artikel',
       'item_notFound': 'Artikel nicht gefunden',
       'lastName': 'Nachname',
       'leave': 'Abfahrt',
+      'miscellaneous': 'Diverses',
       'night': 'Nacht',
       'nights': 'Nächte',
       'no': 'Kein',
@@ -143,6 +171,7 @@ define(['./module'], function (services) {
       'telephone': 'Telefonnummer',
       'times': 'Mal',
       'today': 'Heute',
+      'total': 'Sum',
       'until': 'Bis',
       'update': 'Aktualisieren',
       'val_invalidPlan': 'You must select a Room Plan',
@@ -150,7 +179,7 @@ define(['./module'], function (services) {
       'val_invalidFirm': 'Missing or invalid Firm',
       'val_invalidRoom': 'At least one room is required',
       'val_invalidDates': 'Missing or invalid Reservation dates',
-
+      'val_invalidInsurance': 'An insurance plan must be selected',
       'xxx': '***'
     };
 

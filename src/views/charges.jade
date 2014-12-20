@@ -3,18 +3,21 @@ include nav_common.jade
   .row
     .col-md-4
       .panel.panel-default
-        .panel-heading
-          span.input-group-btn Aktuelle Reservierungen
-            button.btn.btn-small.pull-right(type="button" ng-click="findRes()")
-              i.glyphicon.glyphicon-search
+        .panel-heading {{txt.currentReservations}}
+          span.input-group
+            input.form-control(type=text ng-model="searchTxt")
+            span.input-group-btn
+              button.btn.btn-small.pull-right(type="button" ng-click="findRes()")
+                i.glyphicon.glyphicon-search
         .panel-body
-          ax-reservation-list(list-mode="c" list-date="theDate" selected-reservation="selectedReservation")
+          ax-reservation-list(list-mode="c" selected-reservation="selectedReservation")
     .col-md-8
       .panel.panel-default
         .panel-heading {{txt.charges}}&nbsp;
-          span(ng-show="showCharges") für: {{guest}} - {{txt.roomAbrv}} {{room}}, Abfahrt {{rvm.res.end_date | date:'dd.MM.yyyy'}}, {{rvm.res.nights}} {{txt.nights}}
-          a.btn.btn-default.btn-small.pull-right(ng-show="showCharges" href="#/rechnung/{{rvm.res.reservation_number}}")
-            span(class="glyphicon glyphicon-arrow-right" ng-show="showCharges") &nbsp;Zu Rechnung
+          span(ng-show="showCharges") für: {{rvm.res.reservation_number}} - {{guest}} - {{txt.roomAbrv}} {{room}}, Abfahrt {{rvm.res.end_date | date:'dd.MM.yyyy'}}, {{rvm.res.nights}} {{txt.nights}}
+          span.input-group
+            a.btn.btn-default.btn-small.pull-right(ng-show="showCharges" href="#/rechnung/{{rvm.res.reservation_number}}")
+              i.glyphicon.glyphicon-arrow-right(ng-show="showCharges") &nbsp;Zu Rechnung
         .panel-body
           .col-md-12
             div.table-bordered(ng-show="showCharges")
@@ -24,21 +27,23 @@ include nav_common.jade
                 label.btn.btn-default(ng-class="{active: guest === roomGuest2}" ng-click="changeGuest(roomGuest2)")
                   span {{roomGuest2}}
               .btn-group.btn-group-justified(date-toggle="buttons" ng-if="gRooms.length > 0")
-                label.btn.btn-default(ng-repeat="rm in gRooms" ng-class="{active: guest === rm.guest}" ng-click="changeGuest(rm.guest)")
+                label.btn.btn-default(ng-repeat="rm in gRooms" ng-class="{active: guest === rm.guest}" ng-click="changeRoomGuest(rm.room, rm.guest)")
                   span {{txt.roomAbrv}} {{rm.room}} - {{rm.guest}}
               tabset(justified="true")
-                tab(heading="Allgemein")
+                tab(heading="Plan")
                   .form-horizontal
                     .form-group.left
                       label.control-label.col-xs-4 {{txt.roomPlan}}:
                       .col-xs-8
                         p.form-control-static  {{planText}}
-                  ax-expense-item-list(reservation-vm="rvm" item_type="Plan" room="{{room}}" guest="{{guest}}" count_title="{{txt.days}}" default_count="{{rvm.res.nights}}" max_count="{{rvm.res.nights}}")
+                  ax-expense-item-list(reservation-vm="rvm" item_type="Plan" room="{{room}}" guest="{{guest}}" count_title="{{txt.daysTimes}}")
                 tab(heading="Getränke")
                   ax-expense-item-list(reservation-vm="rvm" item_type="Getränke" room="{{room}}" guest="{{guest}}")
                 tab(heading="Speisen")
                   ax-expense-item-list(reservation-vm="rvm" item_type="Speisen" room="{{room}}" guest="{{guest}}")
-                tab(heading="Kur & Heilmittel" ng-show="rvm.isCure")
+                tab(heading="Dienste" ng-show="!rvm.res.insurance")
+                  ax-expense-item-list(reservation-vm="rvm"  item_type="Dienste" room="{{room}}" guest="{{guest}}" )
+                tab(heading="Kur & Heilmittel" ng-show="rvm.res.insurance")
                   ax-expense-item-list(reservation-vm="rvm"  item_type="{{rvm.res.insurance}}" room="{{room}}" guest="{{guest}}" )
-
+              ax-mini-bill(reservation-vm="rvm", room="{{room}}" guest="{{guest}}")
 

@@ -12,4 +12,5 @@ define([
   './dashboard',
   './node-webkit',
   './datetime',
-  './utility'], function () {});
+  './utility',
+  './modals'], function () {});

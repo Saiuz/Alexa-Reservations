@@ -9,7 +9,7 @@ define(['./module'], function (model) {
   // Salutaion enum for Guest
   var salutationEnum = ['Dr.', 'Frau', 'Familie', 'Herr', 'Herrn'];
   // item type enum used in ExpenseItem and ItemType schema
-  var itemTypeEnum =['Plan', 'Allgemein', 'Speisen', 'Getränke', 'VDAK', 'AOK & Andere', 'Privat'];
+  var itemTypeEnum =['Plan', 'Allgemein', 'Speisen', 'Getränke', 'Dienste', 'VDAK', 'AOK & Andere', 'Privat'];
   // enums used in Room and ReservedRoom schemas
   var roomTypeEnum = ['Einzelzimmer', 'Doppelzimmer', 'Suite'];
   var roomTypeAbbrEnum = ['EZ', 'DZ', 'SU', '']
@@ -19,7 +19,7 @@ define(['./module'], function (model) {
   var resStatusEnum = ['Sicher', 'Vorreservation'];
   var resSourceEnum = ['Phone', 'Booking.Com'];
   var resInsuranceEnum = ['','VDAK', 'AOK & Andere', 'Privat'];
-  var resTypeEnum = ['Std.', 'Bus.', 'Kur', 'Group'];
+  var resTypeEnum = ['Std.', 'Bus.', 'Kur', 'Gruppe'];
   // enum for Resource Schema
   var resourceTypeEnum = ['Parkplatz'];
 
@@ -76,11 +76,14 @@ define(['./module'], function (model) {
     var expenseItem = new db.Schema({
       name: {type: String, required: true },  //Name of item type, often used to display on bill
       category: {type: String, enum: itemTypeEnum},  // the expense item type category
+      bill_code: Number, // groups expense items into categories for display on bill. Each category has 10 bill_code values,
+                         // assigned to it, e.g. Plan - 0 to 9, Getränke - 10 to 19 etc. See config.constants service for more info.
       guest: String, // The guest name the expense item is associated with.
       room: Number, // the room number the expense item is associated with.
       date_added: Date, // Date-time stamp for when this item was added to the room.
+      last_updated: Date, //Date-time stamp for when this item was last modified.
       is_room: Boolean, // True if this expense item represents an actual room expense for a reservation.
-      //included_in_room: Boolean, // True if the price of this item is included in the room price associated with the reservation
+      included_in_room: Boolean, // True if the taxable price or price of this item is included in the room price associated with the reservation
       per_room: Boolean, // If true then this item should be duplicated for each room. Used by room plan items.
       per_person: Boolean, //If true then the item should be  duplicated for each person in a room room
       no_delete: Boolean, // If true then the item can not be deleted from a reservation or RoomPlan
@@ -95,6 +98,8 @@ define(['./module'], function (model) {
       //type_id: Number, // the id of the ItemTypes document that created this ExpenseItem document.
       display_string: String, //Formatting display string using custom format symbols (to be worked out)
       display_order: Number, // used for display order of lists item names
+      price_lookup: String, // If it contains a string value, the initial price will be looked up in the Constants
+                            // object. The value in price_lookup is the name of the constant containing the price.
       double_price: Number, // Specific to package plan room items represents the daily room price for a double room
       taxable_price: Number, // If a non 0 value is provided, then this number is used to calculate the tax while the
                              // value of the price field will be used as a displayed value on the bill, otherwise the
@@ -105,49 +110,47 @@ define(['./module'], function (model) {
     });
 
     // ** Virtual readonly properties
-    // Returns the total cost of the item, if not a one-off item then it returns price * count, else returns just price.
+    // Returns the total cost of the item, which is simply price * count.
     expenseItem.virtual('item_total').get(function(){
-      if (this.count && this.price) {
-        var val = this.one_count ? this.price : (this.price * this.count);
-          return convert.roundp(val,2);
-      }
-      else {
-        return 0;
-      }
+      var price = this.price !== undefined ?  this.price : 0,
+          count = this.count !== undefined ? this.count : 0;
+
+      return convert.roundp((price * count), 2);
     });
 
-    // Returns the amount of the total (taxable) price that is the tax portion. The formula assumes that the
-    // taxable_rate value is in percent.
+    // Returns the total cost of the item used for tax calculations. This may differ that the item_total.
+    // It will use the value of the taxable_price field if defined in the total cost calculation. This is needed
+    // for items such as a room which includes breakfast to break out the cost of the breakfast which may be
+    // calculated at a different rate.
+    expenseItem.virtual('item_tax_total').get(function(){
+      var price = this.price !== undefined ? (this.taxable_price ? this.taxable_price : this.price) : 0,
+          count = this.count !== undefined ? this.count : 0;
+
+      return convert.roundp((price * count), 2);
+    });
+
+    // Returns the portion of the (taxable) total price that is the amount of the tax. (All prices include tax).
     expenseItem.virtual('item_tax').get(function(){
-      if (this.taxable_rate && this.count && this.price) {
-        var price = this.taxable_price ? this.taxable_price : this.price;
-        var tax_rate = this.low_tax_rate ? configService.constants.roomTax : configService.constants.salesTax;
-        tax_rate = tax_rate > 1.0 ? tax_rate / 100.0 : tax_rate;
-        var taxconv = 1.0 - 1.0/(1 + tax_rate);
-        var val = this.one_count ? (price * taxconv) : (price * this.count * taxconv);
-        return convert.roundp(val,2);
-      }
-      else {
-        return 0;
-      }
+      var tax_rate = this.low_tax_rate ? configService.constants.roomTax : configService.constants.salesTax,
+          taxconv;
+
+      tax_rate = tax_rate > 1.0 ? tax_rate / 100.0 : tax_rate;
+      taxconv = 1.0 - 1.0/(1 + tax_rate);
+      return convert.roundp((this.item_tax_total * taxconv),2);
+
     });
 
     // Returns the net amount of the item, total (taxable) price - tax
-    expenseItem.virtual('item_net').get(function(){
-      if (this.taxable_rate && this.count && this.price) {
-        var price = this.taxable_price ? this.taxable_price : this.price;
-        var tax_rate = this.low_tax_rate ? configService.constants.roomTax : configService.constants.salesTax;
-        tax_rate = tax_rate > 1.0 ? tax_rate / 100.0 : tax_rate;
-        var taxconv = 1.0 - 1.0/(1 + tax_rate);
-        var total = this.one_count ? price : (price * this.count);
-        var tax = total * taxconv;
-        var val = total - (total * tax);
-        return convert.roundp(val,2);
-      }
-      else {
-        return 0;
-      }
+    expenseItem.virtual('item_tax_net').get(function(){
+      return this.item_tax_total - this.item_tax;
     });
+
+    // pre save method to update the last_update field
+    expenseItem.pre('save', function (next) {
+      this.last_update = new Date();
+      next();
+    });
+
 
     // ** Instance method, copies the ExpenseItem embedded document
     //    to a new ExpenseItem DocumentArray in some other model.
@@ -309,7 +312,7 @@ define(['./module'], function (model) {
       title: { type: String, required: true}, //name of reservation - individual or firm
       guest: {name: String, id: db.Schema.Types.ObjectId}, //primary guest or contact from Address collection list
       guest2: {name: String, id: db.Schema.Types.ObjectId}, //optional second guest in a double room from Address
-                                                            // collection list, used for plans that require separate bills
+                                                            // collection list, used for non-group plans that require separate bills
                                                             // for each guest in a double room.
       firm: String,
       start_date: { type: Date, required: true},

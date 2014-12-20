@@ -1,0 +1,94 @@
+<div>
+</div>
+<div class="panel panel-default panel-tight">
+    <div class="panel-heading">
+            <span ng-click="isCollapsed0 = !isCollapsed0">{{section0text}} {{section0total | currency : '€'}} <i
+                    class="glyphicon"
+                    ng-class="{'glyphicon-chevron-down': !isCollapsed0, 'glyphicon-chevron-right': isCollapsed0}"></i></span>
+    </div>
+    <div class="panel-body" collapse="isCollapsed0">
+        <div class="panel panel-default panel-tight">
+            <div class="panel-heading">
+            <span ng-click="isCollapsed1 = !isCollapsed1">{{section1text}} {{section1total | currency : '€'}} <i
+                    class="glyphicon"
+                    ng-class="{'glyphicon-chevron-down': !isCollapsed1, 'glyphicon-chevron-right': isCollapsed1}"></i></span>
+            </div>
+            <div class="panel-body" collapse="isCollapsed1">
+                <table ng-show="section1items.length" class="table small">
+                    <tr>
+                        <th>{{txt.item}}</th>
+                        <th>{{txt.total}}</th>
+                    </tr>
+                    <tr ng-repeat="item in section1items">
+                        <td>{{item.text}}</td>
+                        <td>{{item.total | currency : '€'}}</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+        <div class="panel panel-default panel-tight">
+            <div class="panel-heading">
+            <span ng-click="isCollapsed2 = !isCollapsed2">{{section2text}} {{section2total | currency : '€'}} <i
+                    class="glyphicon"
+                    ng-class="{'glyphicon-chevron-down': !isCollapsed2, 'glyphicon-chevron-right': isCollapsed2}"></i></span>
+            </div>
+            <div class="panel-body" collapse="isCollapsed2">
+                <table ng-show="section2items.length" class="table small">
+                    <tr>
+                        <th>{{txt.item}}</th>
+                        <th>{{txt.total}}</th>
+                    </tr>
+                    <tr ng-repeat="item in section2items">
+                        <td>{{item.text}}</td>
+                        <td>{{item.total | currency : '€'}}</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+        <div class="panel panel-default panel-tight">
+            <div class="panel-heading">
+            <span ng-click="isCollapsed3 = !isCollapsed3">{{section3text}} {{section3total | currency : '€'}} <i
+                    class="glyphicon"
+                    ng-class="{'glyphicon-chevron-down': !isCollapsed3, 'glyphicon-chevron-right': isCollapsed3}"></i></span>
+            </div>
+            <div class="panel-body" collapse="isCollapsed3">
+                <table ng-show="section3items.length" class="table small">
+                    <tr>
+                        <th>{{txt.item}}</th>
+                        <th>{{txt.total}}</th>
+                    </tr>
+                    <tr ng-repeat="item in section3items">
+                        <td>{{item.text}}</td>
+                        <td>{{item.total | currency : '€'}}</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+        <div class="panel panel-default panel-tight">
+            <div class="panel-heading">
+            <span ng-click="isCollapsed4 = !isCollapsed4">{{section4text}} {{section4total | currency : '€'}} <i
+                    class="glyphicon"
+                    ng-class="{'glyphicon-chevron-down': !isCollapsed4, 'glyphicon-chevron-right': isCollapsed4}"></i></span>
+            </div>
+            <div class="panel-body" collapse="isCollapsed4">
+                <table ng-show="section4items.length" class="table small">
+                    <tr>
+                        <th>{{txt.item}}</th>
+                        <th>{{txt.total}}</th>
+                    </tr>
+                    <tr ng-repeat="item in section4items">
+                        <td>{{item.text}}</td>
+                        <td>{{item.total | currency : '€'}}</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+        <div>
+        <hr />
+        <span class="text-muted">
+            Beträge mit  7 % Ust: Netto: {{section0taxes.net7 | currency : '€'}} Ust: {{section0taxes.tax7 | currency : '€'}} Brutto {{section0taxes.sum7 | currency : '€'}} <br />
+            Beträge mit 19 % Ust: Netto: {{section0taxes.net19 | currency : '€'}} Ust: {{section0taxes.tax19 | currency : '€'}} Brutto {{section0taxes.sum19 | currency : '€'}} <br />
+        </span>
+        </div>
+    </div>
+</div>

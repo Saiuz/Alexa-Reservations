@@ -1,7 +1,7 @@
 /**
  * This directive provides a guest lookup input field with a pop-up form that gives the ability to add a new guest
  * to the guest collection.
- * todo-disable the new name button if the name is found.
+ * todo-add wildcard search?
  */
 define(['./module'], function (directives) {
   'use strict';

@@ -7,7 +7,11 @@
  */
 define(['./module'], function (directives) {
   'use strict';
-  directives.directive('axReservationDetails', ['ReservationVM', 'configService', function (ReservationVM, configService) {
+  directives.directive('axReservationDetails', [
+    'ReservationVM',
+    '$rootScope',
+    'configService',
+    'modals', function (ReservationVM, $rootScope, configService, modals) {
 
     var linker = function (scope, element, attrs) {
       scope.txt = configService.loctxt;
@@ -68,6 +72,7 @@ define(['./module'], function (directives) {
               scope.errSave = true;
             }
             else {
+              $rootScope.$broadcast(configService.constants.reservationChangedEvent, {data: scope.rvm.res.reservation_number});
               scope.$apply();
             }
           });
@@ -82,7 +87,24 @@ define(['./module'], function (directives) {
         //todo-as modal menus.
       };
 
-    };
+      // Edit button click. Bring up modal form in edit mode;
+      scope.edit = function () {
+        var dataObj = {data: scope.reservation, extraData: undefined},
+            model = modals.getModelEnum().reservation;
+
+        modals.update(model, dataObj, function(result) {  // Retrieve reservation after edit
+          ReservationVM.getReservationVM(scope.reservation, true).then(function (resVM) {
+            scope.rvm = resVM;
+            scope.hasResults=true;
+          }, function (err) {
+            console.log('Read Error: ' + err);
+            scope.err = err;
+            scope.errLoad = true;
+          });
+        });
+
+      };
+    }; // end linker
 
     return {
       restrict: 'AE',

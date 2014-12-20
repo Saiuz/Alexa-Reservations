@@ -44,6 +44,7 @@ define(['./module'], function (controllers) {
 
   controllers.controller('ReservationFormModalCtrl',
       ['$scope',
+        '$rootScope',
         '$modalInstance',
         'modalParams',
         'Reservation',
@@ -51,7 +52,7 @@ define(['./module'], function (controllers) {
         'configService',
         '$timeout',
         'utility',
-        function ($scope, $modalInstance, modalParams, Reservation, ReservationVM, configService, $timeout, utility) {
+        function ($scope, $rootScope, $modalInstance, modalParams, Reservation, ReservationVM, configService, $timeout, utility) {
           console.log("ReservationFormModal controller fired");
 
           $scope.err = {};
@@ -69,20 +70,28 @@ define(['./module'], function (controllers) {
 
           // Determine CRUD mode of form.
           // For all but 'C' the query can be by reservation_number property which is unique.
-          var mode = modalParams.mode.substring(0, 1).toLowerCase();
-          var resNumber = parseInt(modalParams.data);// ? {'_id': modalParams.data} : {'firm_name': modalParams.data};
-          var excecuteWatch = false;
-          var firstload = false;
+          var mode = modalParams.mode.substring(0, 1).toLowerCase(),
+              resNumber = parseInt(modalParams.data),// ? {'_id': modalParams.data} : {'firm_name': modalParams.data};
+              extraData = modalParams.extraData,
+              executeWatch = false,
+              firstLoad = false;
+          
           switch (mode) {
             case 'c':
               $scope.title = configService.loctxt.reservation_titleCreate;
               $scope.edit = true;
               $scope.read = false;
               ReservationVM.newReservationVM().then(function (resVM) {
-                $scope.rvm = resVM
+                $scope.rvm = resVM;
+                // if extra data is passed to the form, we expect a specific start an end date to use
+                if (extraData && extraData.start && extraData.end) { //TODO- may need some better handling, eg date strings
+                  resVM.res.start_date = new Date(extraData.start);
+                  resVM.res.end_date = new Date(extraData.end);
+                  resVM.nights = resVM.res.nights;
+                }
                 $scope.start_date = new Date(resVM.res.start_date);
                 $scope.end_date = new Date(resVM.res.end_date);
-                excecuteWatch = true;
+                executeWatch = true;
               }, function (err) {
                 console.log('Create Error: ' + err);
                 $scope.err = err; // returns an error object
@@ -104,7 +113,7 @@ define(['./module'], function (controllers) {
               break;
 
             case 'u':
-              firstload = true;
+              firstLoad = true;
               $scope.title = configService.loctxt.reservation_titleEdit;
               ReservationVM.getReservationVM(resNumber).then(function (resVM) {
                 $scope.rvm = resVM;
@@ -115,7 +124,7 @@ define(['./module'], function (controllers) {
                 $scope.edit = true;
                 $scope.read = false;
                 $scope.saveTxt = configService.loctxt.update;
-                excecuteWatch = true;
+                executeWatch = true;
 
               }, function (err) {
                 $scope.err = err; // returns an error object
@@ -143,10 +152,17 @@ define(['./module'], function (controllers) {
           //watch for changes in certain form fields. This logic deals with input changes that impact the available
           // rooms and resources. Since this logic requires a watch it is handled here not in the VM.
           var ignoreIndex = -1;
-          $scope.$watchCollection('[start_date, end_date, rvm.nights, rvm.res.occupants, rvm.res.type, rvm.res.firm]', function (newvars, oldvars) {
-            console.log("Watch collection fired " + excecuteWatch);
-            if (excecuteWatch) {
-              var varIndex = (oldvars[5] !== newvars[5]) ? 5 : (oldvars[4] !== newvars[4]) ? 4 : (oldvars[3] !== newvars[3]) ? 3 : (oldvars[2] !== newvars[2]) ? 2 : (oldvars[1] !== newvars[1]) ? 1 : (oldvars[0] !== newvars[0]) ? 0 : -1;
+          $scope.$watchCollection('[start_date, end_date, rvm.nights, rvm.res.occupants, rvm.res.type, rvm.res.firm, rvm.res.guest.id, rvm.res.guest2.id]', function (newvars, oldvars) {
+            console.log("Watch collection fired " + executeWatch);
+            if (executeWatch) {
+              var varIndex = (oldvars[7] !== newvars[7]) ? 7 :
+                             (oldvars[6] !== newvars[6]) ? 6 :
+                             (oldvars[5] !== newvars[5]) ? 5 :
+                             (oldvars[4] !== newvars[4]) ? 4 :
+                             (oldvars[3] !== newvars[3]) ? 3 :
+                             (oldvars[2] !== newvars[2]) ? 2 :
+                             (oldvars[1] !== newvars[1]) ? 1 :
+                             (oldvars[0] !== newvars[0]) ? 0 : -1;
               console.log("watch index: " + varIndex);
               if (varIndex === -1 || varIndex === ignoreIndex) {
                 ignoreIndex = -1;
@@ -161,7 +177,8 @@ define(['./module'], function (controllers) {
                   rdates = $scope.rvm.calculateEndDate($scope.rvm.res.start_date);
                   $scope.rvm.res.end_date = rdates.end;
                   $scope.end_date = rdates.end;
-                  $scope.rvm.updateAvailableRoomsAndResources().then(function (cnt) {});
+                  $scope.rvm.updateAvailableRoomsAndResources().then(function (cnt) {
+                  });
 
                   break;
 
@@ -170,7 +187,8 @@ define(['./module'], function (controllers) {
                   ignoreIndex = 2; //nights
                   $scope.rvm.res.end_date = $scope.end_date;
                   $scope.rvm.calculateNights();
-                  $scope.rvm.updateAvailableRoomsAndResources().then(function (cnt) {});
+                  $scope.rvm.updateAvailableRoomsAndResources().then(function (cnt) {
+                  });
                   break;
 
                 case 2:
@@ -179,7 +197,8 @@ define(['./module'], function (controllers) {
                   rdates = $scope.rvm.calculateEndDate($scope.rvm.res.start_date);
                   $scope.rvm.res.end_date = rdates.end;
                   $scope.end_date = rdates.end;
-                  $scope.rvm.updateAvailableRoomsAndResources().then(function (cnt) {});
+                  $scope.rvm.updateAvailableRoomsAndResources().then(function (cnt) {
+                  });
                   break;
 
                 case 3:
@@ -192,7 +211,8 @@ define(['./module'], function (controllers) {
                     return;
                   }
 
-                  $scope.rvm.occupantsChanged().then(function(cnt){});
+                  $scope.rvm.occupantsChanged().then(function (cnt) {
+                  });
                   break;
 
                 case 4:
@@ -206,17 +226,29 @@ define(['./module'], function (controllers) {
                 case 5:
                   // if firm changes and has a new value (not empty) then we must clear the guest field since
                   // guests are filtered by and associated with firms. However, we should not do this if the
-                  // firm change is due to loading an existing reservation with a firm. Thus the firstload
+                  // firm change is due to loading an existing reservation with a firm. Thus the firstLoad
                   // parameter.
-                  if (firstload) {
-                    firstload = false;
+                  if (firstLoad) {
+                    firstLoad = false;
                     return;
                   }
                   console.log("Firm changed");
                   if ($scope.rvm.showFirm && $scope.rvm.res.firm && $scope.rvm.res.guest.name) {
-                    $scope.rvm.res.guest.name = '';
+                    $scope.rvm.res.guest = { name: '', id: 0 };
+                    if ($scope.rvm.res.guest2) {
+                      $scope.rvm.res.guest2 = { name: '', id: 0 };
+                    }
                   }
                   break;
+
+                case 6:
+                  ignoreIndex = -1; // no watched variables changed
+                  $scope.rvm.guestChanged(); // perform any BL needed
+                  break;
+
+                case 7:
+                  ignoreIndex = -1;
+                  $scope.rvm.guestChanged(true); // perform any BL needed, true indicates second guest changed
               }
             }
           });
@@ -257,6 +289,9 @@ define(['./module'], function (controllers) {
           // modal button click methods
           // save button handler
           $scope.save = function () {
+            $scope.err =  null;
+            $scope.errSave = false;
+
             //perform any pre save logic and form validation
             $scope.rvm.beforeSave().then(function () {
               $scope.rvm.res.save(function (err) {
@@ -269,6 +304,7 @@ define(['./module'], function (controllers) {
                 else {
                   var msg = (mode === 'c' ? configService.loctxt.reservation + configService.loctxt.success_saved :
                       configService.loctxt.success_changes_saved);
+                  $rootScope.$broadcast(configService.constants.reservationChangedEvent, {data: $scope.rvm.res.reservation_number});
                   autoClose(msg, $scope.rvm.res);
                 }
               });
@@ -293,6 +329,7 @@ define(['./module'], function (controllers) {
               }
               else {
                 var msg = configService.loctxt.res + configService.loctxt.success_deleted;
+                $rootScope.$broadcast(configService.constants.reservationChangedEvent, {data: id});  //broadcast change event
                 autoClose(msg, id);
               }
             });

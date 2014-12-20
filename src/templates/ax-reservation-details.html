@@ -48,11 +48,11 @@
                 <span ng-show="!rvm.res.rooms.length">{{txt.noRoom}}</span>
             </div>
         </div>
-        <div class="form-group">
-            <label class="control-label col-xs-4">{{}}</label>
+        <div class="form-group" ng-if="rvm.res.comments">
+            <label class="control-label col-xs-4">{{txt.comments}}</label>
 
             <div class="col-xs-8">
-                <p class="form-control-static">{{}}</p>
+                <p class="form-control-static">{{rvm.res.comments}}</p>
             </div>
         </div>
     </div>
@@ -63,9 +63,9 @@
 </div>
 <div class="modal-footer">
     <div class="btn-group">
-        <button ng-if="rvm.res.canCheckIn && rvm.oneRoom" class="btn btn-info" type="button" ng-click="checkin(rvm.res.rooms[0].number)">{{txt.checkin}}</button>
         <button class="btn btn-default" type="button" ng-click="edit()">{{txt.edit}}</button>
-        <a class="btn btn-default" href="#/charges/{{rvm.res.reservation_number}}"
+        <button ng-if="rvm.res.canCheckIn && rvm.oneRoom" class="btn btn-info" type="button" ng-click="checkin(rvm.res.rooms[0].number)">{{txt.checkin}}</button>
+        <a class="btn btn-info" href="#/charges/{{rvm.res.reservation_number}}"
            ng-if="rvm.res.canCheckOut && rvm.oneRoom">{{txt.checkout}}</a>
     </div>
 </div>

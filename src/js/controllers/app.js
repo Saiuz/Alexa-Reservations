@@ -12,15 +12,17 @@ define(['./module'], function (controllers) {
         'Itemtype',
         'RoomPlan',
         'AppConstants',
+        'configService',
         'datetime',
         '$state',
-        function ($scope, db, Firm, Guest, Reservation, Resource, Room, Itemtype, RoomPlan, AppConstants, datetime, $state) {
+        function ($scope, db, Firm, Guest, Reservation, Resource, Room, Itemtype, RoomPlan, AppConstants, configService, datetime, $state) {
           console.log("App controller fired");
 
           // Add base db collections if needed.
 
-          // Default Constant values. Note the name properties should not be edited since these are used to
-          // reference the constants throughout the program
+          // Default Constant values. These are constant values that are used throughout the program but that have
+          // values that can be changed but the user. Note the name properties should not be edited since these are used
+          // to reference the constants throughout the program
           AppConstants.count(function (err, count) {
             if (count === 0) {
               AppConstants.create({
@@ -95,6 +97,22 @@ define(['./module'], function (controllers) {
               }, function (err) {
                 console.log(err);
               });
+              AppConstants.create({
+                name: 'halfpension',
+                display_name: 'Halbpension',
+                nvalue: 19,
+                units: '€'
+              }, function (err) {
+                console.log(err);
+              });
+              AppConstants.create({
+                name: 'fullpension',
+                display_name: 'Vollpension',
+                nvalue: 29,
+                units: '€'
+              }, function (err) {
+                console.log(err);
+              });
               /*,
                AppConstants.create({
                name: 'cityTaxDiscount',
@@ -116,6 +134,7 @@ define(['./module'], function (controllers) {
               Itemtype.create({
                 name: 'ZimmerSchnupper',
                 category: 'Plan',
+                bill_code: configService.constants.bcRoom,
                 guest: '',
                 room: 0,
                 is_room: true,
@@ -128,10 +147,10 @@ define(['./module'], function (controllers) {
                 edit_name: false,
                 edit_count: false,
                 low_tax_rate: true,
-                display_string: '%count% %name% à € %price%',
+                display_string: '%count% Tage %planName%',
                 display_order: 1,
-                single_price: 58.33,
-                double_price: 51, //per person
+                single_price: 53.3349, // times 3 rounds up to 175.00
+                double_price: 51.0, //per person
                 price: 0,
                 count: 0
               }, function (err) {
@@ -140,6 +159,7 @@ define(['./module'], function (controllers) {
               Itemtype.create({
                 name: 'ZimmerUrlaub',
                 category: 'Plan',
+                bill_code: configService.constants.bcRoom,
                 guest: '',
                 room: 0,
                 is_room: true,
@@ -151,7 +171,7 @@ define(['./module'], function (controllers) {
                 one_per: false,
                 edit_name: false,
                 low_tax_rate: true,
-                display_string: '%count% %name% à € %price%',
+                display_string: '%count% Tage %planName%',
                 display_order: 1,
                 single_price: 53.53,
                 double_price: 46.2, //per person
@@ -163,6 +183,7 @@ define(['./module'], function (controllers) {
               Itemtype.create({
                 name: 'Zimmer',
                 category: 'Plan',
+                bill_code: configService.constants.bcRoom,
                 guest: '',
                 room: 0,
                 is_room: true,
@@ -174,7 +195,7 @@ define(['./module'], function (controllers) {
                 one_per: false,
                 edit_name: false,
                 low_tax_rate: true,
-                display_string: '%count% %planName% à € %price%',
+                display_string: '%planName%',
                 display_order: 1,
                 price: 0,
                 count: 0
@@ -184,6 +205,7 @@ define(['./module'], function (controllers) {
               Itemtype.create({
                 name: 'BusZimmer',
                 category: 'Plan',
+                bill_code: configService.constants.bcRoom,
                 guest: '',
                 room: 0,
                 is_room: true,
@@ -195,7 +217,7 @@ define(['./module'], function (controllers) {
                 one_per: false,
                 edit_name: false,
                 low_tax_rate: true,
-                display_string: '%count%X  1 Tag Übernachtung im %roomType% à € %price%',
+                display_string: '%planName%',
                 display_order: 1,
                 price: 0,
                 count: 0
@@ -205,6 +227,7 @@ define(['./module'], function (controllers) {
               Itemtype.create({
                 name: 'ZimmerKurKStd',
                 category: 'Plan',
+                bill_code: configService.constants.bcRoom,
                 guest: '',
                 room: 0,
                 is_room: true,
@@ -216,7 +239,7 @@ define(['./module'], function (controllers) {
                 one_per: false,
                 edit_name: false,
                 low_tax_rate: true,
-                display_string: '%count% %name% à € %price%',
+                display_string: '%planName%',
                 display_order: 1,
                 single_price: 53.53,
                 double_price: 46.2, //per person
@@ -228,6 +251,7 @@ define(['./module'], function (controllers) {
               Itemtype.create({
                 name: 'ZimmerKurKKomf',
                 category: 'Plan',
+                bill_code: configService.constants.bcRoom,
                 guest: '',
                 room: 0,
                 is_room: true,
@@ -239,7 +263,7 @@ define(['./module'], function (controllers) {
                 one_per: false,
                 edit_name: false,
                 low_tax_rate: true,
-                display_string: '%count% %name% à € %price%',
+                display_string: '%planName%',
                 display_order: 1,
                 single_price: 58.53,
                 double_price: 53.0, //per person
@@ -248,31 +272,10 @@ define(['./module'], function (controllers) {
               }, function (err) {
                 if (err)console.log(err)
               });
-              /*
               Itemtype.create({
-                name: 'Kurtaxe',
+                name: configService.loctxt.breakfastInc,
                 category: 'Plan',
-                guest: '',
-                room: 0,
-                per_room: true,
-                per_person: true,
-                no_delete: false,
-                no_display: false,
-                day_count: true,
-                one_per: true,
-                edit_name: false,
-                low_tax_rate: true,
-                display_string: '%count% %name% à € %price%',
-                display_order: 1,
-                price: 2.70,
-                count: 1
-              }, function (err) {
-                if (err)console.log(err)
-              });
-              */
-              Itemtype.create({
-                name: 'FrühstückInc',
-                category: 'Plan',
+                bill_code: configService.constants.bcPackageItem,
                 guest: '',
                 room: 0,
                 included_in_room: true,
@@ -286,15 +289,15 @@ define(['./module'], function (controllers) {
                 bus_pauschale: true,
                 display_string: '%count% %name% à € %price%',
                 display_order: 2,
-                taxable_rate: 19,
                 price: 4.80,
                 count: 1
               }, function (err) {
                 if (err)console.log(err)
               });
               Itemtype.create({
-                name: 'HalbpensionInc',
+                name: configService.loctxt.halfPensionInc,
                 category: 'Plan',
+                bill_code: configService.constants.bcPackageItem,
                 guest: '',
                 room: 0,
                 per_room: false,
@@ -315,6 +318,7 @@ define(['./module'], function (controllers) {
               Itemtype.create({
                 name: 'Fangopackungen',
                 category: 'Plan',
+                bill_code: configService.constants.bcPackageItem,
                 guest: '',
                 room: 0,
                 per_room: false,
@@ -336,6 +340,7 @@ define(['./module'], function (controllers) {
               Itemtype.create({
                 name: 'Medizinische Sprudelbäder',
                 category: 'Plan',
+                bill_code: configService.constants.bcPackageItem,
                 guest: '',
                 room: 0,
                 per_room: false,
@@ -357,6 +362,7 @@ define(['./module'], function (controllers) {
               Itemtype.create({
                 name: 'Klassische Massage',
                 category: 'Plan',
+                bill_code: configService.constants.bcPackageItem,
                 guest: '',
                 room: 0,
                 per_room: false,
@@ -378,6 +384,7 @@ define(['./module'], function (controllers) {
               Itemtype.create({
                 name: 'Zug/Radfhart nach Weikersheim',
                 category: 'Plan',
+                bill_code: configService.constants.bcPackageItem,
                 guest: '',
                 room: 0,
                 per_room: false,
@@ -389,7 +396,6 @@ define(['./module'], function (controllers) {
                 edit_name: false,
                 display_string: '%name% à € %price%',
                 display_order: 3,
-                taxable_rate: 19,
                 price: 10,
                 count: 1
               }, function (err) {
@@ -398,6 +404,7 @@ define(['./module'], function (controllers) {
               Itemtype.create({
                 name: 'Besuch des Deutschordensmuseum',
                 category: 'Plan',
+                bill_code: configService.constants.bcPackageItem,
                 guest: '',
                 room: 0,
                 per_room: false,
@@ -418,6 +425,7 @@ define(['./module'], function (controllers) {
               Itemtype.create({
                 name: 'Massagebehandlung im Haus',
                 category: 'Plan',
+                bill_code: configService.constants.bcPackageItem,
                 guest: '',
                 room: 0,
                 per_room: false,
@@ -438,6 +446,7 @@ define(['./module'], function (controllers) {
               Itemtype.create({
                 name: 'Eintritt in den Wildpark',
                 category: 'Plan',
+                bill_code: configService.constants.bcPackageItem,
                 guest: '',
                 room: 0,
                 per_room: false,
@@ -458,6 +467,7 @@ define(['./module'], function (controllers) {
               Itemtype.create({
                 name: 'Stadtführung',
                 category: 'Plan',
+                bill_code: configService.constants.bcPackageItem,
                 guest: '',
                 room: 0,
                 per_room: false,
@@ -478,6 +488,7 @@ define(['./module'], function (controllers) {
               Itemtype.create({
                 name: 'Frühstück',
                 category: 'Plan',
+                bill_code: configService.constants.bcMeals,
                 guest: '',
                 room: 0,
                 per_room: true,
@@ -490,14 +501,58 @@ define(['./module'], function (controllers) {
                 bus_pauschale: true,
                 display_string: '%count% %name% à € %price%',
                 display_order: 2,
-                price: 4.80,
+                price_lookup: 'breakfast',
+                price: 0,
                 count: 1
               }, function (err) {
                 if (err)console.log(err)
               });
               Itemtype.create({
-                name: 'Pauschale',
+                name: configService.loctxt.halfPension,
                 category: 'Plan',
+                bill_code: configService.constants.bcMeals,
+                guest: '',
+                room: 0,
+                per_room: false,
+                per_person: true,
+                no_delete: false,
+                no_display: false,
+                day_count: true,
+                one_per: true,
+                edit_name: false,
+                display_string: '%count% %name% à € %price%',
+                display_order: 4,
+                price_lookup: 'halfpension',
+                price: 19.0,
+                count: 1
+              }, function (err) {
+                if (err)console.log(err)
+              });
+              Itemtype.create({
+                name: configService.loctxt.fullPension,
+                category: 'Plan',
+                bill_code: configService.constants.bcMeals,
+                guest: '',
+                room: 0,
+                per_room: false,
+                per_person: true,
+                no_delete: false,
+                no_display: false,
+                day_count: true,
+                one_per: true,
+                edit_name: false,
+                display_string: '%count% %name% à € %price%',
+                display_order: 5,
+                price_lookup: 'fullpension',
+                price: 29.0,
+                count: 1
+              }, function (err) {
+                if (err)console.log(err)
+              });
+              Itemtype.create({
+                name: 'Pauschale à 19%',
+                category: 'Plan',
+                bill_code: configService.constants.bcPlanDiverses,
                 guest: '',
                 room: 0,
                 per_room: false,
@@ -507,8 +562,30 @@ define(['./module'], function (controllers) {
                 day_count: false,
                 one_per: false,
                 edit_name: true,
-                display_string: '%count% %name% à € %price%',
-                display_order: 4,
+                low_tax_rate: false,
+                display_string: '%name%',
+                display_order: 6,
+                price: 0,
+                count: 1
+              }, function (err) {
+                if (err)console.log(err)
+              });
+              Itemtype.create({
+                name: 'Pauschale à 7%',
+                category: 'Plan',
+                bill_code: configService.constants.bcPlanDiverses,
+                guest: '',
+                room: 0,
+                per_room: false,
+                per_person: false,
+                no_delete: false,
+                no_display: false,
+                day_count: false,
+                one_per: false,
+                edit_name: true,
+                low_tax_rate: true,
+                display_string: '%name%',
+                display_order: 7,
                 price: 0,
                 count: 1
               }, function (err) {
@@ -517,6 +594,7 @@ define(['./module'], function (controllers) {
               Itemtype.create({
                 name: 'Telephone',
                 category: 'Plan',
+                bill_code: configService.constants.bcPlanDiverses,
                 guest: '',
                 room: 0,
                 per_room: true,
@@ -525,11 +603,13 @@ define(['./module'], function (controllers) {
                 no_display: false,
                 day_count: false,
                 one_per: false,
+                edit_count: true,
                 edit_name: false,
                 bus_pauschale: true,
                 display_string: 'Telefon: %count% Einheiten à € %price%',
                 display_order: 3,
-                price: -1,
+                price_lookup: 'telephone',
+                price: 0,
                 count: 1
               }, function (err) {
                 if (err)console.log(err)
@@ -557,6 +637,7 @@ define(['./module'], function (controllers) {
               Itemtype.create({
                 name: 'Classic Mineralwasser 0,2l',
                 category: 'Getränke',
+                bill_code: configService.constants.bcFoodDrink,
                 guest: '',
                 room: 0,
                 per_room: false,
@@ -566,9 +647,9 @@ define(['./module'], function (controllers) {
                 day_count: false,
                 one_per: false,
                 edit_name: false,
+                edit_count: true,
                 display_string: '%count% %name% à € %price%',
                 display_order: 1,
-                taxable_rate: 19,
                 price: 1.5,
                 count: 1
               }, function (err) {
@@ -577,6 +658,7 @@ define(['./module'], function (controllers) {
               Itemtype.create({
                 name: 'Distelhäuser Landbier dunkel 0,5l',
                 category: 'Getränke',
+                bill_code: configService.constants.bcFoodDrink,
                 guest: '',
                 room: 0,
                 per_room: false,
@@ -586,9 +668,9 @@ define(['./module'], function (controllers) {
                 day_count: false,
                 one_per: false,
                 edit_name: false,
+                edit_count: true,
                 display_string: '%count% %name% à € %price%',
                 display_order: 1,
-                taxable_rate: 19,
                 price: 2.1,
                 count: 1
               }, function (err) {
@@ -597,6 +679,7 @@ define(['./module'], function (controllers) {
               Itemtype.create({
                 name: 'Kuchen',
                 category: 'Speisen',
+                bill_code: configService.constants.bcFoodDrink,
                 guest: '',
                 room: 0,
                 per_room: false,
@@ -606,9 +689,9 @@ define(['./module'], function (controllers) {
                 day_count: false,
                 one_per: false,
                 edit_name: false,
+                edit_count: true,
                 display_string: '%count% %name% à € %price%',
                 display_order: 1,
-                taxable_rate: 19,
                 price: 2.0,
                 count: 1
               }, function (err) {
@@ -617,6 +700,7 @@ define(['./module'], function (controllers) {
               Itemtype.create({
                 name: 'Erdnüsse',
                 category: 'Speisen',
+                bill_code: configService.constants.bcFoodDrink,
                 guest: '',
                 room: 0,
                 per_room: false,
@@ -626,17 +710,18 @@ define(['./module'], function (controllers) {
                 day_count: false,
                 one_per: false,
                 edit_name: false,
+                edit_count: true,
                 display_string: '%count% %name% à € %price%',
                 display_order: 1,
-                taxable_rate: 19,
                 price: 1.0,
                 count: 1
               }, function (err) {
                 if (err)console.log(err)
               });
               Itemtype.create({
-                name: 'Halbpension',
-                category: 'Speisen',
+                name: 'Großmassage 30 Minuten',
+                category: 'Dienste',
+                bill_code: configService.constants.bcKur,
                 guest: '',
                 room: 0,
                 per_room: false,
@@ -646,30 +731,33 @@ define(['./module'], function (controllers) {
                 day_count: false,
                 one_per: false,
                 edit_name: false,
+                edit_count: true,
+                low_tax_rate: true,
                 display_string: '%count% %name% à € %price%',
                 display_order: 1,
-                taxable_rate: 19,
-                price: 19.0,
+                price: 19,
                 count: 1
               }, function (err) {
                 if (err)console.log(err)
               });
               Itemtype.create({
-                name: 'Vollpension',
-                category: 'Speisen',
+                name: 'Aromaöl',
+                category: 'Dienste',
+                bill_code: configService.constants.bcKur,
                 guest: '',
                 room: 0,
                 per_room: false,
-                per_person: true,
+                per_person: false,
                 no_delete: false,
                 no_display: false,
                 day_count: false,
                 one_per: false,
                 edit_name: false,
+                edit_count: true,
+                low_tax_rate: true,
                 display_string: '%count% %name% à € %price%',
                 display_order: 1,
-                taxable_rate: 19,
-                price: 29.0,
+                price: 2,
                 count: 1
               }, function (err) {
                 if (err)console.log(err)
@@ -677,6 +765,7 @@ define(['./module'], function (controllers) {
               Itemtype.create({
                 name: 'X1501 Fangopackungen',
                 category: 'VDAK',
+                bill_code: configService.constants.bcKur,
                 guest: '',
                 room: 0,
                 per_room: false,
@@ -686,9 +775,10 @@ define(['./module'], function (controllers) {
                 day_count: false,
                 one_per: false,
                 edit_name: false,
+                edit_count: true,
+                low_tax_rate: true,
                 display_string: '%count% %name% à € %price%',
                 display_order: 1,
-                taxable_rate: 19,
                 price: 8.19,
                 count: 1
               }, function (err) {
@@ -697,6 +787,7 @@ define(['./module'], function (controllers) {
               Itemtype.create({
                 name: 'X1712 Gashaltiges Bad mit Zusatz',
                 category: 'VDAK',
+                bill_code: configService.constants.bcKur,
                 guest: '',
                 room: 0,
                 per_room: false,
@@ -706,9 +797,10 @@ define(['./module'], function (controllers) {
                 day_count: false,
                 one_per: false,
                 edit_name: false,
+                edit_count: true,
+                low_tax_rate: true,
                 display_string: '%count% %name% à € %price%',
                 display_order: 1,
-                taxable_rate: 19,
                 price: 15.5,
                 count: 1
               }, function (err) {
@@ -717,6 +809,7 @@ define(['./module'], function (controllers) {
               Itemtype.create({
                 name: 'X0106 Klassische Massage',
                 category: 'VDAK',
+                bill_code: configService.constants.bcKur,
                 guest: '',
                 room: 0,
                 per_room: false,
@@ -726,9 +819,10 @@ define(['./module'], function (controllers) {
                 day_count: false,
                 one_per: false,
                 edit_name: false,
+                edit_count: true,
+                low_tax_rate: true,
                 display_string: '%count% %name% à € %price%',
                 display_order: 1,
-                taxable_rate: 19,
                 price: 14.06,
                 count: 1
               }, function (err) {
@@ -749,7 +843,6 @@ define(['./module'], function (controllers) {
                edit_name: false,
                display_string: '%count% %name% à € %price%',
                display_order: 1,
-               taxable_rate: 19,
                price: 4.80,
                count: 1
                }, function (err) {
@@ -778,7 +871,7 @@ define(['./module'], function (controllers) {
                 needs_firm: false,
                 needs_insurance: false,
                 includes_breakfast: true,
-                display_string: '%nights% Tage %name% à € %roomprice%',
+                display_string: '%nights% Tag|Tage %name% à € %roomprice%',
                 required_items: ['Zimmer']
               },function(err){if (err)console.log(err)});
               RoomPlan.create({
@@ -794,7 +887,7 @@ define(['./module'], function (controllers) {
                 needs_firm: false,
                 needs_insurance: false,
                 includes_breakfast: true,
-                display_string: '%nights% Tage %name% à € %roomprice%',
+                display_string: '%nights% Tag|Tage %name% à € %roomprice%',
                 required_items: ['Zimmer']
               },function(err){if (err)console.log(err)});
               RoomPlan.create({
@@ -832,7 +925,7 @@ define(['./module'], function (controllers) {
                 pp_price: 330,
                 single_surcharge: 35,
                 duration: 6,
-                display_string: '%duration% Tage %name% %perPerson%',
+                display_string: '%duration% Tag|Tage %name% %perPerson%',
                 required_items:  ['ZimmerUrlaub', 'Zug/Radfhart nach Weikersheim', 'Besuch des Deutschordensmuseum', 'Massagebehandlung im Haus', 'Eintritt in den Wildpark', 'Eintritt in den Wildpark', 'Stadtführung']
               },function(err){if (err)console.log(err)});
               RoomPlan.create({
@@ -907,7 +1000,7 @@ define(['./module'], function (controllers) {
               },function(err){if (err)console.log(err)});
               RoomPlan.create({
                 name: 'Geschäftsgruppe',
-                resTypeFilter: ['Group'],
+                resTypeFilter: ['Gruppe'],
                 is_default: true,
                 is_plan: false,
                 is_group: true,
@@ -918,12 +1011,12 @@ define(['./module'], function (controllers) {
                 second_guest: true,
                 needs_firm: true,
                 needs_insurance: false,
-                display_string: '%day% Tage %name% à € %roomprice%',
+                display_string: '%nights%X - 1 Tag Übernachtung im %roomType% à € %roomPrice%',
                 required_items: ['BusZimmer']
               },function(err){if (err)console.log(err)});
               RoomPlan.create({
                 name: 'Reisegruppe',
-                resTypeFilter: ['Group'],
+                resTypeFilter: ['Gruppe'],
                 is_plan: false,
                 is_group: true,
                 one_bill: true,
@@ -934,7 +1027,7 @@ define(['./module'], function (controllers) {
                 needs_firm: true,
                 needs_insurance: false,
                 includes_breakfast: true,
-                display_string: '%nights% Tage Unterkunft mit Frühstück für %occupants% Personen',
+                display_string: '%nights% Tag|Tage Unterkunft mit Frühstück  (%occupants% Person|Personen - %roomCnt% Zimmer)',
                 required_items: ['Zimmer']
               },function(err){if (err)console.log(err)});
             }

@@ -68,6 +68,7 @@ define(['./module'], function (controllers) {
             sal.push({value: ix, name: item});
             ix++;
           });
+          $scope.firmPrice = 0; // required by firm lookup but not used in this form.
           $scope.salutations = sal;
           $scope.selSalutation = sal[0];
           $scope.salutationChanged = function () {

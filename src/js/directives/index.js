@@ -14,5 +14,6 @@ define([
   './ax-resource-select',
   './ax-lookup-guest',
   './ax-lookup-firm',
+  './ax-mini-bill',
   './dateFix'
 ], function () {});

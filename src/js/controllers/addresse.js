@@ -16,7 +16,8 @@ define(['./module'], function (controllers) {
         'ExpenseItem',
         '$modal',
         '$document',
-        function ($scope, $state, $rootScope, dashboard, datetime, Reservation, ExpenseItem, $modal, $document) {
+        'modals',
+        function ($scope, $state, $rootScope, dashboard, datetime, Reservation, ExpenseItem, $modal, $document, modals) {
           console.log("Addresse  controller fired")
           $scope.appTitle = $rootScope.appTitle;
           $scope.appBrand = $rootScope.appBrand;
@@ -44,11 +45,19 @@ define(['./module'], function (controllers) {
           $scope.curRes=function(){
             $scope.reservationNumber = 1400101;
             $scope.showRes = true;
-          }
+          };
+
           $scope.newRes=function(){
-            $scope.reservationNumber = 0;
-            $scope.showRes = true;
-          }
+            var dataObj = {
+              data: undefined,
+              extraData: {start: Date.parse('12/13/2014'), end: Date.parse('12/16/2014')}
+            };
+
+            modals.create(modals.getModelEnum().reservation,dataObj, function(result){
+              $scope.testRid = result.reservation_number;
+              $scope.resTestResult = result;
+            })
+          };
 
           //Testing stuff
           // Testing the basics for a multiple room selection directive. I originally incorporated the controls
@@ -193,44 +202,39 @@ define(['./module'], function (controllers) {
 
           };
           $scope.testRid = 0;
-          var lastModer = '';
-          $scope.testRes = function(mode, size) {
+          var lastModer = '',
+              dataObjR = {data: undefined, extraData: undefined};
+
+          $scope.testRes = function(mode) {
             lastModer = mode;
-            var modeParams = {};
+            var model = modals.getModelEnum().reservation;
             switch (mode) {
               case 'c':
-                modeParams = {data: $scope.testRid, mode: 'Create'};
+                dataObjR.data = undefined;
+                modals.create(model,dataObjR,function(result) {
+                  $scope.testRid = result.reservation_number;
+                  $scope.resTestResult = result;
+                });
                 break;
               case 'r':
-                modeParams = {data: $scope.testRid, mode: 'Read'};
+                dataObjR.data = $scope.testRid;
+                modals.read(model,dataObjR,function(result) {
+                  $scope.resTestResult = result;
+                });
                 break;
               case 'u':
-                modeParams = {data: $scope.testRid, mode: 'Update'};
+                dataObjR.data = $scope.testRid;
+                modals.update(model,dataObjR,function(result) {
+                  $scope.resTestResult = result;
+                });
                 break;
               case 'd':
-                modeParams = {data: $scope.testRid, mode: 'Delete'};
+                dataObjR.data = $scope.testRid;
+                modals.delete(model,dataObjR,function(result) {
+                  $scope.resTestResult = result;
+                });
                 break
             }
-
-            var modalInstance = $modal.open({
-              templateUrl: './templates/reservationFormModal.html',
-              controller: 'ReservationFormModalCtrl',
-              size: size,
-              resolve: {
-                modalParams: function () {
-                  return modeParams;
-                }
-              }
-            });
-
-            modalInstance.result.then(function (result) {
-              console.log("Reservation Modal returned: " + result);
-              if (lastModer === 'c') {
-                $scope.testRid = result.reservation_number;
-              }
-              $scope.resTestResult = result;
-            });
-
           };
 
         }]);

@@ -1,168 +1,158 @@
 /**
  * Directive to create a table of Expense items of a particular type. That can be edited and new items created.
- * todo- calculate and display running total amount for items of the specific type
- * todo- add a default value to the item list and  value for when item list is empty (more attributes?)
- * todo- callback function when item has been added/edited (so controller/model can save values in db)
- * TODO- fix add logic, add button to add item not on change of item selection
+ * TODO- Add button to show/hide hidden expenses and implement display logic (hideB)
  */
 define(['./module'], function (directives) {
   'use strict';
-  directives.directive('axExpenseItemList', ['ExpenseItem', '$filter', 'configService',
-        function (ExpenseItem, $filter, configService) {
-    var linker = function (scope, element, attrs) {
-      console.log("axExpenseItemList linker fired");
+  directives.directive('axExpenseItemList', ['$filter', '$rootScope', 'configService',
+    function ($filter, $rootScope, configService) {
+      var linker = function (scope, element, attrs) {
+        console.log("axExpenseItemList linker fired");
 
-      // build the local select list from the expenseItemArray
-      // filter the list by the itemType property. Note we must wait until
-      // both properties have been set during the compile phase of the hosting page
-      scope.txt = configService.loctxt;
-      scope.hideB = false;  //todo-need button that shows if this is true that will allow the toggling of hidden items.
-      scope.selected = {};
+        // build the local select list from the expenseItemArray
+        // filter the list by the itemType property. Note we must wait until
+        // both properties have been set during the compile phase of the hosting page
+        scope.txt = configService.loctxt;
+        scope.hasHidden = false;  //todo-need button that shows if this is true that will allow the toggling of hidden items.
+        scope.showHidden = false;
+        scope.showRoomText = false;
+        scope.selected = {};
 
-      var curItemInfo = []; // contains key information about the current items, use by the item filter
+        var curItemInfo = []; // contains key information about the current items, use by the item filter
 
-      scope.$watchCollection('[reservationVm, itemType, room, guest, hide]', function (newvals) {
-        console.log("axExpenseItemList filter fired");
-        if (newvals[0] && newvals[1] && newvals[2] && newvals[3]) {
-          scope.col1Title = attrs.itemTitle ? attrs.itemTitle : configService.loctxt.item;
-          scope.col2Title = attrs.countTitle ? attrs.countTitle : configService.loctxt.times;
-          scope.col3Title = attrs.priceTitle ? attrs.priceTitle : configService.loctxt.price;
-          scope.rvm = newvals[0];
-          buildInitialList();
-          scope.selected = scope.itemList.length > 0  ? scope.itemList[0] : {};
-          scope.calculateTotals();
-        }
-        if (newvals[4]) {
-          scope.hideB = newvals[3] === 'true';
-        }
-      });
-
-      scope.calculateTotals = function() {
-        var sum = 0;
-        angular.forEach(scope.expenseItemArray, function (item) {
-          if (item.category === scope.itemType) {
-            sum += (item.count * item.price);
-          }
-        });
-         scope.total = sum;
-      } ;
-
-      // removes items from the displayed item types list that have already been added to
-      // the expenseItems array.
-      //var filterOutExistingItems = function () {
-      //  scope.itemList = $filter('filter')(scope.itemList, {_id: 0}, function (actual) {
-      //    return isNotIn(actual);
-      //  });
-      //};
-
-      // Retrieves the name guest and room properties of the current items that are of the specified category,
-      // this list is used to filter out the items that allow for only one item per person or per room
-      var getCurrentItems = function () {
-        curItemInfo = [];
-        scope.rvm.res.expenses.forEach(function (exp) {
-          if (item.category === attrs.itemType) {
-            var item = {
-              name: exp.name,
-              guest: exp.guest,
-              room: exp.room
-            };
-            curItemInfo.push(item);
-          }
-        })
-      };
-
-      // function that determines if an item should be excluded from the item pick list. There are a number reasons:
-      // If plan includes breakfast then breakfast should be removed.
-      var excludeItem = function (item) {
-        if (item.name === configService.loctxt.breakfast) {
-          return scope.rvm.includesBreakfast;
-        }
-
-        return false;
-      };
-
-      // function that builds the initial (filtered) expense item array
-      var buildInitialList = function () {
-        //scope.itemList = $filter('filter')(scope.itemTypeArray, {category: attrs.itemType, no_display: false}, true);
-        scope.itemList = $filter('filter')(scope.rvm.expenseItemTypes,function(item){
-         return (item.category === attrs.itemType
-                 && !item.no_display && !excludeItem(item));
-        });
-        //filterOutExistingItems();
-      };
-
-      // function that checks that a particular expense item type is not already added to
-      // the expense items array
-      //var isNotIn = function (id) {
-      //  var found = true;
-      //  angular.forEach(scope.expenseItemArray, function (item) {
-      //    if (item.type_id === id) {
-      //      found = false;
-      //    }
-      //  });
-      //  return found;
-      //};
-
-      // add the selected expense item to the reservation
-      //
-      scope.addExpenseItem = function () {
-        scope.rvm.addExpenseItemSave(scope.selected, scope.room, scope.guest).then(function (){
-          scope.calculateTotals();
-        }, function(err){
-          //todo-figure out error handling
-        });
-
-      };
-
-      scope.removeItem = function (id) {
-        scope.rvm.res.expenses.id(id).remove();
-        scope.rvm.res.save(function (err) {
-          if (err) {
-            //todo-figure out error handling
-          }
-          else {
-            console.log(scope.rvm.res);
-            scope.calculateTotals();
-          }
-        });
-        //scope.rvm.removeExpenseItemSave(id).then(function (){
-        //  scope.calculateTotals();
-        //  buildInitialList(); //need to re-add removed item to the pick list
-        //}, function(err){
-        //  //todo-figure out error handling
-        //});
-      };
-
-      // We have edited an expense simply save reservation to lock it in.
-      scope.updateExpense = function() {
-        scope.rvm.res.save(function (err) {
-          if (err) {
-            //todo-figure out error handling
-          }
-          else {
+        scope.$watchCollection('[reservationVm, itemType, room, guest]', function (newvals) {
+          if (newvals[0] && newvals[1] && newvals[2] && newvals[3]) {
+            console.log("axExpenseItemList watch fired with all parameters " + newvals[1] + " " + newvals[2] + " " + newvals[3]);
+            scope.col1Title = attrs.itemTitle ? attrs.itemTitle : configService.loctxt.item;
+            scope.col2Title = attrs.countTitle ? attrs.countTitle : configService.loctxt.times;
+            scope.col3Title = attrs.priceTitle ? attrs.priceTitle : configService.loctxt.price;
+            scope.rvm = newvals[0];
+            buildInitialList();
+            scope.selected = scope.itemList.length > 0 ? scope.itemList[0] : {};
             scope.calculateTotals();
           }
         });
 
-      }
-    }; //end link function
+        // calculates the sum of all expense items in the category, may be filtered by user if required.
+        // fires an event that something has changed on the root scope so that other directives can listen
+        // for it and react accordingly.
+        scope.calculateTotals = function () {
+          var sum = 0;
+          angular.forEach(scope.rvm.res.expenses, function (item) {
+            var includeIt = (scope.rvm.oneBill || (item.guest === scope.guest && item.room === Number(scope.room)));
+            if (item.category === scope.itemType && includeIt) {
+              sum += item.item_total;
+            }
+          });
+          scope.total = sum;
+          $rootScope.$broadcast(configService.constants.expensesChangedEvent, {data: scope.itemType});  //Fire event
+        };
 
-    return {
-      restrict: 'AE',
-      link: linker,
-      templateUrl: './templates/ax-expense-item-list.html',
-      scope: {
-        reservationVm: '=',
-        itemType: '@',
-        room: '@',
-        guest: '@',
-        defaultCount: '@',
-        maxCount: '@',
-        itemTitle: '@',
-        countTitle: '@',
-        priceTitle: '@',
-        hide: '@'
-      }
-    };
-  }]);
+        var hasHiddenItems = function () {
+          scope.rvm.res.expenses.forEach(function (exp) {
+            if (exp.category === attrs.itemType && exp.no_display) {
+              scope.hasHidden = true;
+            }
+          });
+        };
+
+        var hasItem = function (name) {
+          var exp;
+          for (var i=0; i <  scope.rvm.res.expenses.length; i++) {
+             exp =  scope.rvm.res.expenses[i];
+            if (exp.per_person) {
+              if (exp.name === name && exp.guest === scope.guest) {
+                return true;
+              }
+            }
+            else {
+              if (exp.name === name) {
+                return true
+              }
+            }
+          }
+
+          return false;
+        };
+
+        // function that determines if an item should be excluded from the item pick list. There are a number reasons:
+        // If plan includes breakfast then breakfast should be removed.
+        var excludeItem = function (item) {
+          if (item.name === configService.loctxt.breakfast) {
+            return scope.rvm.includesBreakfast ? true : hasItem(item.name);
+          }
+          // if plan includes full or half pension then remove both items from list
+          if (item.name === configService.loctxt.halfPension || item.name === configService.loctxt.fullPension) {
+            var result = (hasItem(configService.loctxt.halfPensionInc) || hasItem(configService.loctxt.fullPensionInc));
+            return result;
+          }
+
+          if (item.one_per) { // if true then only allow one of these items.
+            return hasItem(item.name);
+          }
+          return false;
+        };
+
+        // function that builds the initial (filtered) expense item array
+        var buildInitialList = function () {
+          hasHiddenItems(); //first check for hidden items
+          //scope.itemList = $filter('filter')(scope.itemTypeArray, {category: attrs.itemType, no_display: false}, true);
+          scope.itemList = $filter('filter')(scope.rvm.expenseItemTypes, function (item) {
+            return (item.category === attrs.itemType
+            && !item.no_display && !excludeItem(item));
+          });
+          scope.selected = scope.itemList[0];
+        };
+
+        scope.toggleHidden = function () {
+          scope.showHidden = !scope.showHidden;
+
+        };
+
+        // add the selected expense item to the reservation
+        //
+        scope.addExpenseItem = function () {
+          scope.rvm.addExpenseItemSave(scope.selected, scope.room, scope.guest).then(function () {
+            buildInitialList(); // remove added item if required.
+            scope.calculateTotals();
+          }, function (err) {
+            //todo-figure out error handling
+          });
+
+        };
+
+        scope.removeItem = function (id) {
+          scope.rvm.removeExpenseItemSave(id).then(function () {
+            scope.calculateTotals();
+            buildInitialList(); //need to re-add removed item to the pick list
+          }, function (err) {
+            //todo-figure out error handling
+          });
+        };
+
+        // We have edited an expense simply save reservation to lock it in.
+        scope.updateExpense = function (id) {
+          scope.rvm.updateExpenseItemSave(id).then(function () {
+            scope.calculateTotals();
+          }, function (err) {
+            //todo-figure out error handling
+          });
+        }
+      }; //end link function
+
+      return {
+        restrict: 'AE',
+        link: linker,
+        templateUrl: './templates/ax-expense-item-list.html',
+        scope: {
+          reservationVm: '=',
+          itemType: '@',
+          room: '@',
+          guest: '@',
+          itemTitle: '@',
+          countTitle: '@',
+          priceTitle: '@'
+        }
+      };
+    }]);
 });

@@ -28,17 +28,18 @@ define(['./module'], function (controllers) {
 
 
           $scope.$watch('selectedReservation', function (newval) {
-            ReservationVM.getReservationVM(newval, true).then(function (resVM) {
+            if (!newval) return;
+            ReservationVM.getReservationVM(newval.number, true).then(function (resVM) {
               if(resVM.res) {
                 $scope.rvm = resVM;
-                $scope.res = resVM.res;
                 $scope.showCharges = true;
+                $scope.selectedReservation = resVM.res.reservation_number;
               }
             });
           });
 
           if ($stateParams.resNum && $stateParams.resNum > 0){
-            ReservationVM.getReservation($stateParams.resNum).then(function (res){
+            ReservationVM.getReservationVM($stateParams.resNum).then(function (res){
               $scope.res = res;
               $scope.showCharges = true;
             });
