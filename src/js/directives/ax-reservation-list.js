@@ -8,12 +8,15 @@
  *     c (current) - shows reservations that are currently active (have check-in date but no check-out date).
  * The attributes for this directive are:
  *    the-date - the specified date for the reservation queries (not used for mode c).
- *    selected-reservation - parent scope variable that receives the selected reservation
- *    list-mode - determines which reservations are shown
- *
- * Development notes:
- * When I tried to bind the theDate scope property using read only "@" binding, it
- * it did not respond to a watch. I assume I must use two-way binding for this.
+ *    selected-reservation - parent scope variable that receives the selected reservation object/number
+ *    resCount - parent scope variable that receives the number of reservations in the list.
+ *    list-mode - determines which reservations are shown,
+ *    number-only - if true then the selected-reservation parameter receives an object with only one property 'number'
+ *                  that contains the reservation number, if false then a "reservation link" object is returned.
+ *                  This object has three properties:
+ *                      number: the reservation number of the selected list item
+ *                      room: the room associated with the selected list item
+ *                      guest: the guest name associated with the selected list item.
  *
  */
 define(['./module'], function (directives) {
@@ -21,14 +24,15 @@ define(['./module'], function (directives) {
   directives.directive('axReservationList', ['Reservation', 'dashboard', 'configService', 'datetime',
     function (Reservation, dashboard, configService, datetime) {
 
-
-
       var linker = function (scope, element, attrs) {
 
         var haveAttributes = false,
-            useLink, // determines if the selected link is just the reservation number of is the reservation link object
+            useLink = true, // determines if the selected link is just the reservation number of is the reservation link object
             listType, //value of listMode attribute
             theDate; //value of the listDate attribute
+
+        //scope.selectedReservation = {number: 0, room: 0, guest: ''};
+        //scope.selectedResId = -1;
 
         // Private function to build the reservation list. It will separate group reservations that
         // require individual checkins and bills.
@@ -36,6 +40,8 @@ define(['./module'], function (directives) {
           var rlist = [];
           var rlistItem = {};
           var ix = 0;
+
+          scope.resCount = resList.length;
           resList.forEach(function (res) {
             if (res.rooms.length > 1 && res.individualBill) {
               // list res under each room with name defined in room list
@@ -95,7 +101,6 @@ define(['./module'], function (directives) {
           if (haveAttributes) {
             switch (listType) {
               case 'c':
-                useLink = true;
                 scope.getCurrent();
                 break;
               case 'a':
@@ -157,19 +162,18 @@ define(['./module'], function (directives) {
         // click method for when a user selects a reservation.
         scope.resSelected = function (id) {
           var resObj = scope.reservations[id];
-          console.log("resSelected function fired: " + resObj.reservation_number);
+          //console.log("resSelected function fired: " + resObj.reservation_number);
+          scope.selectedResId = resObj.id;
           if (useLink) {
             scope.selectedReservation = resObj.reservation_link;
           }
           else {
-            scope.selectedReservation = resObj.reservation_number;
+            scope.selectedReservation = {number: resObj.reservation_number};
           }
-          scope.selectedResId = resObj.id; //Used
         };
 
         scope.getCurrent = function () {
           scope.show = true;
-          useLink = true;
           dashboard.getCurrentReservations().then(function (result) {
                 scope.reservations = buildList(result, useLink);
               },
@@ -179,21 +183,26 @@ define(['./module'], function (directives) {
         };
 
         scope.$on(configService.constants.reservationChangedEvent, function (event, result) {
-           updateList(); //todo- check to see if reservation is in ilist before updating
+           updateList(); //todo- check to see if reservation is in ilist before updating don't want to respond to a reservation this directive doesn't care about.
         });
-        scope.$watchCollection('[listDate, listMode ]', function (newvals) {
+        scope.$watchCollection('[listDate, listMode, numberOnly, selectedReservation.number ]', function (newvals) {
+          if (newvals[2]) {
+            useLink = !(scope.numberOnly === 'true');
+          }
+          if (!newvals[3]) {
+            scope.selectedResId = -1;
+          }
           if (newvals[1]) {
             listType = newvals[1].toLowerCase().substring(0, 1);
             if (listType !== 'c' && !newvals[0]) return;
 
             haveAttributes = true;
             theDate = newvals[0];
-
-            useLink = false;
-            console.log('Directive watch fired, value is: ' + newvals[0] + " ListMode is: " + newvals[1]);
+            //console.log('Directive watch fired, value is: ' + newvals[0] + " ListMode is: " + newvals[1]);
 
             updateList();
           }
+
         });
 
       }; //end linker
@@ -205,7 +214,9 @@ define(['./module'], function (directives) {
         scope: {
           listDate: '=',
           selectedReservation: '=',
-          listMode: '@'
+          resCount: '=',
+          listMode: '@',
+          numberOnly: '@'
         }
       };
     }

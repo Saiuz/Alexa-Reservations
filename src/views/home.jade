@@ -1,43 +1,26 @@
 
 include nav_common.jade
 
-.container
+.container-fluid
   .row
     .col-md-4
-      .panel.panel-default
-        .panel-heading Ankunft {{theDate | date:'dd.MM.yyyy'}}
-        .panel-body.scrollable200
-          ax-reservation-list(list-mode="arrival" list-date="theDate" selected-reservation="selectedReservation")
-      .panel.panel-default
-        .panel-heading Abfahrt {{theDate | date:'dd.MM.yyyy'}}
-        .panel-body.scrollable200
-          ax-reservation-list(list-mode="departure" list-date="theDate" selected-reservation="selectedReservation")
-      .panel.panel-default
-        .panel-heading Abfahrt {{theNextDate | date:'dd.MM.yyyy'}}
-        .panel-body.scrollable200
-          ax-reservation-list(list-mode="departure" list-date="theNextDate" selected-reservation="selectedReservation")
-    .col-md-6
-      .panel.panel-default(ng-hide="selectedReservation === 0")
+      tabset(justified="true")
+        tab(heading="{{selected.anCnt}} Ankunft: {{theDate | date:'dd.MM.yyyy'}}" select="clearSelected()")
+          .tab-content-box
+            ax-reservation-list(list-mode="arrival" list-date="theDate" selected-reservation="selected.reservation" res-count="selected.anCnt")
+        tab(heading="{{selected.ab1Cnt}} Abfahrt: {{theDate | date:'dd.MM.yyyy'}}" select="clearSelected()")
+          .tab-content-box
+            ax-reservation-list(list-mode="departure" list-date="theDate" selected-reservation="selected.reservation" res-count="selected.ab1Cnt")
+        tab(heading="{{selected.ab2Cnt}} Abfahrt: {{theNextDate | date:'dd.MM.yyyy'}}" select="clearSelected()")
+          .tab-content-box
+            ax-reservation-list(list-mode="departure" list-date="theNextDate" selected-reservation="selected.reservation" res-count="selected.ab2Cnt")
+    .col-md-8
+      .panel.panel-default(ng-hide="!selected.reservation.number")
         .panel-heading
           .form-horizontal
             span.input-group-btn Reservierung #: {{selectedReservation}}
               button.btn.btn-small.pull-right(type="button" ng-click="clearSelected()")
                 i.glyphicon.glyphicon-eye-close
         .panel-body
-          div(ax-reservation-details reservation="selectedReservation")
-    .col-md-5
-      .panel.panel-default
-        .panel-heading Wochen Plan für {{weekStart | date:'dd.MM.yyyy'}} bis {{weekEnd | date:'dd.MM.yyyy'}}
-          div
-            a.btn.btn-default.btn-small(href="#" ng-click="goPrevWeek()")
-              span.glyphicon.glyphicon-fast-backward
-            a.btn.btn-default.btn-small(href="#" ng-click="goPrev()")
-              span.glyphicon.glyphicon-backward
-            a.btn.btn-default.btn-amall(href="#" ng-click="goToday()")
-              span Heute
-            a.btn.btn-default.btn-small(href="#" ng-click="goNext()")
-              span.glyphicon.glyphicon-forward
-            a.btn.btn-default.btn-small(href="#" ng-click="goNextWeek()")
-              span.glyphicon.glyphicon-fast-forward
-        .panel-body
-          div(ax-reservation-stats date-in-week="theDate")
+          div(ax-reservation-details reservation="selected.reservation.number")
+      ax-room-plan(date-in-week="theDate" selected-reservation="selected.reservation" blank-click-function="newResOrCal")

@@ -6,52 +6,55 @@ define(['./module'], function (controllers) {
         '$state',
         '$rootScope',
         'datetime',
-        function ($scope, $state, $rootScope, datetime) {
-          console.log("Home controller fired")
-          //local variables
-          var week = {};
+        'modals',
+        function ($scope, $state, $rootScope, datetime, modals) {
 
-          var changeDate = function (days) {
-            $scope.theDate = days ? datetime.dateOnly($scope.theDate, days) : datetime.dateOnly(new Date(Date.now()));
-            week = datetime.findWeek($scope.theDate);
-            $scope.weekStart = week.weekStart;
-            $scope.weekEnd = week.weekEnd;
-            $scope.theNextDate = datetime.dateOnly($scope.theDate, + 1);
-
-          }
-          // other scope variables
           // Required for nav and page header
           $scope.appTitle = $rootScope.appTitle;
           $scope.appBrand = $rootScope.appBrand;
           $scope.url = $state.current.url;
+          $scope.pageHeading = "Zimmer Plan " // + $scope.theDate.getDate() + '.' + ($scope.theDate.getMonth() + 1) + '.' + $scope.theDate.getFullYear()
 
           $scope.theDate = datetime.dateOnly(new Date(Date.now()));
-          week = datetime.findWeek($scope.theDate);
-          $scope.weekStart = week.weekStart;
-          $scope.weekEnd = week.weekEnd;
-          $scope.theNextDate = datetime.dateOnly($scope.theDate, 1);
-          $scope.selectedReservation = 0;
-          $scope.pageHeading = "Zimmer Plan " // + $scope.theDate.getDate() + '.' + ($scope.theDate.getMonth() + 1) + '.' + $scope.theDate.getFullYear()
-          $scope.showDetails = ($scope.selectedReservationId > 0);
+          $scope.selected = {
+            reservation: undefined,
+            anCnt: 0,
+            ab1Cnt: 0,
+            ab2Cnt: 0
+          };
 
-          // scope functions:
-          $scope.goNext = function () {
-             changeDate(1);
-          }
-          $scope.goNextWeek = function () {
-            changeDate(7);
-          }
-          $scope.goPrev = function() {
-            changeDate(-1);
-          }
-          $scope.goPrevWeek = function(){
-            changeDate(-7);
-          }
-          $scope.goToday = function() {
-            changeDate();
-          }
+          $scope.$watch('theDate', function (newval) {
+            $scope.theNextDate = datetime.dateOnly($scope.theDate, 1);
+          });
+
+          // launch new reservation or new calendar event form
+          $scope.newResOrCal = function (cObj) {
+            console.log('HOME room: ' + cObj.room + ' start: ' + cObj.start + ' end: ' + cObj.end);
+            if (cObj.room) {
+              var dataObj = {
+                    data: undefined,
+                    extraData: {
+                      start: cObj.start,
+                      end: cObj.end,
+                      room: cObj.room
+                    }
+                  },
+                  model = modals.getModelEnum().reservation;
+
+              modals.create(model, dataObj, function () {
+                //nothing needed yet
+              });
+            }
+            else {
+              //calendar, nothing yet
+            }
+          };
+
+
           $scope.clearSelected = function() {
-            $scope.selectedReservation = 0;
+            if ($scope.selected.reservation) {
+              $scope.selected.reservation.number = 0;
+            }
           }
         }]);
 });

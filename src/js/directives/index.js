@@ -15,5 +15,7 @@ define([
   './ax-lookup-guest',
   './ax-lookup-firm',
   './ax-mini-bill',
+  './ax-room-plan',
+  './ax-week-buttons',
   './dateFix'
 ], function () {});

@@ -50,9 +50,10 @@ define(['./module'], function (controllers) {
         'Reservation',
         'ReservationVM',
         'configService',
+        'datetime',
         '$timeout',
         'utility',
-        function ($scope, $rootScope, $modalInstance, modalParams, Reservation, ReservationVM, configService, $timeout, utility) {
+        function ($scope, $rootScope, $modalInstance, modalParams, Reservation, ReservationVM, configService, datetime, $timeout, utility) {
           console.log("ReservationFormModal controller fired");
 
           $scope.err = {};
@@ -84,10 +85,11 @@ define(['./module'], function (controllers) {
               ReservationVM.newReservationVM().then(function (resVM) {
                 $scope.rvm = resVM;
                 // if extra data is passed to the form, we expect a specific start an end date to use
-                if (extraData && extraData.start && extraData.end) { //TODO- may need some better handling, eg date strings
-                  resVM.res.start_date = new Date(extraData.start);
-                  resVM.res.end_date = new Date(extraData.end);
+                if (extraData) { //TODO- may need some better handling, eg date strings
+                  resVM.res.start_date = extraData.start ? datetime.dateOnly(new Date(extraData.start)) : datetime.dateOnly(new Date());
+                  resVM.res.end_date = extraData.end ? datetime.dateOnly(new Date(extraData.end)) : datetime.dateOnly(resVM.res.start_date, 1);
                   resVM.nights = resVM.res.nights;
+                  $scope.title = extraData.room ? $scope.title + ' (' + configService.loctxt.selectedRoom + ' ' + extraData.room + ')' : $scope.title; //todo-can we figure out how to pre select room?
                 }
                 $scope.start_date = new Date(resVM.res.start_date);
                 $scope.end_date = new Date(resVM.res.end_date);
@@ -304,7 +306,7 @@ define(['./module'], function (controllers) {
                 else {
                   var msg = (mode === 'c' ? configService.loctxt.reservation + configService.loctxt.success_saved :
                       configService.loctxt.success_changes_saved);
-                  $rootScope.$broadcast(configService.constants.reservationChangedEvent, {data: $scope.rvm.res.reservation_number});
+                  $rootScope.$broadcast(configService.constants.reservationChangedEvent, {data: $scope.rvm.res.reservation_number, sDate: $scope.rvm.res.start_date});
                   autoClose(msg, $scope.rvm.res);
                 }
               });

@@ -114,6 +114,7 @@ define(['./module'], function (directives) {
         var resource = { //same as ReservedResource schema
           name: scope.resourceSelect.name,
           resource_type: scope.resourceSelect.resource_type,
+          display_name: scope.resourceSelect.display_name,
           price: scope.resourcePrice,
           room_number: scope.selectedRoom.number,
           guest: scope.selectedRoom.guest

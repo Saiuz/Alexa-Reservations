@@ -28,8 +28,10 @@ define(['./module'], function (services) {
     // bill section.
     this.constants = {
       autoCloseTime: 2000,
-      expensesChangedEvent: 'EXP_EVENT1',
+      expensesChangedEvent: 'EXP_EVENT1',  // event names
       reservationChangedEvent: 'RES_EVENT1',
+      roomPlanClickEvent: 'ZPLAN_EVENT1',
+      appReadyEvent: '', // broadcast when app.js finishes.
       bcRoom: 0,
       bcPackageItem: 1,
       bcExtraRoom: 2,
@@ -66,6 +68,7 @@ define(['./module'], function (services) {
       'birthday': 'Geburtstag',
       'breakfast': 'Frühstück',
       'breakfastInc': 'FrühstückInc',
+      'calendar': 'Kalender',
       'cancel': 'Abbrechen',
       'charges': 'Gebühren',
       'chargesFor': 'Gebühren für',
@@ -157,6 +160,7 @@ define(['./module'], function (services) {
       'roomsFree': 'Frei Zimmer',
       'salutation': 'Anrede',
       'selected': 'Ausgewählt',
+      'selectedRoom': 'Gewählte Zi.',
       'select': 'Auswählen',
       'selectParkPlace': 'Parkplatz auswählen',
       'selectRoom': 'Zimmer auswählen',
@@ -180,9 +184,19 @@ define(['./module'], function (services) {
       'val_invalidRoom': 'At least one room is required',
       'val_invalidDates': 'Missing or invalid Reservation dates',
       'val_invalidInsurance': 'An insurance plan must be selected',
+      'week_plan_for': 'Wochen Plan für',
       'xxx': '***'
     };
 
+    // Kalendar month and day names and abbreviations
+    this.calendarInfo = {
+      months: ['Januar', 'Febuar', 'März', 'April', 'Mai', 'Juni', 'Juli', 'August', 'September', 'Oktober', 'November', 'Dezember'],
+      monthsAbrv: ['Januar', 'Febuar', 'März', 'April', 'Mai', 'Juni', 'Juli', 'August', 'September', 'Oktober', 'November', 'Dezember'],
+      days: ['Sonntag','Montag','Dienstag','Mittwoch','Donnerstag','Freitag','Samstag'],
+      daysAbrv: ['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa'],
+      daysDe: ['Montag','Dienstag','Mittwoch','Donnerstag','Freitag','Samstag','Sonntag'],
+      daysAbrvDe: ['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So']
+    };
     // Constructor actions - populate the constants object with the constants defined in the AppConstants collection
     // This action gives precedence to the string value of a constant. If it is defined then it is choosen, else the
     // numeric value is chosen.

@@ -1,5 +1,5 @@
 include nav_common.jade
-.container
+.container-fluid
   .row
     .col-md-4
       .panel.panel-default
@@ -51,15 +51,6 @@ include nav_common.jade
                 label.control-label.col-xs-4 Results:
                 .col-xs-8
                   div {{resTestResult | json}}
-    .col-md-6
-      .panel.panel-default
-        .panel-heading Reservation {{reservationNumber}}
-        .panel-body(ng-show="showRes")
-          h3 ExpenseItem Properties
-          ul
-            li(class='list-unstyled' ng-repeat='p in eiProperties') {{p}}
-          h3 {{planName}} R-I Properties
-          ul
-            li(class='list-unstyled' ng-repeat='p in riProperties') {{p.name}}: {{p.value}}
-           //ax-reservation(reservation-number="reservationNumber")
-
+    .col-md-8
+      ax-room-plan(date-in-week="dateInWeek")
+      div HI: {{dateInWeek | date:'dd.MM.yyyy'}}

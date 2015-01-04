@@ -2064,7 +2064,7 @@ th {
   padding: 8px;
   line-height: 1.42857143;
   vertical-align: top;
-  border-top: 1px solid #dddddd;
+  border: 1px solid #dddddd;
 }
 .table > thead > tr > th {
   vertical-align: bottom;
@@ -6365,4 +6365,85 @@ body {
 }
 .text-delete {
   text-decoration: line-through;
+}
+.table-zp {
+  width: 100%;
+  max-width: 100%;
+  margin: 0px;
+}
+.table-zp > thead > tr > th,
+.table-zp > tbody > tr > th,
+.table-zp > tfoot > tr > th,
+.table-zp > thead > tr > td,
+.table-zp > tbody > tr > td,
+.table-zp > tfoot > tr > td {
+  padding: 1px;
+  height: 16px;
+  max-width: 16px;
+  margin: 0;
+  border: 1px solid #dddddd;
+  font-size: 9px;
+}
+.table-zp > thead > tr > th {
+  vertical-align: middle;
+  text-align: center;
+}
+.table-zp > tbody > tr > td:first-child,
+.table-zp td:last-child {
+  vertical-align: middle;
+  text-align: center;
+  font-weight: bold;
+  width: 50px;
+}
+.table-zp > tbody > tr > td > div {
+  white-space: nowrap;
+  width: inherit;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.table-zp > thead > tr > th > div {
+  white-space: nowrap;
+  width: inherit;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.zp-container {
+  padding: 1px;
+  overflow-x: auto;
+  overflow-y: auto;
+  max-height: 700px;
+}
+.zp-resColor {
+  background-color: #ffff99;
+}
+.zp-endColor {
+  background-color: #ffcc99;
+}
+.table-zplan > tbody > tr > td.zp-endButt {
+  border-right-style: double;
+  border-right-width: thick;
+  border-right-color: #ffa347;
+}
+.zp-divColor {
+  background-color: #fcf8e3;
+}
+.zp-weekColor {
+  background-color: #dff0d8;
+}
+.zp-dayColor {
+  background-color: #d9edf7;
+}
+.zp-selColor {
+  background-color: #fcf8e3;
+}
+.tab-content-box {
+  border-left: 1px solid #dddddd;
+  border-right: 1px solid #dddddd;
+  border-bottom: 1px solid #dddddd;
+  border-bottom-left-radius: 4px;
+  border-bottom-right-radius: 4px;
+  border-top: 0px;
+  padding: 5px;
+  height: 715px;
+  overflow-y: auto;
 }

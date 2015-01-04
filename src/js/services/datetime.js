@@ -8,7 +8,7 @@ define(['./module'], function (services) {
 
     var millisecondsPerDay = 86400000;
 
-    var dateParseDeF = function (dateStr) {
+    var _dateParseDeF = function (dateStr) {
       if (!dateStr) {
         return undefined;
       }
@@ -34,6 +34,33 @@ define(['./module'], function (services) {
       }
     }
 
+    var _isDate = function (dateval) {
+      var adate = false;
+      if (dateval) {
+        if (Object.prototype.toString.call(dateval) === "[object Date]") {
+          return true;
+        }
+        else if (typeof dateval === 'string') {
+          var x = Date.parse(dateval);
+          var y = dateParseDeF(dateval);
+          return x || y ? true : false;
+        }
+      }
+      return adate;
+    };
+
+    var _dateOnly = function (dateval, daysOffset) {
+      if (dateval instanceof Date && !isNaN(dateval.valueOf())) {
+        var d = new Date(dateval.getFullYear(), dateval.getMonth(), dateval.getDate());
+        if ((Object.prototype.toString.call(daysOffset) !== '[object Array]') && daysOffset - parseFloat(daysOffset) >= 0) {
+          d.setDate(d.getDate() + daysOffset);
+        }
+        return d;
+      }
+      else
+        return dateval;
+    };
+
     return {
       // Strip time value off a Date object and optionally changes the date
       // by the specified number of days (+ or -). Function returns a new
@@ -41,17 +68,7 @@ define(['./module'], function (services) {
       // object.
       // NOTE: this function will not work correctly with the TingoDB / Mongoose Date objects. To get around the
       // issue, you can wrap the Mongoose date object in a new JS date object, e.g. new Date(schema.date_field)
-      dateOnly: function (dateval, daysOffset) {
-        if (dateval instanceof Date && !isNaN(dateval.valueOf())) {
-          var d = new Date(dateval.getFullYear(), dateval.getMonth(), dateval.getDate());
-          if ((Object.prototype.toString.call(daysOffset) !== '[object Array]') && daysOffset - parseFloat(daysOffset) >= 0) {
-            d.setDate(d.getDate() + daysOffset);
-          }
-          return d;
-        }
-        else
-          return dateval;
-      },
+      dateOnly: _dateOnly,
 
       // Given a date, find the start and end of the week that the date is in. Weeks can start on Sunday or Monday
       // The default is monday. If no date is provided then the current date is chosen.
@@ -84,23 +101,59 @@ define(['./module'], function (services) {
         }
       },
       // function parses a date string in the German format: dd.MM.yyyy and returns a date object
-      dateParseDe: dateParseDeF,
+      dateParseDe: _dateParseDeF,
       // determine if a variable is a valid date object or string representation of a date object.
       // handles US and German dd.MM.yyyy format
-      isDate: function (dateval) {
-        var adate = false;
-        if (dateval) {
-          if (Object.prototype.toString.call(dateval) === "[object Date]") {
-            return true;
-          }
-          else if (typeof dateval === 'string') {
-            var x = Date.parse(dateval);
-            var y = dateParseDeF(dateval);
-            return x || y ? true : false;
-          }
+      isDate: _isDate,
+      // returns the days in the month of the specified date. If the date is not specified returns
+      // days in the month of the current month.
+      daysInMonthOfDate: function (dateval) {
+        if (!dateval) {
+          var cdate = new Date();
+          return new Date(cdate.getFullYear(), cdate.getMonth() + 1, 0).getDate();
         }
-        return adate;
-      }
+        else if (_isDate(dateval)) {
+          return new Date(dateval.getFullYear(), dateval.getMonth() + 1, 0).getDate();
+        }
+        else {
+          return 0;
+        }
+      },
+      // returns the day of the year for the specified date
+      dayOfYear: function (dateval){
+        if (_isDate(dateval)) {
+          var oneJ = new Date(dateval.getFullYear(), 0, 0);
+          return Math.floor( (dateval-oneJ) / millisecondsPerDay);
+        }
+        else {
+          return 0;
+        }
+      },
+      // returns the number of days since Jan. 1, 1970
+      daysSinceEpoch: function (dateval) {
+        if (_isDate(dateval)) {
+          var ms = new Date(dateval.getFullYear(), dateval.getMonth(), dateval.getDate(), 0, 0, 0).getTime();
+          return Math.floor(dateval / millisecondsPerDay) + 1;
+        }
+        else {
+          return 0;
+        }
+      },
+      // converts a days since Jan. 1 1970 value to a date
+      dseToDate: function (dseval) {
+        return _dateOnly(new Date(dseval * millisecondsPerDay));
+      },
+      // converts a date to a string (no time) in the german format dd.MM.YYYY
+      toDeDateString: function (dateval) {
+        if (dateval) {
+          var y = dateval.getFullYear(),
+              m = dateval.getMonth() + 1,
+              d = dateval.getDate();
+
+          return d + '.' + m + '.' + y;
+        }
+    }
+
     };
   });
 

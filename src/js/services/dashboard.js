@@ -223,6 +223,70 @@ define(['./module'], function (services) {
             });
         return deferred.promise;
       },
+      // find reservations during a specified date interval. Returns an array of objects containing the
+      // reservation number, title, start_date, end_date, room number, room guest name, day of year of start date,
+      // day of year of end date, and two flags that indicate if the reservation starts before the specified date or
+      // ends after the specified date.
+      findReservationsByDateRange: function(start, end) {
+        var deferred = $q.defer(),
+            results = {reservations: [], resources: []},
+            startDoy = datetime.dayOfYear(start),
+            endDoy = datetime.dayOfYear(end);
+
+        Reservation.find({start_date: {$lt: end}, end_date: {$gt: start}})
+          .sort({start_date: 1})
+          .exec(function (err, resResults) {
+            if (err) {
+              deferred.reject(err);
+              console.log("findReservationsByDateRange query 1 failed: " + err);
+            }
+            else {
+              resResults.forEach(function (res) {
+                var rstartDse = datetime.daysSinceEpoch(res.start_date),
+                    rendDse = datetime.daysSinceEpoch(res.end_date);
+
+                res.rooms.forEach(function (room) {
+                  var r = {
+                    reservation_number: res.reservation_number,
+                    start_date: res.start_date,
+                    start_dse: rstartDse,
+                    end_date: res.end_date,
+                    end_dse: rendDse,
+                    room: room.number,
+                    guest: room.guest,
+                    before_start: rstartDse < startDoy,
+                    after_end: rendDse > endDoy,
+                    nights: res.nights,
+                    title: res.title,
+                    oneRoom: res.rooms.length === 1
+                  };
+                  results.reservations.push(r);
+                });
+                res.resources.forEach(function (resource) {
+                  var r = {
+                    resource_name: resource.name,
+                    reservation_number: res.reservation_number,
+                    start_date: res.start_date,
+                    start_dse: rstartDse,
+                    end_date: res.end_date,
+                    end_dse: rendDse,
+                    room: resource.room_number,
+                    guest: resource.guest,
+                    before_start: rstartDse < startDoy,
+                    after_end: rendDse > endDoy,
+                    nights: res.nights,
+                    title: res.title,
+                    oneRoom: res.rooms.length === 1
+                  };
+                  results.resources.push(r);
+                });
+              });
+
+              deferred.resolve(results);
+            }
+          });
+        return deferred.promise;
+      },
       // Find free rooms by finding the rooms for all reservations that
       // overlap the specified dates and then
       // returning the list of rooms not in the set.
@@ -318,6 +382,40 @@ define(['./module'], function (services) {
                     });
               }
             });
+        return deferred.promise;
+      },
+      // Retrieve Room number type and class for all rooms
+      getRoomListInfo: function() {
+        var deferred = $q.defer();
+        Room.find()
+            .select('number room_type room_class display_abbr')
+            .exec(function (err, rooms) {
+              if (err) {
+                deferred.reject(err);
+                console.log("getRoomListInfo query failed: " + err);
+              }
+              else {
+                deferred.resolve(rooms);
+              }
+            });
+
+        return deferred.promise;
+      },
+      // Retrieve Room number type and class for all rooms
+      getResourceListInfo: function() {
+        var deferred = $q.defer();
+        Resource.find()
+            .select('name resource_type display_name')
+            .exec(function (err, res) {
+              if (err) {
+                deferred.reject(err);
+                console.log("getResourceListInfo query failed: " + err);
+              }
+              else {
+                deferred.resolve(res);
+              }
+            });
+
         return deferred.promise;
       },
       // retrieve the room plan types filtering will be done in the vm or UI

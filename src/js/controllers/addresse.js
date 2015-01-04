@@ -24,6 +24,11 @@ define(['./module'], function (controllers) {
           $scope.url = $state.current.url;
           $scope.showRes = true;
 
+          $scope.weekStart;
+          $scope.weekEnd;
+          $scope.dayInWeek;
+          $scope.dateInWeek; // = new Date();
+
           $scope.eiProperties = [];
           ExpenseItem.eachPath(function(value) {
              $scope.eiProperties.push(value);

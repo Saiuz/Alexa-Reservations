@@ -3,6 +3,7 @@ define(['./module'], function (controllers) {
 
   controllers.controller('AppCtrl',
       ['$scope',
+       '$rootScope',
         'db',
         'Firm',
         'Guest',
@@ -15,7 +16,9 @@ define(['./module'], function (controllers) {
         'configService',
         'datetime',
         '$state',
-        function ($scope, db, Firm, Guest, Reservation, Resource, Room, Itemtype, RoomPlan, AppConstants, configService, datetime, $state) {
+        '$timeout',
+        function ($scope, $rootScope, db, Firm, Guest, Reservation, Resource,
+                  Room, Itemtype, RoomPlan, AppConstants, configService, datetime, $state, $timeout) {
           console.log("App controller fired");
 
           // Add base db collections if needed.
@@ -1106,9 +1109,10 @@ define(['./module'], function (controllers) {
             if (count === 0) {
               console.log("Creating Resource collection");
               Resource.create({
-                name: 'Parkplatz 1',
+                name: 'Res. Platz',
                 resource_type: 'Parkplatz',
                 display_order: 1,
+                display_name: 'Res. Pl.',
                 multiple_allowed: false,
                 price: 3
               }, function (err) {
@@ -1118,6 +1122,7 @@ define(['./module'], function (controllers) {
                 name: 'Parkplatz 2',
                 resource_type: 'Parkplatz',
                 display_order: 2,
+                display_name: 'Pl. 2',
                 multiple_allowed: false,
                 price: 3
               }, function (err) {
@@ -1127,6 +1132,7 @@ define(['./module'], function (controllers) {
                 name: 'Parkplatz 3',
                 resource_type: 'Parkplatz',
                 display_order: 3,
+                display_name: 'Pl. 3',
                 multiple_allowed: false,
                 price: 3
               }, function (err) {
@@ -1136,6 +1142,7 @@ define(['./module'], function (controllers) {
                 name: 'Parkplatz 4',
                 resource_type: 'Parkplatz',
                 display_order: 4,
+                display_name: 'Pl. 4',
                 multiple_allowed: false,
                 price: 3
               }, function (err) {
@@ -1145,6 +1152,7 @@ define(['./module'], function (controllers) {
                 name: 'Parkplatz 5',
                 resource_type: 'Parkplatz',
                 display_order: 5,
+                display_name: 'Pl. 5',
                 multiple_allowed: false,
                 price: 3
               }, function (err) {
@@ -1154,6 +1162,7 @@ define(['./module'], function (controllers) {
                 name: 'Parkplatz 6',
                 resource_type: 'Parkplatz',
                 display_order: 6,
+                display_name: 'Pl. 6',
                 multiple_allowed: false,
                 price: 3
               }, function (err) {
@@ -1163,6 +1172,7 @@ define(['./module'], function (controllers) {
                 name: 'Parkplatz 7',
                 resource_type: 'Parkplatz',
                 display_order: 7,
+                display_name: 'Pl. 7',
                 multiple_allowed: false,
                 price: 3
               }, function (err) {
@@ -1277,7 +1287,7 @@ define(['./module'], function (controllers) {
                 if (err)console.log(err)
               });
               Room.create({
-                number: 31,
+                number: 19,
                 room_type: 'Doppelzimmer',
                 room_class: 'Komfort',
                 display_order: 2,
@@ -1286,16 +1296,16 @@ define(['./module'], function (controllers) {
                 if (err)console.log(err)
               });
               Room.create({
-                number: 32,
-                room_type: 'Doppelzimmer',
-                room_class: 'Komfort',
-                display_order: 2,
-                price: 109
+                number: 20,
+                room_type: 'Einzelzimmer',
+                room_class: 'Economy',
+                display_order: 1,
+                price: 57
               }, function (err) {
                 if (err)console.log(err)
               });
               Room.create({
-                number: 23,
+                number: 21,
                 room_type: 'Suite',
                 room_class: '',
                 display_order: 3,
@@ -1306,12 +1316,211 @@ define(['./module'], function (controllers) {
               Room.create({
                 number: 26,
                 room_type: 'Suite',
+                room_class: '',
+                display_order: 3,
+                price: 125
+              }, function (err) {
+                if (err)console.log(err)
+              });
+              Room.create({
+                number: 27,
+                room_type: 'Suite',
                 room_class: 'Balkon',
                 display_order: 3,
                 price: 130
               }, function (err) {
                 if (err)console.log(err)
               });
+              Room.create({
+                number: 31,
+                room_type: 'Einzelzimmer',
+                room_class: 'Standart',
+                display_order: 1,
+                price: 61
+              }, function (err) {
+                if (err)console.log(err)
+              });
+              Room.create({
+                number: 32,
+                room_type: 'Einzelzimmer',
+                room_class: 'Standart',
+                display_order: 1,
+                price: 61
+              }, function (err) {
+                if (err)console.log(err)
+              });
+              Room.create({
+                number: 33,
+                room_type: 'Einzelzimmer',
+                room_class: 'Standart',
+                display_order: 1,
+                price: 61
+              }, function (err) {
+                if (err)console.log(err)
+              });
+              Room.create({
+                number: 34,
+                room_type: 'Einzelzimmer',
+                room_class: 'Standart',
+                display_order: 1,
+                price: 61
+              }, function (err) {
+                if (err)console.log(err)
+              });
+              Room.create({
+                number: 35,
+                room_type: 'Doppelzimmer',
+                room_class: 'Komfort',
+                display_order: 2,
+                price: 109
+              }, function (err) {
+                if (err)console.log(err)
+              });
+              Room.create({
+                number: 41,
+                room_type: 'Einzelzimmer',
+                room_class: 'Standart',
+                display_order: 1,
+                price: 61
+              }, function (err) {
+                if (err)console.log(err)
+              });
+              Room.create({
+                number: 42,
+                room_type: 'Einzelzimmer',
+                room_class: 'Standart',
+                display_order: 1,
+                price: 61
+              }, function (err) {
+                if (err)console.log(err)
+              });
+              Room.create({
+                number: 43,
+                room_type: 'Einzelzimmer',
+                room_class: 'Standart',
+                display_order: 1,
+                price: 61
+              }, function (err) {
+                if (err)console.log(err)
+              });
+              Room.create({
+                number: 44,
+                room_type: 'Einzelzimmer',
+                room_class: 'Standart',
+                display_order: 1,
+                price: 61
+              }, function (err) {
+                if (err)console.log(err)
+              });
+              Room.create({
+                number: 45,
+                room_type: 'Doppelzimmer',
+                room_class: 'Komfort',
+                display_order: 2,
+                price: 109
+              }, function (err) {
+                if (err)console.log(err)
+              });
+              Room.create({
+                number: 46,
+                room_type: 'Doppelzimmer',
+                room_class: 'Komfort',
+                display_order: 2,
+                price: 109
+              }, function (err) {
+                if (err)console.log(err)
+              });
+              Room.create({
+                number: 47,
+                room_type: 'Doppelzimmer',
+                room_class: 'Komfort',
+                display_order: 2,
+                price: 109
+              }, function (err) {
+                if (err)console.log(err)
+              });
+              Room.create({
+                number: 48,
+                room_type: 'Doppelzimmer',
+                room_class: 'Komfort',
+                display_order: 2,
+                price: 109
+              }, function (err) {
+                if (err)console.log(err)
+              });
+              Room.create({
+                number: 51,
+                room_type: 'Einzelzimmer',
+                room_class: 'Standart',
+                display_order: 1,
+                price: 61
+              }, function (err) {
+                if (err)console.log(err)
+              });
+              Room.create({
+                number: 52,
+                room_type: 'Einzelzimmer',
+                room_class: 'Standart',
+                display_order: 1,
+                price: 61
+              }, function (err) {
+                if (err)console.log(err)
+              });
+              Room.create({
+                number: 53,
+                room_type: 'Doppelzimmer',
+                room_class: 'Komfort',
+                display_order: 2,
+                price: 109
+              }, function (err) {
+                if (err)console.log(err)
+              });
+              Room.create({
+                number: 54,
+                room_type: 'Einzelzimmer',
+                room_class: 'Standart',
+                display_order: 1,
+                price: 61
+              }, function (err) {
+                if (err)console.log(err)
+              });
+              Room.create({
+                number: 55,
+                room_type: 'Einzelzimmer',
+                room_class: 'Standart',
+                display_order: 1,
+                price: 61
+              }, function (err) {
+                if (err)console.log(err)
+              });
+              Room.create({
+                number: 56,
+                room_type: 'Einzelzimmer',
+                room_class: 'Standart',
+                display_order: 1,
+                price: 61
+              }, function (err) {
+                if (err)console.log(err)
+              });
+              Room.create({
+                number: 57,
+                room_type: 'Einzelzimmer',
+                room_class: 'Standart',
+                display_order: 1,
+                price: 61
+              }, function (err) {
+                if (err)console.log(err)
+              });
+              Room.create({
+                number: 58,
+                room_type: 'Doppelzimmer',
+                room_class: 'Komfort',
+                display_order: 2,
+                price: 109
+              }, function (err) {
+                if (err)console.log(err)
+              });
+
             }
             else {
               console.log("Room collection contains %d records", count);
@@ -1487,5 +1696,11 @@ define(['./module'], function (controllers) {
           $scope.$on('open-file', function (e, menu, item) {
             $state.go('file_open');
           });
+
+          // Completed all start activity, broadcast the fact that we are ready
+          $timeout(function () {
+            $rootScope.$broadcast(configService.constants.appReadyEvent, {});
+            console.log("app.js complete");
+          }, 400);
         }]);
 });

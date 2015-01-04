@@ -221,6 +221,7 @@ define(['./module'], function (model) {
     var schema = new db.Schema({
       name: String, // the resource name (unique)
       resource_type: String, //the resource type from the resource table
+      display_name: String,
       price: String,  // the resource price
       room_number: Number,
       guest: String
@@ -435,6 +436,7 @@ define(['./module'], function (model) {
       name: {type: String, required: true, unique: true},
       resource_type: {type: String, enum: resourceTypeEnum},
       display_order: Number, // to allow specific sorting (e.g. by type)
+      display_name: String,
       multiple_allowed: Boolean,  // if true then multiple entries of this type are allowed, else only one allowed per res.
       price: Number
     });
