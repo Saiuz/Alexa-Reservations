@@ -23,4 +23,4 @@ include nav_common.jade
                 i.glyphicon.glyphicon-eye-close
         .panel-body
           div(ax-reservation-details reservation="selected.reservation.number")
-      ax-room-plan(date-in-week="theDate" selected-reservation="selected.reservation" blank-click-function="newResOrCal")
+      ax-room-plan(date-in-week="theDate" selected-reservation="selected.reservation" blank-click-function="newResOrCal" selected-event="selectedEvent")

@@ -206,6 +206,43 @@ define(['./module'], function (controllers) {
             });
 
           };
+
+          $scope.testEid = 0;
+          var lastModee = '',
+              dataObjE = {data: undefined, extraData: undefined};
+
+          $scope.testEvt = function(mode) {
+            lastModee = mode;
+            var model = modals.getModelEnum().event;
+            switch (mode) {
+              case 'c':
+                dataObjE.data = undefined;
+                modals.create(model,dataObjE,function(result) {
+                  $scope.testEid = result.reservation_number;
+                  $scope.evtTestResult = result;
+                });
+                break;
+              case 'r':
+                dataObjE.data = $scope.testEid;
+                modals.read(model,dataObjE,function(result) {
+                  $scope.evtTestResult = result;
+                });
+                break;
+              case 'u':
+                dataObjE.data = $scope.testEid;
+                modals.update(model,dataObjE,function(result) {
+                  $scope.resTestResult = result;
+                });
+                break;
+              case 'd':
+                dataObjE.data = $scope.testRid;
+                modals.delete(model,dataObjE,function(result) {
+                  $scope.evtTestResult = result;
+                });
+                break
+            }
+          };
+
           $scope.testRid = 0;
           var lastModer = '',
               dataObjR = {data: undefined, extraData: undefined};

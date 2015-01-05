@@ -11,7 +11,7 @@ define(['./module'], function (services) {
 
   services.factory(
       'dashboard',
-      function (Reservation, Guest, Room, RoomPlan, Resource, Itemtype, Firm, dbEnums, datetime, $q, configService) {
+      function (Reservation, Guest, Room, RoomPlan, Resource, Itemtype, Firm, Event, dbEnums, datetime, $q, configService) {
     return {
       getNextDaysDate: function (dateval) {
         return datetime.dateOnly(dateval, 1);
@@ -285,6 +285,44 @@ define(['./module'], function (services) {
               deferred.resolve(results);
             }
           });
+        return deferred.promise;
+      },
+      // find events during a specified date interval. Returns an array of objects containing the
+      // event id, title, start_date, end_date, comments, day of year of start date,
+      // day of year of end date, and two flags that indicate if the event starts before the specified date or
+      // ends after the specified date.
+      findEventsByDateRange: function(start, end) {
+        var deferred = $q.defer(),
+            results = [],
+            startDoy = datetime.dayOfYear(start),
+            endDoy = datetime.dayOfYear(end);
+
+        Event.find({start_date: {$lt: end}, end_date: {$gt: start}})
+            .sort({start_date: 1})
+            .exec(function (err, evtResults) {
+              if (err) {
+                deferred.reject(err);
+                console.log("findEventsByDateRange query failed: " + err);
+              }
+              else {
+                evtResults.forEach(function (event) {
+                  var eStartDse = datetime.daysSinceEpoch(event.start_date),
+                      eEndDse = datetime.daysSinceEpoch(event.end_date),
+                      evt = {
+                              id: event._id.id,
+                              title: event.title,
+                              start_date: event.start_date,
+                              start_dse: eStartDse,
+                              end_date: event.end_date,
+                              end_dse: eEndDse,
+                              comments: event.comments
+                            };
+                  results.push(evt);
+                });
+
+                deferred.resolve(results);
+              }
+            });
         return deferred.promise;
       },
       // Find free rooms by finding the rooms for all reservations that

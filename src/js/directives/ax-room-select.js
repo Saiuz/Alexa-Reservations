@@ -26,7 +26,7 @@
  *    If the planPrice is provided then the default price associated with the room object is overwritten by the plan
  *    price.  If the firmPrice is provided then the value provided will overwrite both the room and plan price as the
  *    default.
- *
+ *   todo-add room type class based on room abbrev.
  */
 define(['./module'], function (directives) {
   'use strict';

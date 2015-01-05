@@ -7,10 +7,10 @@ define(['./module'], function (services) {
   services.service('modals', ['$q', '$modal', '$document', function ($q, $modal, $document) {
     // define the Mongoose Models the service knows about and the modal form
     // templates and controllers.
-    var models = ['Reservation', 'Guest', 'Firm'],
-        templates = ['./templates/reservationFormModal.html', './templates/guestFormModal.html', './templates/firmFormModal.html'],
-        controllers = ['ReservationFormModalCtrl', 'GuestFormModalCtrl', 'FirmFormModalCtrl'],
-        formSize = ['lg', 'lg', 'lg'], // size of modal
+    var models = ['Reservation', 'Guest', 'Firm', 'Event'],
+        templates = ['./templates/reservationFormModal.html', './templates/guestFormModal.html', './templates/firmFormModal.html', './templates/eventFormModal.html'],
+        controllers = ['ReservationFormModalCtrl', 'GuestFormModalCtrl', 'FirmFormModalCtrl', 'EventFormModalCtrl'],
+        formSize = ['lg', 'lg', 'lg', 'lg'], // size of modal
         mode = {c: 0, r: 1, u: 2, d: 3}, // CRUD mode object
         modeStr = ['c', 'r', 'u', 'd'];
 
@@ -53,7 +53,8 @@ define(['./module'], function (services) {
       return {
         reservation: 0,
         guest: 1,
-        firm: 2
+        firm: 2,
+        event: 3
       }
     };
 

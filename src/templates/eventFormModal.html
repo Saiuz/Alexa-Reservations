@@ -1,0 +1,77 @@
+<div class="modal-header">
+    <h3 class="modal-title">{{title}}</h3>
+</div>
+<div class="modal-body">
+    <div class="form-horizontal" ng-show="!errLoad && !hide">
+        <div class="form-group">
+            <label class="control-label col-xs-4">{{txt.title}}</label>
+            <div class="col-xs-8" ng-show="read">
+                <p class="form-control-static">{{event.title}}</p>
+            </div>
+            <div class="col-xs-8" ng-show="edit">
+                <input class="form-control" ng-model="event.title" type="text" />
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="control-label col-xs-4">{{txt.from}}</label>
+
+            <div class="col-xs-8" ng-show="read">
+                <p class="form-control-static">{{event.start_date | date:'dd.MM.yyyy'}}</p>
+            </div>
+            <div class="col-xs-8" ng-show="edit">
+            <span class="input-group">
+                <input class="form-control" type="text" date-fix datepicker-popup="dd.MM.yyyy" is-open="openedStart"
+                       ng-model="start_date" datepicker-options="dateOptions" ng-required="true" close-text="OK"
+                       current-text="Heute" clear-text="Löschen" date-fix/>
+                <span class="input-group-btn">
+                    <button class="btn btn-default" type="button" ng-click="openStart($event)"><i
+                            class="glyphicon glyphicon-calendar"></i></button>
+                </span>
+            </span>
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="control-label col-xs-4">{{txt.until}}</label>
+
+            <div class="col-xs-8" ng-show="read">
+                <p class="form-control-static">{{event.end_date | date:'dd.MM.yyyy'}}</p>
+            </div>
+            <div class="col-xs-8" ng-show="edit">
+            <span class="input-group">
+                <input class="form-control" type="text" date-fix datepicker-popup="dd.MM.yyyy" is-open="openedEnd"
+                       ng-model="end_date" datepicker-options="dateOptions" ng-required="true" close-text="OK"
+                       current-text="Heute" clear-text="Löschen"/>
+                <span class="input-group-btn">
+                    <button class="btn btn-default" type="button" ng-click="openEnd($event)"><i
+                            class="glyphicon glyphicon-calendar"></i></button>
+                </span>
+            </span>
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="control-label col-xs-4">{{txt.comments}}</label>
+            <div class="col-xs-8" ng-show="read">
+                <p class="form-control-static">{{event.comments}}</p>
+            </div>
+            <div class="col-xs-8" ng-show="edit">
+                <textarea class="form-control" ng-model="event.comments"></textarea>
+            </div>
+        </div>
+    </div>
+    <div class="alert alert-danger" ng-show="errLoad || errSave">
+        <a class="close" ng-click="hideErr()" ng-show="!errLoad">&times;</a>
+        <h3>Error!</h3>
+        <ul>
+            <li ng-repeat="e in err.errors()">{{e}}</li>
+        </ul>
+    </div>
+    <div class="alert alert-success" ng-show="hide">
+        <strong>{{actionMsg}}</strong>
+    </div>
+</div>
+<div class="modal-footer">
+    <label class="btn  btn-primary" ng-show="deleteMode && !hide"><input type="checkbox" ng-model="confirmed" />{{txt.confirmDelete}}</label>
+    <button class="btn btn-danger" ng-click="delete()" ng-show="!errLoad && deleteMode && confirmed && !hide">{{saveTxt}}</button>
+    <button class="btn btn-primary" ng-click="save()" ng-show="!errLoad && edit && !hide">{{saveTxt}}</button>
+    <button class="btn btn-warning" ng-click="cancel()">{{cancelTxt}}</button>
+</div>

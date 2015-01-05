@@ -31,6 +31,7 @@ define(['./module'], function (services) {
       expensesChangedEvent: 'EXP_EVENT1',  // event names
       reservationChangedEvent: 'RES_EVENT1',
       roomPlanClickEvent: 'ZPLAN_EVENT1',
+      calEventChangedEvent: 'CAL_EVENT_EVENT', // calendar event saved/deleted
       appReadyEvent: '', // broadcast when app.js finishes.
       bcRoom: 0,
       bcPackageItem: 1,
@@ -101,6 +102,13 @@ define(['./module'], function (services) {
       'extra_day': 'tag Extra',
       'extra_days': 'tage Extra',
       'extra_days_item': 'Extra Tage',
+      'error': 'Fehler',
+      'errorBold': 'FEHLER!',
+      'event': 'Veranstaltung',
+      'event_titleCreate': 'Veranstaltung Informationen Erstellen',
+      'event_titleDelete': 'Veranstaltung Informationen Löschen',
+      'event_titleRead': 'Veranstaltung zur Firma',
+      'event_titleUpdate': 'Veranstaltung Informationen Bearbeiten',
       'firmName': 'Firma Name',
       'firm': 'Firma',
       'firm_titleCreate': 'Firma Informationen Erstellen',
@@ -174,6 +182,7 @@ define(['./module'], function (services) {
       'success_changes_saved': 'Veränderungen erfolgreich gespeichert',
       'telephone': 'Telefonnummer',
       'times': 'Mal',
+      'title': 'Titel',
       'today': 'Heute',
       'total': 'Sum',
       'until': 'Bis',

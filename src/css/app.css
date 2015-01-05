@@ -6417,7 +6417,7 @@ body {
   background-color: #ffff99;
 }
 .zp-endColor {
-  background-color: #ffcc99;
+  background-color: #ffea80;
 }
 .table-zplan > tbody > tr > td.zp-endButt {
   border-right-style: double;
@@ -6425,7 +6425,7 @@ body {
   border-right-color: #ffa347;
 }
 .zp-divColor {
-  background-color: #fcf8e3;
+  background-color: #f7ecb5;
 }
 .zp-weekColor {
   background-color: #dff0d8;
@@ -6434,7 +6434,31 @@ body {
   background-color: #d9edf7;
 }
 .zp-selColor {
-  background-color: #fcf8e3;
+  background-color: #4daeff;
+}
+.zp-ppColor {
+  background-color: #b2ab8d;
+}
+.zp-EZ-Econ {
+  background-color: #fff1bc;
+}
+.zp-EZ-Std {
+  background-color: #ffdca3;
+}
+.zp-EZ-Komf {
+  background-color: #ffd389;
+}
+.zp-DZ-Econ {
+  background-color: #b5fff5;
+}
+.zp-DZ-Komf {
+  background-color: #82ffd9;
+}
+.zp-SU {
+  background-color: #cca5ca;
+}
+.zp-SU-BK {
+  background-color: #b384ba;
 }
 .tab-content-box {
   border-left: 1px solid #dddddd;

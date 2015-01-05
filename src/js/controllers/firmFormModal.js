@@ -15,7 +15,7 @@
  * The form is activated, and any returned results are handled by the following code:
  *        var modalInstance = $modal.open({
  *                     templateUrl: './templates/firmFormModal.html',
- *                     controller: 'FirmFormModalCtrl',
+ *                     controller: 'firmFormModalCtrl',
  *                     size: size,
  *                     resolve: {
  *                       modalParams: function () {
@@ -165,7 +165,8 @@ define(['./module'], function (controllers) {
               }
               else {
                 var msg = (mode === 'c' ? configService.loctxt.firm + configService.loctxt.success_saved :
-                    configService.loctxt.success_changes_saved);
+                           configService.loctxt.success_changes_saved);
+
                 autoClose(msg, $scope.firm);
               }
             });
@@ -174,7 +175,6 @@ define(['./module'], function (controllers) {
           // Delete btn handler
           $scope.delete = function (err) {
             var id = $scope.firm._id.id;
-            var name = ' ' + $scope.firm.firm_name;
             $scope.firm.remove(function (err) {
               if (err) {
                 console.log('Firm delete error: ' + err);
@@ -183,7 +183,7 @@ define(['./module'], function (controllers) {
                 $scope.$apply();
               }
               else {
-                var msg = configService.loctxt.firm + configService.loctxt.success_deleted
+                var msg = configService.loctxt.firm + configService.loctxt.success_deleted;
                 autoClose(msg, id);
               }
             });

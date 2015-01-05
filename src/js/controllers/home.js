@@ -22,31 +22,45 @@ define(['./module'], function (controllers) {
             ab1Cnt: 0,
             ab2Cnt: 0
           };
+          $scope.selectedEvent; //todo-watch this and launch editor for cal item.
 
-          $scope.$watch('theDate', function (newval) {
-            $scope.theNextDate = datetime.dateOnly($scope.theDate, 1);
+          // monitor to scope properties. They do not interact with one another and we expect only
+          // one to change at any given time.
+          $scope.$watchCollection('[theDate, selectedEvent]', function (newvals, oldvals) {
+            var varIndex = (oldvals[1] !== newvals[1]) ? 1 :
+                (oldvals[0] !== newvals[0]) ? 0 : -1;
+
+            switch (varIndex) {
+              case 0:
+                $scope.theNextDate = datetime.dateOnly($scope.theDate, 1);
+                break;
+              case 1:
+                var dataObj = { data: newvals[1].number, extraData: undefined },
+                    model = modals.getModelEnum().event;
+                modals.update(model, dataObj);
+                break;
+            }
           });
 
           // launch new reservation or new calendar event form
           $scope.newResOrCal = function (cObj) {
+            var dataObj = {
+                  data: undefined,
+                  extraData: {
+                    start: cObj.start,
+                    end: cObj.end,
+                    room: cObj.room
+                  }
+                },
+                model;
             console.log('HOME room: ' + cObj.room + ' start: ' + cObj.start + ' end: ' + cObj.end);
             if (cObj.room) {
-              var dataObj = {
-                    data: undefined,
-                    extraData: {
-                      start: cObj.start,
-                      end: cObj.end,
-                      room: cObj.room
-                    }
-                  },
-                  model = modals.getModelEnum().reservation;
-
-              modals.create(model, dataObj, function () {
-                //nothing needed yet
-              });
+              model = modals.getModelEnum().reservation;
+              modals.create(model, dataObj); //nothing to do after create
             }
             else {
-              //calendar, nothing yet
+              model =  modals.getModelEnum().event;
+              modals.create(model, dataObj);
             }
           };
 

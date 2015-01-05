@@ -37,7 +37,21 @@ include nav_common.jade
               label.control-label.col-xs-4 Results:
               .col-xs-8
                 div {{guestTestResult | json}}
-              hr
+            hr
+            .form-group
+              label.control-label.col-xs-4 Test Event
+              .col-xs-8
+                button(ng-click="testEvt('c')") New
+                button(ng-click="testEvt('r')") Read
+                button(ng-click="testEvt('u')") Update Res. No.
+                button(ng-click="testEvt('d')") Delete
+                span Event ID:
+                  input(type="number" ng-model="testEid")
+            .form-group
+              label.control-label.col-xs-4 Results:
+              .col-xs-8
+                div {{evtTestResult | json}}
+            hr
             .form-group
               label.control-label.col-xs-4 Test Reservation
               .col-xs-8
@@ -52,5 +66,4 @@ include nav_common.jade
                 .col-xs-8
                   div {{resTestResult | json}}
     .col-md-8
-      ax-room-plan(date-in-week="dateInWeek")
-      div HI: {{dateInWeek | date:'dd.MM.yyyy'}}
+

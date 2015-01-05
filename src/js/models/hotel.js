@@ -444,5 +444,21 @@ define(['./module'], function (model) {
     return db.model('resource', schema);
   });
 
-  // still need schema for diverses, kur&Heilmittel and Andere Preis Liste (may want to handle differently)
+  //Schema for Events Calendar
+  model.factory('Event', function (db, datetime) {
+    var schema = new db.Schema({
+      title: {type: String, required: true},
+      start_date: {type: Date, required: true},
+      end_date:  {type: Date, required: true},
+      comments: String
+    });
+
+    // virtual field to return the number of days duration of the event
+    schema.virtual('duration').get(function() {
+      return datetime.getNightsStayed(this.start_date, this.end_date) + 1;
+    });
+
+    return db.model('event', schema);
+  });
+
 }); //module end

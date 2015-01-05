@@ -76,6 +76,14 @@ body {
 
 @zp-cell-box: 16px; //NOTE: if this changes, line 36 of ax-room-plan.html needs to be changed also
 @zp-font-size: ceil((@font-size-base * 0.6));
+@zp-res-color: #ffff99;
+@zp-ez-color: #fff1bc;
+@zp-dz-color: #b5fff5;
+@zp-su-color: #cca5ca;
+@zp-pp-color: #b2ab8d;
+@zp-sel-color: #4daeff;
+@zp-div-color: darken(@state-warning-bg, 10%);
+// define colors for room type classes
 // formatting for room plan table
 .table-zp {
   //table-layout: fixed;
@@ -134,10 +142,10 @@ body {
   max-height: 700px;
 }
 .zp-resColor {
-  background-color: rgb(255,255,153);
+  background-color: @zp-res-color;
 }
 .zp-endColor {
-  background-color: rgb(255,204,153);
+  background-color: darken(spin(@zp-res-color, -10), 5%);
 }
 .table-zplan > tbody > tr > td.zp-endButt {
   border-right-style: double;
@@ -145,7 +153,7 @@ body {
   border-right-color: rgb(255,163,71);
 }
 .zp-divColor {
-  background-color: @state-warning-bg;
+  background-color: @zp-div-color;
 }
 .zp-weekColor {
   background-color: @state-success-bg; //rgb(197,217,241);
@@ -154,8 +162,32 @@ body {
   background-color: @state-info-bg; //rgb(97,151,217);
 }
 .zp-selColor {
-  background-color: @state-warning-bg; //rgb(97,151,217);
+  background-color: @zp-sel-color;
 }
+.zp-ppColor {
+  background-color: @zp-pp-color;
+}
+.zp-EZ-Econ {
+  background-color: @zp-ez-color;
+}
+.zp-EZ-Std {
+  background-color: darken(spin(@zp-ez-color, -10),5%);
+}
+.zp-EZ-Komf {
+  background-color: darken(spin(@zp-ez-color, -10),10%);
+}
+.zp-DZ-Econ {
+  background-color: @zp-dz-color;
+}
+.zp-DZ-Komf {
+  background-color: darken(spin(@zp-dz-color, -10), 10%);
+}
+.zp-SU {
+  background-color: @zp-su-color;
+}
+.zp-SU-BK {
+   background-color: darken(spin(@zp-su-color, -10), 10%);
+ }
 .tab-content-box {
   border-left: 1px solid #dddddd;
   border-right: 1px solid #dddddd;

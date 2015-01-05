@@ -37,7 +37,7 @@ define(['./module'], function (directives) {
             dom = [], // day of month
             isMouseDown = false,
             selStart = 0,
-            selRoom = 0,
+            selRoom = -1, //needs to be < 0 since calendar items have a room of 0
             selEnd = 0,
             isHighlighted,
             resResults;
@@ -46,6 +46,9 @@ define(['./module'], function (directives) {
         scope.weekStart;
         scope.weekEnd;
         scope.dateInWeek;
+        scope.hasErr = false;
+        scope.errMsg = '';
+
         //scope.dateInWeek = new Date();
 
         // Need to get rooms and resources list and (calendar item eventually)
@@ -58,11 +61,13 @@ define(['./module'], function (directives) {
                     scope.resourceCnt = result.length;
                   },
                   function (err) {
-                    // todo handle error
+                    scope.hasErr = true;
+                    scope.errMsg = err;
                   });
             },
             function (err) {
-              // todo-handle error
+              scope.hasErr = true;
+              scope.errMsg = err;
             });
 
         scope.$watchCollection('[dateInWeek, weekStart, weekEnd]', function (newvals, oldvals) {
@@ -75,7 +80,8 @@ define(['./module'], function (directives) {
         });
 
         // Register events that this directive responds to
-        angular.forEach([configService.constants.reservationChangedEvent, configService.constants.appReadyEvent], function (value) {
+        angular.forEach([configService.constants.reservationChangedEvent, configService.constants.appReadyEvent,
+                         configService.constants.calEventChangedEvent], function (value) {
           scope.$on(value, function (event, result) {
             _buildCalendar();
           });
@@ -93,26 +99,26 @@ define(['./module'], function (directives) {
 
         // part of the select blanks functionality.
         $(document).mouseup(function () {
-              if (isMouseDown) {
-                isMouseDown = false;
-                var cObj = {
-                  start: datetime.dseToDate(selStart),
-                  end: datetime.dseToDate(selEnd),
-                  room: Number(selRoom)
-                }
-                if (scope.blankClickFunction) {
-                  scope.blankClickFunction(cObj);
-                }
-                selRoom = 0;
-                selStart = 0;
-                selEnd = 0;
-                element.find(".zp-selColor").each(function () {
-                  $(this).removeClass("zp-selColor");
-                });
-              }
+          if (isMouseDown) {
+            isMouseDown = false;
+            var cObj = {
+              start: datetime.dseToDate(selStart),
+              end: datetime.dseToDate(selEnd),
+              room: Number(selRoom)
+            }
+            if (scope.blankClickFunction) {
+              scope.blankClickFunction(cObj);
+            }
+            selRoom = -1;
+            selStart = 0;
+            selEnd = 0;
+            element.find(".zp-selColor").each(function () {
+              $(this).removeClass("zp-selColor");
             });
+          }
+        });
 
-        // function to populate scope variables to build calendar
+        // function to retrieve items to build calendar, calls _updateCalendar which does the heavy lifting
         function _buildCalendar(paintOnly) {
           var startCal = datetime.dateOnly(scope.weekStart, -7 * wSpan),
               endCal = datetime.dateOnly(scope.weekEnd, 7 * wSpan),
@@ -124,16 +130,19 @@ define(['./module'], function (directives) {
           }
           else {
             dashboard.findReservationsByDateRange(startCal, endCal).then(function (results) {
-              //todo retrieve events calendar and
-              results.events = [];
-              resResults = results;
-              _updateCalendar(results, startCal, endCal, cols);
-            }, function (err) {
-              //todo handle error
+              dashboard.findEventsByDateRange(startCal, endCal).then(function (events) {
+                results.events = events;
+                resResults = results; //cache last query.
+                _updateCalendar(resResults, startCal, endCal, cols);
+              }, function (err) {
+                scope.hasErr = true;
+                scope.errMsg = err;
+              });
             });
           }
         }
 
+        // populates the scope variables with objects to build the calendar display
         function _updateCalendar(results, startCal, endCal, cols) {
           scope.dow = _buildDowArray(startCal, endCal, cols); // calendar day and day of week
           scope.mHeader = _buildMonthHeader(startCal, endCal, cols);
@@ -145,7 +154,7 @@ define(['./module'], function (directives) {
             if (element) {
               element.find(".zpSel")
                   .mousedown(function () {
-                    if (!selRoom) {
+                    if (selRoom < 0) {
                       var sr = $(this).attr("cdat");
                       if (sr) {
                         isMouseDown = true;
@@ -176,7 +185,7 @@ define(['./module'], function (directives) {
                 $(this).width(pw);
               });
             }
-          }, 10);
+          }, 200);
         };
 
         function _buildMonthHeader(start, end, cols) {
@@ -234,7 +243,8 @@ define(['./module'], function (directives) {
               day: configService.calendarInfo.daysAbrv[std],
               date: datetime.dateOnly(start, i).getDate(),
               inWk: (cDSE >= startDSE && cDSE <= endDSE),
-              isDay: (cDSE === dse)
+              isDay: (cDSE === dse),
+              dse: cDSE
             };
             dnow.push(dow);
             std = (std === 6) ? 0 : std + 1;
@@ -257,6 +267,7 @@ define(['./module'], function (directives) {
             var resArr = _findRes(room.number, reservations),
                 bItem = {
                   room: room.number,
+                  rclass: 'zp-' + room.display_abbr,
                   resItems: []
                 };
 
@@ -356,21 +367,81 @@ define(['./module'], function (directives) {
           return bodyArr;
         }
 
-        // todo-incomplete
         function _buildEventsBody(start, end, cols, events) {
           var bodyArr = [],
               sDSE = datetime.daysSinceEpoch(start),  //use date since epoch to avoid logic issues with day of year
               eDSE = datetime.daysSinceEpoch(end),    //that occur at end of the year.
-              dDSE = datetime.daysSinceEpoch(scope.dateInWeek);
+              dDSE = datetime.daysSinceEpoch(scope.dateInWeek),
+              bins = [],
+              binEnd = [];
 
-          // need to find overlapping events and build them out into individual rows. For now we just leave blank
-          var bItem = {
-            name: '',
-            resItems: []
-          };
-          _addBlanks(cols, bItem.resItems, 0, sDSE, dDSE);
-          bodyArr.push(bItem);
+          // bin the events to avoid any overlap, each bin gets a calendar row
+          events.forEach(function (event) {
+            _addToBin(0, bins, binEnd, event);
+          });
+          // Now process bins
+          bins.forEach(function (bin) {
+            var bItem = {
+              name: '',
+              evtItems: []
+            };
+
+            if (bin.length === 0) {
+              _addBlanks(cols, bItem.evtItems, 0, sDSE, dDSE);
+            }
+            else { // process all events in bin.
+              var rix = 0,
+                  ixDSE = sDSE;
+
+              while (rix < bin.length && ixDSE < eDSE) {
+                var evt = bin[rix],
+                    blanks = 0;
+                if (rix === 0 && evt.start_dse < ixDSE && evt.end_dse >= ixDSE) { //first event starts before calendar start
+                  evt.start_dse = ixDSE;
+                  ixDSE = _addEventItem(evt, _backToBack(bin, rix), bItem.evtItems);
+                }
+                else if (rix === bin.length - 1 && evt.end_dse > eDSE) { // last event ends after calendar end
+                  evt.nights -= (evt.end_dse - eDSE);
+                  evt.end_dse = eDSE;
+                  ixDSE = _addEventItem(evt, true, bItem.evtItems); //don't add checkout day to last evt
+                }
+                else { // process evt - find out how many blanks we need
+                  blanks = evt.start_dse - ixDSE;
+                  ixDSE += _addBlanks(blanks, bItem.evtItems, 0, ixDSE, dDSE);
+                  ixDSE = _addEventItem(evt, _backToBack(bin, rix), bItem.evtItems);
+                }
+                rix++;
+              } //end while
+
+              if (ixDSE < eDSE) { //Add any needed blanks at end
+                _addBlanks((eDSE - ixDSE + 1), bItem.evtItems, 0, ixDSE, dDSE);
+              }
+            }
+            bodyArr.push(bItem);
+          });
+
           return bodyArr;
+        }
+
+        // adds the calendar item to the first bin that has no overlap. It will extend the bins if needed.
+        // bix - is the bin number (start with 0)
+        // bins - is an array that contains the bins (2d array)
+        // binEnd - is an array that holds the highest end date of the bin,
+        // item - is the event to place in the bins.
+        function _addToBin(bix, bins, binEnd, item) {
+          if (bix >= binEnd.length) {
+            binEnd.push(item.end_dse);
+            bins.push([]);
+            bins[bix].push(item);
+          }
+          else if (item.start_dse > binEnd[bix]) {
+            bins[bix].push(item);
+            binEnd[bix] = item.end_dse;
+          }
+          else {
+            bix++;
+            _addToBin(bix, bins, binEnd, item);
+          }
         }
 
         // Tests next reservation in list to see if it starts on the checkout day of the previous res
@@ -405,7 +476,28 @@ define(['./module'], function (directives) {
           return i;
         }
 
-        // Adds a reservation item if not overlapEnd then add a checkout day
+        // Adds an event to the array
+        function _addEventItem(evt, overlapEnd, eArr) {
+          var evtItem = {
+                resNum: evt.id,
+                text: evt.title,
+                span: evt.end_dse - evt.start_dse + 1,
+                resCol: true,
+                endCol: false,
+                link: {number: evt.id, room: 0, guest: ''},
+                overLapCol: overlapEnd,
+                hoverTxt: '<b>' + evt.title + '<b><br />Von: ' + datetime.toDeDateString(evt.start_date) + '<br />Bis: ' +
+                datetime.toDeDateString(evt.end_date) + (evt.comments ? '<br />' + evt.comments : ''),
+                isBlank: false
+              },
+              nextDSE = evt.end_dse + 1;
+
+          eArr.push(evtItem);
+
+          return nextDSE;
+        }
+
+        // Adds a reservation/resource item if not overlapEnd then add a checkout day
         function _addResItem(res, overlapEnd, rArr) {
           var resItem = {
                 resNum: res.reservation_number,
