@@ -16,5 +16,6 @@ define([
     './guestFormModal',
     './firmFormModal',
     './reservationFormModal',
-    './eventFormModal'
+    './eventFormModal',
+    './yesNoFormModal'
 ], function () {});

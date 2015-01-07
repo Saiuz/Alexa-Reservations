@@ -15,12 +15,5 @@ include nav_common.jade
           .tab-content-box
             ax-reservation-list(list-mode="departure" list-date="theNextDate" selected-reservation="selected.reservation" res-count="selected.ab2Cnt")
     .col-md-8
-      .panel.panel-default(ng-hide="!selected.reservation.number")
-        .panel-heading
-          .form-horizontal
-            span.input-group-btn Reservierung #: {{selectedReservation}}
-              button.btn.btn-small.pull-right(type="button" ng-click="clearSelected()")
-                i.glyphicon.glyphicon-eye-close
-        .panel-body
-          div(ax-reservation-details reservation="selected.reservation.number")
+      ax-reservation-details(ng-show="selected.reservation.number" reservation="selected.reservation")
       ax-room-plan(date-in-week="theDate" selected-reservation="selected.reservation" blank-click-function="newResOrCal" selected-event="selectedEvent")

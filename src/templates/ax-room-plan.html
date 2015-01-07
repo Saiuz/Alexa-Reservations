@@ -1,7 +1,7 @@
 <div class="panel panel-default">
     <div class="panel-heading">
         {{txt.week_plan_for}} {{weekStart | date:'dd.MM.yyyy'}} {{txt.until}} {{weekEnd | date:'dd.MM.yyyy'}}
-        <ax-week-buttons week-start-date='weekStart' week-end-date='weekEnd' date-in-week='dateInWeek'/>
+        <ax-week-buttons week-start-date='weekStart' week-end-date='weekEnd' picked-date='dateInWeek'/>
     </div>
     <div class="panel-body zp-container">
         <table class="table-zp" ng-if="!hasErr">
@@ -9,7 +9,7 @@
             <tr>
                 <th class="zp-divColor"></th>
                 <th ng-repeat="m in mHeader track by $index" colspan="{{m.span}}" ng-class-odd="'zp-divColor'"
-                    ng-class-even="'zp-endColor'"><div style="width: {{m.span * 16}}px;">{{m.text}}</div>
+                    ng-class-even="'zp-endColor'">{{m.text}}
                 </th>
                 <th class="zp-divColor"></th>
             </tr>
@@ -33,7 +33,7 @@
                 <td class="zp-divColor"></td>
                 <td ng-repeat="i in e.evtItems track by $index" colspan="{{i.span}}"
                     ng-class="{'zp-resColor': i.resCol, 'zp-endColor': i.endCol,'zp-endButt': i.overLapCol,
-                    'zp-dayColor': i.dayCol, 'zpSel': i.isBlank}" cdat="0|{{i.dse}}">
+                    'zp-dayColor': i.dayCol}">
                     <div ng-if="!i.isBlank" ng-click="eClick(i.link)"
                          tooltip-html-unsafe="{{i.hoverTxt}}" tooltip-append-to-body="true" class="zpRes">{{i.text}}</div>
                 </td>
@@ -51,7 +51,7 @@
                 <td ng-repeat="i in r.resItems track by $index" colspan="{{i.span}}"
                     ng-class="{'zp-resColor': i.resCol, 'zp-endColor': i.endCol,'zp-endButt': i.overLapCol,
                     'zp-dayColor': i.dayCol, 'zpSel': i.isBlank}" cdat="{{i.room}}|{{i.dse}}">
-                    <div ng-if="!i.isBlank" ng-click="rClick(i.link)"
+                    <div ng-if="!i.isBlank" ng-click="rClick(i.link, i.start)"
                          tooltip-html-unsafe="{{i.hoverTxt}}" tooltip-append-to-body="true" class="zpRes">{{i.text}}</div>
                 </td>
                 <td class="{{r.rclass}}">{{r.room}}</td>

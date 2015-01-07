@@ -32,6 +32,7 @@ define(['./module'], function (services) {
       reservationChangedEvent: 'RES_EVENT1',
       roomPlanClickEvent: 'ZPLAN_EVENT1',
       calEventChangedEvent: 'CAL_EVENT_EVENT', // calendar event saved/deleted
+      weekButtonsSetEvent: 'WEEK_BTN1',
       appReadyEvent: '', // broadcast when app.js finishes.
       bcRoom: 0,
       bcPackageItem: 1,
@@ -66,6 +67,8 @@ define(['./module'], function (services) {
       'aggregatePersonDisplayString': '%text% für %icount% Personen',
       'aggregateRoomDisplayString': '%text% (%icount% Zimmer - %guestCnt% Gäste)',
       'arrive': 'Ankunft',
+      'bill': 'Rechnung',
+      'bills': 'Rechnungen',
       'birthday': 'Geburtstag',
       'breakfast': 'Frühstück',
       'breakfastInc': 'FrühstückInc',
@@ -140,6 +143,7 @@ define(['./module'], function (services) {
       'night': 'Nacht',
       'nights': 'Nächte',
       'no': 'Kein',
+      'noNeg': 'Nein',
       'no_lc': '<keine>',
       'noParkPlace': 'Kein Parkplatz',
       'noRoom': 'Kein Zimmer',
@@ -170,6 +174,7 @@ define(['./module'], function (services) {
       'selected': 'Ausgewählt',
       'selectedRoom': 'Gewählte Zi.',
       'select': 'Auswählen',
+      'selectReservation': 'Wählen Sie eine Reservierung',
       'selectParkPlace': 'Parkplatz auswählen',
       'selectRoom': 'Zimmer auswählen',
       'selectRoomPlan': 'Zimmer plan auswählen',
@@ -193,6 +198,8 @@ define(['./module'], function (services) {
       'val_invalidRoom': 'At least one room is required',
       'val_invalidDates': 'Missing or invalid Reservation dates',
       'val_invalidInsurance': 'An insurance plan must be selected',
+      'wantToEdit': 'This reservation has been checked out. Are you sure you want to edit it?',
+      'yes': 'Ja',
       'week_plan_for': 'Wochen Plan für',
       'xxx': '***'
     };

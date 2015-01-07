@@ -203,8 +203,8 @@ define(['./module'], function (model) {
       default_price: Number, // The default room price before user adjustments or firm prices. Used by logic to add
                              // extra days to a package plan. This is populated from the original room price field.
       price: Number,  // the room price
-      isCheckedIn: Boolean, // true when the guest in this room has checked in.
-      isCheckedOut: Boolean, // true when the guest in this room has been checked out.
+      isCheckedIn: Boolean, // true when the guest or guests in this room have checked in.
+      isCheckedOut: Boolean, // true when the guest or guests in this room have checked out.
       isBilled: Boolean // true when the bill for this room is created and guest checked out.
     });
     schema.virtual('display_type').get(function() {
@@ -350,9 +350,9 @@ define(['./module'], function (model) {
     schema.virtual('nights').get(function() {
        return datetime.getNightsStayed(this.start_date, this.end_date);
     });
-    // virtual field is true if the current date = start_date and res. has not yet been checked in.
+    // virtual field is true if the current date >= start_date and res. has not yet been checked in.
     schema.virtual('canCheckIn').get(function() {
-      return (!this.checked_in && (datetime.dateOnly(this.start_date).getTime() === datetime.dateOnly(new Date()).getTime()));
+      return (!this.checked_in && (datetime.dateOnly(this.start_date).getTime() <= datetime.dateOnly(new Date()).getTime()));
     });
     // virtual field is true if reservation is checked in but not checked out
     schema.virtual('canCheckOut').get(function() {

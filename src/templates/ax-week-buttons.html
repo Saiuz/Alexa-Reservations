@@ -3,6 +3,9 @@
     <a class="btn btn-default btn-sm" href="#" ng-click="goPrevWeek()"><span class="glyphicon glyphicon-backward"></span></a>
     <a class="btn btn-default btn-sm" href="#" ng-click="goPrev()"><span class="glyphicon glyphicon-chevron-left"></span></a>
     <a class="btn btn-default btn-sm" href="#" ng-click="goToday()"><span class="">{{txt.today}}</span></a>
+    <input type="text" ng-show="false" ng-model="dpdate" datepicker-popup="{{format}}"  is-open="opened" datepicker-options="dateOptions"
+           current-text="{{txt.today}}" close-text="{{txt.ok}}" clear-text="{{txt.clear}}" />
+    <a class="btn btn-default btn-sm" href="#" ng-click="goPick($event)"><span class="glyphicon glyphicon-calendar"></span></a>
     <a class="btn btn-default btn-sm" href="#" ng-click="goNext()"><span class="glyphicon glyphicon-chevron-right"></span></a>
     <a class="btn btn-default btn-sm" href="#" ng-click="goNextWeek()"><span class="glyphicon glyphicon-forward"></span></a>
     <a class="btn btn-default btn-sm" href="#" ng-click="goNextMonth()"><span class="glyphicon glyphicon-fast-forward"></span></a>

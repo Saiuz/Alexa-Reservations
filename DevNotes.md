@@ -31,7 +31,7 @@ the _updateRequiredExpenses method. left off at ~372 in reservationVM.
 
 ** NEEDED CHANGES**
 
-1. Resources also need a name associated with them (like rooms) for multiple room business reservations.
+1. **DONE** Resources also need a name associated with them (like rooms) for multiple room business reservations.
 
 **Reservation, Pre-save action (new reservation)**
 
@@ -43,10 +43,19 @@ the _updateRequiredExpenses method. left off at ~372 in reservationVM.
 
  1. **DONE** ~~Need to re-purpose the reservation details directive to show basic info about the reservation with buttons
     to checking, checkout edit and view etc the reservation.~~
+ 4. **DONE**expense items must be modified to include room numbers so that expenses can be assigned to each room
+ 5. **DONE** ~~Figure out how to handle the old Kur functionality where we need individual bills for two people in the same room.~~
+ 3. **PARTIALLY DONE**Need to develop the checkin logic for a group reservation. For multi-bill group res need to check in the rooms
+    individually. - need to modify the ax-reservation-details directive to display only the selected guest/room combination if provided.
  2. Document the logic around creating the room plans and the Plan itemsTypes that are used by the plans.
  2. Redesign the home page, move the stats to a separate page, add the graphic view zimmer plan and the three lists
     currently there.
- 3. Need to develop the checkin logic for a group reservation. For multi-bill group res need to check in the rooms
-    individually.
- 4. expense items must be modified to include room numbers so that expenses can be assigned to each room
- 5. **DONE** ~~Figure out how to handle the old Kur functionality where we need individual bills for two people in the same room.~~
+ 6. Consider developing a help system.
+ 7. Work on checkout logic. Should reservation be locked once it is checked out? Could still print bill, but would we need to edit after the fact?
+ 8. Modify ax-reservation-list to show reservations in red if their end date is in the past, and in some other color if
+ their start date is in the past and they are not checked in.
+ 9. Complete final bill and checkout page. Need to figure out group reservations (non-business) (have flag on room?) The
+ checkout logic needs to check for early checkout and ask.
+ 10. Need data import code from old excel data.
+ 11. REVAMP? checkin logic - checkout logic. For multiple room reservations, we currently just have a flag for the room. Is this enough? do we actually need a date?
+

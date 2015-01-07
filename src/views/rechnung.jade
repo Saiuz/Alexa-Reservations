@@ -5,16 +5,20 @@ include nav_common.jade
   .row
     .col-md-4
       .panel.panel-default
-        .panel-heading
-          span.input-group-btn Aktuelle Reservierungen
-            button.btn.btn-small.pull-right(type="button" ng-click="findRes()")
-              i.glyphicon.glyphicon-search
+        .panel-heading {{txt.currentReservations}}
+          span.input-group
+            input.form-control(type=text ng-model="searchTxt")
+            span.input-group-btn
+              button.btn.btn-small.pull-right(type="button" ng-click="findRes()")
+                i.glyphicon.glyphicon-search
         .panel-body
-          ax-reservation-list(list-mode="c" list-date="theDate" selected-reservation="selectedReservation")
+          ax-reservation-list(list-mode="c" list-date="theDate" selected-reservation="selectedReservation" res-count="resCount")
     .col-md-8
       .panel.panel-default
-        .panel-heading Rechnung&nbsp;
-          span(ng-show="showCharges") für: {{res.guest.name}} - Zimmer {{res.room}}, Abfahrt {{res.end_date | date:'shortDate'}}, {{res.nights}} Nächte
+        .panel-heading {{pTitle}}&nbsp;
+          span(ng-show="showCharges") für: {{rvm.res.reservation_number}} - {{guest}} - {{txt.roomAbrv}} {{room}}, Abfahrt {{rvm.res.end_date | date:'dd.MM.yyyy'}}, {{rvm.res.nights}} {{txt.nights}}
+          span.input-group
+            button.btn.btn-default.btn-small.pull-right(type="button" ng-if="showCharges && canCheckOut" ng-click="checkout()") Check Out
         .panel-body
           .col-md-12
             div(ng-show="showCharges")

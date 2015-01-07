@@ -243,6 +243,14 @@ define(['./module'], function (controllers) {
             }
           };
 
+          $scope.testYes = function () {
+            var dataObj = {message: 'Is it good yet?', yes: 'Damn Right!', no: 'No Way', level: 'warn'},
+                mode = modals.getModelEnum().YesNo;
+            modals.yesNoShow('Is it good yet?', function (result) {
+              alert(result)
+            }, 'Damn Right!', 'No Way', 'danger' );
+          };
+
           $scope.testRid = 0;
           var lastModer = '',
               dataObjR = {data: undefined, extraData: undefined};

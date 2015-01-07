@@ -73,7 +73,12 @@ body {
 .text-delete {
   text-decoration: line-through;
 }
-
+.late-chkin {
+  background-color: @state-danger-bg;
+}
+.late-chkout {
+  background-color: @state-info-bg;
+}
 @zp-cell-box: 16px; //NOTE: if this changes, line 36 of ax-room-plan.html needs to be changed also
 @zp-font-size: ceil((@font-size-base * 0.6));
 @zp-res-color: #ffff99;
@@ -126,6 +131,11 @@ body {
     overflow: hidden;
     text-overflow: ellipsis;
   }
+  > tbody > tr > td.zp-endButt {
+    border-right-style: double;
+    border-right-width: thick;
+    border-right-color: rgb(255,163,71);
+  }
   > thead > tr > th > div {
     white-space: nowrap;
     width: inherit;
@@ -135,6 +145,7 @@ body {
 }
 .zpSel {} //used as jquery selector
 .zpRes {} //ditto
+.zpDate {} //ditto
 .zp-container {
   padding: 1px;
   overflow-x: auto;
@@ -145,12 +156,7 @@ body {
   background-color: @zp-res-color;
 }
 .zp-endColor {
-  background-color: darken(spin(@zp-res-color, -10), 5%);
-}
-.table-zplan > tbody > tr > td.zp-endButt {
-  border-right-style: double;
-  border-right-width: thick;
-  border-right-color: rgb(255,163,71);
+  background-color: lighten(spin(@zp-res-color, -10), 5%);
 }
 .zp-divColor {
   background-color: @zp-div-color;
@@ -198,4 +204,10 @@ body {
   padding: 5px;
   height: 715px;
   overflow-y: auto;
+}
+.m-box {
+  border: 1px solid #dddddd;
+  border-radius: 4px;
+  padding: 5px;
+  margin-bottom: 5px;
 }

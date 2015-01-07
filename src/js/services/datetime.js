@@ -76,7 +76,7 @@ define(['./module'], function (services) {
       // The currentDay represents the current day of the week that the specified date represents, but the first
       // day of the week is 1 and the last day of the week is 7.
       findWeek: function (theDate, startSunday) {
-        var startDay = 1; //0=sunday, 1=monday etc.
+        var startDay = startSunday ? 0 : 1; //0=sunday, 1=monday
         var currdate = theDate ? new Date(theDate) : new Date();
         currdate.setHours(0, 0, 0, 0);
         var d = currdate.getDay(); //get the day

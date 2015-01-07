@@ -24,14 +24,14 @@ define(['./module'], function (states) {
         });
 
         $stateProvider.state('charges', {
-          url:'/charges/:resNum',
+          url:'/charges/:resNum/:resRoom/:resGuest',
           template: viewProvider.renderView('charges'),
           controller: 'ChargesCtrl'
 
         });
 
         $stateProvider.state('rechnung', {
-          url:'/rechnung/:resNum',
+          url:'/rechnung/:resNum/:resRoom/:resGuest',
           template: viewProvider.renderView('rechnung'),
           controller: 'RechnungCtrl'
 

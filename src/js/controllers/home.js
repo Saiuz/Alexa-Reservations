@@ -15,14 +15,14 @@ define(['./module'], function (controllers) {
           $scope.url = $state.current.url;
           $scope.pageHeading = "Zimmer Plan " // + $scope.theDate.getDate() + '.' + ($scope.theDate.getMonth() + 1) + '.' + $scope.theDate.getFullYear()
 
-          $scope.theDate = datetime.dateOnly(new Date(Date.now()));
+          $scope.theDate = datetime.dateOnly(new Date(Date.now()));// start at current date
           $scope.selected = {
             reservation: undefined,
             anCnt: 0,
             ab1Cnt: 0,
             ab2Cnt: 0
           };
-          $scope.selectedEvent; //todo-watch this and launch editor for cal item.
+          $scope.selectedEvent;
 
           // monitor to scope properties. They do not interact with one another and we expect only
           // one to change at any given time.

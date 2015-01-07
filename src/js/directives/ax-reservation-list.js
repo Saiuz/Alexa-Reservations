@@ -29,20 +29,27 @@ define(['./module'], function (directives) {
         var haveAttributes = false,
             useLink = true, // determines if the selected link is just the reservation number of is the reservation link object
             listType, //value of listMode attribute
-            theDate; //value of the listDate attribute
+            theDate, //value of the listDate attribute
+            ignore = false; // ignore watch on reservation link if fired from select reservation method.
 
         //scope.selectedReservation = {number: 0, room: 0, guest: ''};
         //scope.selectedResId = -1;
 
         // Private function to build the reservation list. It will separate group reservations that
         // require individual checkins and bills.
-        var buildList = function (resList, splitNames) {
-          var rlist = [];
-          var rlistItem = {};
-          var ix = 0;
+        var _buildList = function (resList, splitNames) {
+          var rlist = [],
+              rlistItem = {},
+              ix = 0,
+              cdse = datetime.daysSinceEpoch(datetime.dateOnly(new Date())),
+              sdse = 0,
+              edse = 0;
 
           scope.resCount = resList.length;
           resList.forEach(function (res) {
+            sdse = datetime.daysSinceEpoch(datetime.dateOnly(res.start_date));
+            edse = datetime.daysSinceEpoch(datetime.dateOnly(res.end_date));
+
             if (res.rooms.length > 1 && res.individualBill) {
               // list res under each room with name defined in room list
               res.rooms.forEach(function (room) {
@@ -55,11 +62,13 @@ define(['./module'], function (directives) {
                   multiroom: false,
                   end_date: res.end_date,
                   isCheckedIn: room.isCheckedIn,
-                  isCheckedOut: room.isCheckedOut
+                  isCheckedOut: room.isCheckedOut,
+                  lateCheckIn: !room.isCheckedIn && sdse < cdse,
+                  lateCheckOut: room.isCheckedIn && !room.isCheckedOut &&  edse < cdse
                 };
                 rlist.push(rlistItem);
                 ix++;
-                if (splitNames & room.guest_count > 1) {
+                if (splitNames && room.guest_count > 1) {
                   rlistItem = {
                     id: ix,
                     roomNumber: room.number,
@@ -69,7 +78,9 @@ define(['./module'], function (directives) {
                     multiroom: false,
                     end_date: res.end_date,
                     isCheckedIn: room.isCheckedIn, //TODO-need means of checking out individuals in rooms
-                    isCheckedOut: room.isCheckedOut
+                    isCheckedOut: room.isCheckedOut,
+                    lateCheckIn: !room.isCheckedIn && sdse < cdse,
+                    lateCheckOut: room.isCheckedIn && !room.isCheckedOut &&  edse < cdse
                   };
                   rlist.push(rlistItem);
                   ix++;
@@ -87,7 +98,9 @@ define(['./module'], function (directives) {
                 multiroom: res.rooms.length > 1,
                 end_date: res.end_date,
                 isCheckedIn: datetime.isDate(res.checked_in),
-                isCheckedOut: datetime.isDate(res.checked_out)
+                isCheckedOut: datetime.isDate(res.checked_out),
+                lateCheckIn: !datetime.isDate(res.checked_in) && sdse < cdse,
+                lateCheckOut: datetime.isDate(res.checked_in) && !datetime.isDate(res.checked_out) &&  edse < cdse
               };
               rlist.push(rlistItem);
               ix++;
@@ -97,46 +110,59 @@ define(['./module'], function (directives) {
         };
 
         // updates the reservation list, retrives the reservation info and rebuilds the list
-        var updateList = function () {
+        var _updateList = function () {
+
+          scope.reservations = [];
           if (haveAttributes) {
             switch (listType) {
               case 'c':
-                scope.getCurrent();
+                  scope.show = true;
+                  dashboard.getCurrentReservations().then(function (result) {
+                        scope.reservations = _buildList(result, useLink);
+                        _setChecked(scope.selectedReservation);
+                      },
+                      function (err) {
+                        scope.error = err;
+                      });
                 break;
               case 'a':
                 dashboard.getArrivals(theDate).then(function (result) {
-                      scope.reservations = buildList(result);
+                      scope.reservations = _buildList(result, useLink);
+                      _setChecked(scope.selectedReservation);
                     },
                     function (err) {
-                      scope.reservations = err;
+                      scope.error = err;
                     });
                 break;
 
               case 'd':
                 dashboard.getDepartures(theDate).then(function (result) {
-                      scope.reservations = buildList(result);
+                      scope.reservations = _buildList(result, useLink);
+                      _setChecked(scope.selectedReservation);
                     },
                     function (err) {
-                      scope.reservations = err;
+                      scope.error = err;
                     });
                 break;
 
               case 'u':
                 scope.show = true;
                 dashboard.getUpcomming(theDate).then(function (result) {
-                      scope.reservations = buildList(result);
+                      scope.reservations = _buildList(result, useLink);
+                      _setChecked(scope.selectedReservation);
                     },
                     function (err) {
-                      scope.reservations = err;
+                      scope.error = err;
                     });
                 break;
 
               default:
                 dashboard.getDepartures(theDate).then(function (result) {
-                      scope.reservations = buildList(result);
+                      scope.reservations = _buildList(result, useLink);
+                      _setChecked(scope.selectedReservation);
                     },
                     function (err) {
-                      scope.reservations = err;
+                      scope.error = err;
                     });
                 break;
             }
@@ -145,25 +171,26 @@ define(['./module'], function (directives) {
 
         // finds the specified reservation number in the displayed list and returns the list object's reservation_link
         // property
-        var getResLink = function (id) {
-          var reslink = {};
+        var _setChecked = function (resLink) {
 
           scope.reservations.forEach(function (res) {
-            if (res.reservation_number === resNum) {
-              reslink = res.reservation_link;
+            if (res.reservation_link && res.reservation_link.number === resLink.number && res.reservation_link.room === resLink.room && res.reservation_link.guest === resLink.guest) {
+              scope.selectedResId = res.id;
+              scope.$apply();
             }
           });
-          return reslink;
         }
 
         scope.txt = configService.loctxt;
         scope.show = false;
+        scope.reservations = [];
 
         // click method for when a user selects a reservation.
         scope.resSelected = function (id) {
           var resObj = scope.reservations[id];
           //console.log("resSelected function fired: " + resObj.reservation_number);
           scope.selectedResId = resObj.id;
+          ignore = true;
           if (useLink) {
             scope.selectedReservation = resObj.reservation_link;
           }
@@ -172,25 +199,29 @@ define(['./module'], function (directives) {
           }
         };
 
-        scope.getCurrent = function () {
-          scope.show = true;
-          dashboard.getCurrentReservations().then(function (result) {
-                scope.reservations = buildList(result, useLink);
-              },
-              function (err) {
-                scope.reservations = err;
-              });
-        };
 
         scope.$on(configService.constants.reservationChangedEvent, function (event, result) {
-           updateList(); //todo- check to see if reservation is in ilist before updating don't want to respond to a reservation this directive doesn't care about.
+           _updateList(); //todo- check to see if reservation is in ilist before updating don't want to respond to a reservation this directive doesn't care about.
         });
-        scope.$watchCollection('[listDate, listMode, numberOnly, selectedReservation.number ]', function (newvals) {
+
+        scope.$watchCollection('[listDate, listMode, numberOnly, selectedReservation]', function (newvals) {
           if (newvals[2]) {
             useLink = !(scope.numberOnly === 'true');
           }
           if (!newvals[3]) {
             scope.selectedResId = -1;
+          }
+          else {
+            if (!ignore) {
+              if (!scope.reservations.length) {
+                _updateList();
+                _setChecked(newvals[3]);
+              }
+              else {
+                _setChecked(newvals[3]);
+              }
+              ignore = false;
+            }
           }
           if (newvals[1]) {
             listType = newvals[1].toLowerCase().substring(0, 1);
@@ -200,7 +231,7 @@ define(['./module'], function (directives) {
             theDate = newvals[0];
             //console.log('Directive watch fired, value is: ' + newvals[0] + " ListMode is: " + newvals[1]);
 
-            updateList();
+            _updateList();
           }
 
         });

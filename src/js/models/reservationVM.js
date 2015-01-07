@@ -381,6 +381,172 @@ define(['./module'], function (model) {
         return result;
       };
 
+      // method that implements the check-in logic. The reservation is checked in by room for most reservations.
+      // The current exception is for travel group reservations, for this type, all rooms are checked in at once.
+      // The method excepts a room number parameter. This parameter is only used for multi-room, individual bill
+      // reservations. For all other types, the parameter is ignored.
+      // The method returns a promise since it saves the reservation after updating..
+      this.checkIn = function (roomNum) {
+        var deferred = $q.defer(),
+            room,
+            allCheckedIn = true,
+            msg;
+
+        if (that.isGroup && that.oneBill) {  //travel group reservation
+          that.res.rooms.forEach(function (rm) {
+            rm.isCheckedIn = true;
+          });
+          if (that.res.rooms.length) {
+            that.res.checked_in = new Date();
+          }
+        }
+        else if (that.oneRoom && that.oneBill) {  //single bill one room res. only check that a room exists
+           if (that.res.rooms.length){
+             that.res.rooms[0].isCheckedIn = true;
+             that.res.checked_in = new Date();
+           }
+          else {
+             msg = configService.loctxt.errorBold + ' ' + configService.loctxt.noRoom;
+             deferred.reject(msg);
+           }
+
+        }
+        else { //All other reservations
+          room = that.getRoomInReservation(roomNum);
+          if (room) {
+            room.isCheckedIn = true;
+            that.res.rooms.forEach(function (rm) {
+              if (!rm.isCheckedIn) {
+                allCheckedIn = false;
+              }
+            });
+            if (allCheckedIn) {
+              that.res.checked_in = new Date();
+            }
+          }
+          else { //error couldn't find room.
+            msg = configService.loctxt.errorBold + ' ' + configService.loctxt.room + ' ' + roomNum + ' ' +
+            configService.loctxt.notFound;
+            deferred.reject(msg);
+          }
+        }
+        that.res.save(function (err) {
+          if (err) {
+            deferred.reject(err);
+          }
+          else {
+            deferred.resolve();
+          }
+        });
+
+        return deferred.promise;
+      };
+
+      // method that implements the check-out logic. The reservation is checked out by room for most reservations.
+      // The current exception is for travel group reservations, for this type, all rooms are checked out at once.
+      // The method excepts a room number parameter. This parameter is only used for multi-room, individual bill
+      // reservations. For all other types, the parameter is ignored.
+      // The method returns a promise since it saves the reservation after updating..
+      this.checkOut = function (roomNum) {
+        var deferred = $q.defer(),
+            room,
+            allCheckedOut = true,
+            msg;
+
+        if (that.isGroup && that.oneBill) {  //travel group reservation
+          that.res.rooms.forEach(function (rm) {
+            rm.isCheckedOut = true;
+          });
+          if (that.res.rooms.length) {
+            that.res.checked_out = new Date();
+          }
+        }
+        else if (that.oneRoom && that.oneBill) {  //single bill one room res. only check that a room exists
+          if (that.res.rooms.length){
+            that.res.rooms[0].isCheckedOut = true;
+            that.res.checked_out = new Date();
+          }
+          else {
+            msg = configService.loctxt.errorBold + ' ' + configService.loctxt.noRoom;
+            deferred.reject(msg);
+          }
+
+        }
+        else { //All other reservations
+          room = that.getRoomInReservation(roomNum);
+          if (room) {
+            room.isCheckedOut = true;
+            that.res.rooms.forEach(function (rm) {
+              if (!rm.isCheckedOut) {
+                allCheckedOut = false;
+              }
+            });
+            if (allCheckedOut) {
+              that.res.checked_out = new Date();
+            }
+          }
+          else { //error couldn't find room.
+            msg = configService.loctxt.errorBold + ' ' + configService.loctxt.room + ' ' + roomNum + ' ' +
+            configService.loctxt.notFound;
+            deferred.reject(msg);
+          }
+        }
+        that.res.save(function (err) {
+          if (err) {
+            deferred.reject(err);
+          }
+          else {
+            deferred.resolve();
+          }
+        });
+
+        return deferred.promise;
+      };
+
+      // Method that returns a boolean that determines if a reservation / room can be checked in. It implements similar
+      // logic used in the checkIn method.
+      this.canCheckIn = function (roomNum) {
+        var room;
+
+        if (that.isGroup && that.oneBill) {  //travel group reservation
+          return that.res.canCheckIn; // uses the reservation model's virtual property
+        }
+        else if (that.oneRoom && that.oneBill) {  //single bill one room res. also check that a room exists
+          return (that.res.canCheckIn && that.res.rooms.length);
+        }
+        else { //All other reservations
+          room = that.getRoomInReservation(roomNum);
+          if (room) {
+            return (that.res.canCheckIn && !room.isCheckedIn);
+          }
+          else {
+            return false;
+          }
+        }
+      };
+
+      // Method that returns a boolean that determines if a reservation / room can be checked out. It implements similar
+      // logic used in the checkIn method.
+      this.canCheckOut = function (roomNum) {
+        var room;
+
+        if (that.isGroup && that.oneBill) {  //travel group reservation
+          return that.res.canCheckOut; // uses the reservation model's virtual property
+        }
+        else if (that.oneRoom && that.oneBill) {  //single bill one room res. also check that a room exists
+          return (that.res.canCheckOut && that.res.rooms.length);
+        }
+        else { //All other reservations
+          room = that.getRoomInReservation(roomNum);
+          if (room) {
+            return (that.res.canCheckOut && !room.isCheckedOut);
+          }
+          else {
+            return false;
+          }
+        }
+      };
+
       // This method is called prior to saving the reservation. It performs the following functions:
       //    Validates various reservation properties
       //    Generates the reservation title.

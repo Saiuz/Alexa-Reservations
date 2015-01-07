@@ -72,10 +72,16 @@ define(['./module'], function (directives) {
 
         scope.$watchCollection('[dateInWeek, weekStart, weekEnd]', function (newvals, oldvals) {
           // respond to change in calendar.
-          if (newvals[0] && newvals[1] && newvals[2]) {
+          console.log('*** ax-room-plan watch fired ' + newvals[0] + '|' + newvals[1] + '|' + newvals[2]);
+          var nd  = [datetime.daysSinceEpoch(newvals[0]), datetime.daysSinceEpoch(newvals[1]), datetime.daysSinceEpoch(newvals[2])] ;
+          var od  = [datetime.daysSinceEpoch(oldvals[0]), datetime.daysSinceEpoch(oldvals[1]), datetime.daysSinceEpoch(oldvals[2])] ;
+          if (nd[0] === od[0]) {
+            return;
+          }
+          if (nd[0] && nd[1] && nd[2]) {
             // get reservation info during the dates represented by the calendar display
-            var paintOnly = (oldvals[1] && (newvals[1].getDate() === oldvals[1].getDate()));
-            _buildCalendar(paintOnly);
+            var paintOnly = (resResults && od[1] && (nd[1] === od[1] && nd[2] === od[2]));
+            _buildCalendar(false);
           }
         });
 
@@ -88,7 +94,9 @@ define(['./module'], function (directives) {
         });
 
         // respond to a user clicking on a reservation item
-        scope.rClick = function (link) {
+        scope.rClick = function (link, start) {
+          var newdate = datetime.dseToDate(start);
+          $rootScope.$broadcast(configService.constants.weekButtonsSetEvent, newdate);
           scope.selectedReservation = link;
         };
 
@@ -125,15 +133,17 @@ define(['./module'], function (directives) {
               cols = (wSpan * 2 + 1) * 7;
 
           scope.colCnt = cols;
-          if (paintOnly) {
+          if (paintOnly) { //there is a subtle bug with paint only. Since build calendar can change the reservation objects close to the end, currently set paintOnly to false.
             _updateCalendar(resResults, startCal, endCal, cols);
           }
           else {
             dashboard.findReservationsByDateRange(startCal, endCal).then(function (results) {
               dashboard.findEventsByDateRange(startCal, endCal).then(function (events) {
-                results.events = events;
-                resResults = results; //cache last query.
-                _updateCalendar(resResults, startCal, endCal, cols);
+                if (results) {
+                  results.events = events;
+                  resResults = results; //cache last query.
+                  _updateCalendar(resResults, startCal, endCal, cols);
+                }
               }, function (err) {
                 scope.hasErr = true;
                 scope.errMsg = err;
@@ -180,6 +190,7 @@ define(['./module'], function (directives) {
                   .bind("selectstart", function () {
                     return false;
                   });
+
               element.find(".zpRes").each(function () {
                 var pw = $(this).parent().width();
                 $(this).width(pw);
@@ -284,17 +295,26 @@ define(['./module'], function (directives) {
                 if (rix === 0 && res.start_dse < ixDSE && res.end_dse >= ixDSE) { //first res starts before calendar start
                   res.nights -= (ixDSE - res.start_dse);
                   res.start_dse = ixDSE;
-                  ixDSE = _addResItem(res, _backToBack(resArr, rix), bItem.resItems);
+                  ixDSE = _addResItem(res, _backToBack(resArr, rix), bItem.resItems, eDSE);
                 }
                 else if (rix === resArr.length - 1 && res.end_dse > eDSE) { // last res ends after calendar end
-                  res.nights -= (res.end_dse - eDSE);
+                  res.nights -= (res.end_dse - eDSE-1);
                   res.end_dse = eDSE;
-                  ixDSE = _addResItem(res, true, bItem.resItems); //don't add checkout day to last res
+                  blanks = res.start_dse - ixDSE;
+                  ixDSE += _addBlanks(blanks, bItem.resItems, room.number, ixDSE, dDSE);
+                  ixDSE = _addResItem(res, true, bItem.resItems, eDSE); //don't add checkout day to last res
+                }
+                else if (rix === resArr.length - 1 && res.end_dse < eDSE) { // last res ends before calendar end add then backfill with blanks
+                  blanks = res.start_dse - ixDSE;
+                  ixDSE += _addBlanks(blanks, bItem.resItems, room.number, ixDSE, dDSE);
+                  ixDSE = _addResItem(res, _backToBack(resArr, rix), bItem.resItems, eDSE);
+                  blanks = eDSE - res.end_dse;
+                  ixDSE += _addBlanks(blanks, bItem.resItems, room.number, ixDSE, dDSE);
                 }
                 else { // process res - find out how many blanks we need
                   blanks = res.start_dse - ixDSE;
                   ixDSE += _addBlanks(blanks, bItem.resItems, room.number, ixDSE, dDSE);
-                  ixDSE = _addResItem(res, _backToBack(resArr, rix), bItem.resItems);
+                  ixDSE = _addResItem(res, _backToBack(resArr, rix), bItem.resItems, eDSE);
 
                 }
                 rix++;
@@ -340,17 +360,26 @@ define(['./module'], function (directives) {
                 if (rix === 0 && res.start_dse < ixDSE && res.end_dse >= ixDSE) { //first res starts before calendar start
                   res.nights -= (ixDSE - res.start_dse);
                   res.start_dse = ixDSE;
-                  ixDSE = _addResItem(res, _backToBack(resArr, rix), bItem.resItems);
+                  ixDSE = _addResItem(res, _backToBack(resArr, rix), bItem.resItems, eDSE);
                 }
                 else if (rix === resArr.length - 1 && res.end_dse > eDSE) { // last res ends after calendar end
-                  res.nights -= (res.end_dse - eDSE);
+                  res.nights -= (res.end_dse - eDSE - 1);
                   res.end_dse = eDSE;
-                  ixDSE = _addResItem(res, true, bItem.resItems); //don't add checkout day to last res
+                  blanks = res.start_dse - ixDSE;
+                  ixDSE += _addBlanks(blanks, bItem.resItems, 0, ixDSE, dDSE);
+                  ixDSE = _addResItem(res, true, bItem.resItems, eDSE); //don't add checkout day to last res
+                }
+                else if (rix === resArr.length - 1 && res.end_dse < eDSE) { // last res ends before calendar end, add then backfill with blanks
+                  blanks = res.start_dse - ixDSE;
+                  ixDSE += _addBlanks(blanks, bItem.resItems, 0, ixDSE, dDSE);
+                  ixDSE = _addResItem(res, _backToBack(resArr, rix), bItem.resItems, eDSE);
+                  blanks = eDSE - res.end_dse;
+                  ixDSE += _addBlanks(blanks, bItem.resItems, 0, ixDSE, dDSE);
                 }
                 else { // process res - find out how many blanks we need
                   blanks = res.start_dse - ixDSE;
                   ixDSE += _addBlanks(blanks, bItem.resItems, 0, ixDSE, dDSE);
-                  ixDSE = _addResItem(res, _backToBack(resArr, rix), bItem.resItems);
+                  ixDSE = _addResItem(res, _backToBack(resArr, rix), bItem.resItems, eDSE);
 
                 }
                 rix++;
@@ -379,6 +408,9 @@ define(['./module'], function (directives) {
           events.forEach(function (event) {
             _addToBin(0, bins, binEnd, event);
           });
+          if (bins.length === 0) { //no events create at least one empty row
+            bins.push([]);
+          }
           // Now process bins
           bins.forEach(function (bin) {
             var bItem = {
@@ -403,7 +435,16 @@ define(['./module'], function (directives) {
                 else if (rix === bin.length - 1 && evt.end_dse > eDSE) { // last event ends after calendar end
                   evt.nights -= (evt.end_dse - eDSE);
                   evt.end_dse = eDSE;
-                  ixDSE = _addEventItem(evt, true, bItem.evtItems); //don't add checkout day to last evt
+                  blanks = evt.start_dse - ixDSE;
+                  ixDSE += _addBlanks(blanks, bItem.evtItems, 0, ixDSE, dDSE);
+                  ixDSE = _addEventItem(evt, false, bItem.evtItems);
+                }
+                else if (rix === bin.length - 1 && evt.end_dse < eDSE) { // last event ends before calendar end, add it then backfill with blanks
+                  blanks = evt.start_dse - ixDSE;
+                  ixDSE += _addBlanks(blanks, bItem.evtItems, 0, ixDSE, dDSE);
+                  ixDSE = _addEventItem(evt, _backToBack(bin, rix), bItem.evtItems);
+                  blanks = eDSE - evt.end_dse;
+                  ixDSE += _addBlanks(blanks, bItem.evtItems, 0, ixDSE, dDSE);
                 }
                 else { // process evt - find out how many blanks we need
                   blanks = evt.start_dse - ixDSE;
@@ -498,15 +539,16 @@ define(['./module'], function (directives) {
         }
 
         // Adds a reservation/resource item if not overlapEnd then add a checkout day
-        function _addResItem(res, overlapEnd, rArr) {
+        function _addResItem(res, overlapEnd, rArr, edse) {
           var resItem = {
                 resNum: res.reservation_number,
                 text: res.resource_name ? configService.loctxt.roomAbrv + ' ' + res.room : res.title + ( !res.oneRoom ? ' - ' + res.guest : ''),
                 span: res.nights,
+                start: datetime.daysSinceEpoch(res.start_date), //used to move calendar to start date of reservation when selected
                 resCol: true,
                 endCol: false,
                 link: {number: res.reservation_number, room: res.room, guest: res.guest},
-                overLapCol: overlapEnd,
+                overLapCol: overlapEnd && res.end_dse !== edse,
                 hoverTxt: '<b>' + res.title + ( !res.oneRoom ? ' - ' + res.guest : '') + '</b><br />Von: '
                 + datetime.toDeDateString(res.start_date) +
                 '<br />Bis: ' + datetime.toDeDateString(res.end_date) + (res.resource_name ? '<br /> Zi. ' + res.room : ''),
@@ -526,7 +568,7 @@ define(['./module'], function (directives) {
               nextDSE = res.start_dse + res.nights;
 
           rArr.push(resItem);
-          if (!overlapEnd) {
+          if (!overlapEnd && (res.end_dse <= edse)) {
             rArr.push(checkout);
             nextDSE++;
           }

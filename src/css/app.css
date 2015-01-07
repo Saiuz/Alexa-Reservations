@@ -6366,6 +6366,12 @@ body {
 .text-delete {
   text-decoration: line-through;
 }
+.late-chkin {
+  background-color: #f2dede;
+}
+.late-chkout {
+  background-color: #d9edf7;
+}
 .table-zp {
   width: 100%;
   max-width: 100%;
@@ -6401,6 +6407,11 @@ body {
   overflow: hidden;
   text-overflow: ellipsis;
 }
+.table-zp > tbody > tr > td.zp-endButt {
+  border-right-style: double;
+  border-right-width: thick;
+  border-right-color: #ffa347;
+}
 .table-zp > thead > tr > th > div {
   white-space: nowrap;
   width: inherit;
@@ -6417,12 +6428,7 @@ body {
   background-color: #ffff99;
 }
 .zp-endColor {
-  background-color: #ffea80;
-}
-.table-zplan > tbody > tr > td.zp-endButt {
-  border-right-style: double;
-  border-right-width: thick;
-  border-right-color: #ffa347;
+  background-color: #fff2b3;
 }
 .zp-divColor {
   background-color: #f7ecb5;
@@ -6470,4 +6476,10 @@ body {
   padding: 5px;
   height: 715px;
   overflow-y: auto;
+}
+.m-box {
+  border: 1px solid #dddddd;
+  border-radius: 4px;
+  padding: 5px;
+  margin-bottom: 5px;
 }

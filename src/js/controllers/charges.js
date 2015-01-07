@@ -15,33 +15,33 @@ define(['./module'], function (controllers) {
         'dashboard',
         'configService',
         function ($scope, $state, $rootScope, $stateParams, ReservationVM, dashboard, configService) {
-          console.log("Charges  controller fired") ;
           $scope.appTitle = $rootScope.appTitle;
           $scope.appBrand = $rootScope.appBrand;
           $scope.url = $state.current.url;
-          $scope.pageHeading = "Gebühren";
+          $scope.pageHeading = configService.loctxt.charges;
 
           $scope.txt = configService.loctxt;
           $scope.showCharges = false;
           $scope.showHiddenExpenses = false;
           $scope.planText = '***';
+          $scope.resCount = 0;
+          $scope.pTitle = configService.loctxt.selectReservation;
 
           // for reservation-list directive
-          $scope.selectedReservation = 0;
-          $scope.listDate = new Date();
+          $scope.selectedReservation;
 
           dashboard.getItemTypeListExcept('').then(function(items){
             $scope.itemTypes = items;
           });
 
           $scope.$watch('selectedReservation', function (newval) {
-            if (!newval.number) return; //We expect an object with (res) number, room and guest properties
+            if (!newval || !newval.number) return; //We expect an object with (res) number, room and guest properties
             // Get reservation and prepare the room plan text and handle the special case
             // where we have a group reservation with one bill- need to show the rooms
             ReservationVM.getReservationVM(newval.number, true).then(function (resVM) {
               if(resVM.res) {
                 $scope.rvm = resVM;
-                //$scope.res = resVM.res;
+                $scope.pTitle = configService.loctxt.charges;
                 $scope.showCharges = true;
                 $scope.room = newval.room;
                 $scope.guest = newval.guest;
@@ -66,15 +66,9 @@ define(['./module'], function (controllers) {
             $scope.guest = guest;
           };
 
-          // Todo- this is broke, if we still want to navigate here we will need the reslink info not just the number.
+          // See if we were passed a reservation link in the URL
           if ($stateParams.resNum && $stateParams.resNum > 0){
-             ReservationVM.getReservationVM($stateParams.resNum, true).then(function (resVM){
-               if(resVM.res) {
-                 $scope.rvm = resVM;
-                 //$scope.res = resVM.res;
-                 $scope.showCharges = true;
-               }
-             });
+            $scope.selectedReservation = {number: Number($stateParams.resNum), room: Number($stateParams.resRoom), guest: $stateParams.resGuest};
           }
         }]);
 });

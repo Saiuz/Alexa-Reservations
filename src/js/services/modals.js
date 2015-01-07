@@ -5,14 +5,25 @@
 define(['./module'], function (services) {
   'use strict';
   services.service('modals', ['$q', '$modal', '$document', function ($q, $modal, $document) {
-    // define the Mongoose Models the service knows about and the modal form
+    // define the Mongoose Models the service knows about and the modal form - also other utility modals
     // templates and controllers.
-    var models = ['Reservation', 'Guest', 'Firm', 'Event'],
-        templates = ['./templates/reservationFormModal.html', './templates/guestFormModal.html', './templates/firmFormModal.html', './templates/eventFormModal.html'],
-        controllers = ['ReservationFormModalCtrl', 'GuestFormModalCtrl', 'FirmFormModalCtrl', 'EventFormModalCtrl'],
-        formSize = ['lg', 'lg', 'lg', 'lg'], // size of modal
+    var models = ['Reservation', 'Guest', 'Firm', 'Event','YesNo'],
+        templates = ['./templates/reservationFormModal.html',
+                     './templates/guestFormModal.html',
+                     './templates/firmFormModal.html',
+                     './templates/eventFormModal.html',
+                     './templates/yesNoFormModal.html'],
+        controllers = ['ReservationFormModalCtrl',
+                       'GuestFormModalCtrl',
+                       'FirmFormModalCtrl',
+                       'EventFormModalCtrl',
+                       'YesNoFormModalCtrl'],
+        formSize = ['lg', 'lg', 'lg', 'lg', 'sm'], // size of modal
         mode = {c: 0, r: 1, u: 2, d: 3}, // CRUD mode object
         modeStr = ['c', 'r', 'u', 'd'];
+
+     function _showModel(mModel, dataObj, callback) {
+     }
 
      function _executeModal(mModel, mode, dataObj, callback) {
        var bodyRef = angular.element( $document[0].body),
@@ -54,7 +65,8 @@ define(['./module'], function (services) {
         reservation: 0,
         guest: 1,
         firm: 2,
-        event: 3
+        event: 3,
+        yesNo: 4
       }
     };
 
@@ -84,5 +96,33 @@ define(['./module'], function (services) {
     this.delete = function (mModel, dataObj, callback ) {
       _executeModal(mModel, mode.d, dataObj, callback);
     };
+
+    // For non Mongoose Model modals very specific
+    this.yesNoShow = function(message, callback, yesText, noText, level) {
+      var bodyRef = angular.element( $document[0].body),
+          modeParams = {message: message, yes: yesText, no: noText, level: level},
+          mModel = this.getModelEnum().yesNo,
+          modalInstance,
+          result;
+
+      bodyRef.addClass('ovh'); //This is supposed to take care of a scrolling bug in modal, doesn't seem to work.
+      modalInstance = $modal.open({
+        templateUrl: templates[mModel],
+        controller: controllers[mModel],
+        size: formSize[mModel],
+        resolve: {
+          modalParams: function () {
+            return modeParams;
+          }
+        }
+      });
+
+      modalInstance.result.then(function(result) {
+        bodyRef.removeClass('ovh');
+        if (callback) {
+          callback(result); // call the user provided callback on successful completion.
+        }
+      });
+    }
   }]);
 });
