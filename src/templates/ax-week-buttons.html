@@ -1,12 +1,11 @@
 <div class="input-group-btn">
-    <a class="btn btn-default btn-sm" href="#" ng-click="goPrevMonth()"><span class="glyphicon glyphicon-fast-backward"></span></a>
-    <a class="btn btn-default btn-sm" href="#" ng-click="goPrevWeek()"><span class="glyphicon glyphicon-backward"></span></a>
-    <a class="btn btn-default btn-sm" href="#" ng-click="goPrev()"><span class="glyphicon glyphicon-chevron-left"></span></a>
-    <a class="btn btn-default btn-sm" href="#" ng-click="goToday()"><span class="">{{txt.today}}</span></a>
-    <input type="text" ng-show="false" ng-model="dpdate" datepicker-popup="{{format}}"  is-open="opened" datepicker-options="dateOptions"
-           current-text="{{txt.today}}" close-text="{{txt.ok}}" clear-text="{{txt.clear}}" />
-    <a class="btn btn-default btn-sm" href="#" ng-click="goPick($event)"><span class="glyphicon glyphicon-calendar"></span></a>
-    <a class="btn btn-default btn-sm" href="#" ng-click="goNext()"><span class="glyphicon glyphicon-chevron-right"></span></a>
-    <a class="btn btn-default btn-sm" href="#" ng-click="goNextWeek()"><span class="glyphicon glyphicon-forward"></span></a>
-    <a class="btn btn-default btn-sm" href="#" ng-click="goNextMonth()"><span class="glyphicon glyphicon-fast-forward"></span></a>
+    <a class="btn btn-default btn-sm" href="" ng-click="goDate(-30)"><span class="glyphicon glyphicon-fast-backward"></span></a>
+    <a class="btn btn-default btn-sm" href="" ng-click="goDate(-7)"><span class="glyphicon glyphicon-backward"></span></a>
+    <a class="btn btn-default btn-sm" href="" ng-click="goDate(-1)"><span class="glyphicon glyphicon-chevron-left"></span></a>
+    <a class="btn btn-default btn-sm" href="" ng-click="goDate(0)"><span class="">{{txt.today}}</span></a>
+    <input type="text" ng-show="false" datepicker-popup="{{format}}"  ng-model="pickedDate" is-open="opened" datepicker-options="dateOptions" show-button-bar="false" />
+    <a class="btn btn-default btn-sm" href="" ng-click="goPick($event)"><span class="glyphicon glyphicon-calendar"></span></a>
+    <a class="btn btn-default btn-sm" href="" ng-click="goDate(1)"><span class="glyphicon glyphicon-chevron-right"></span></a>
+    <a class="btn btn-default btn-sm" href="" ng-click="goDate(7)"><span class="glyphicon glyphicon-forward"></span></a>
+    <a class="btn btn-default btn-sm" href="" ng-click="goDate(30)"><span class="glyphicon glyphicon-fast-forward"></span></a>
 </div>

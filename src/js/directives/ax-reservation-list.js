@@ -21,8 +21,8 @@
  */
 define(['./module'], function (directives) {
   'use strict';
-  directives.directive('axReservationList', ['Reservation', 'dashboard', 'configService', 'datetime',
-    function (Reservation, dashboard, configService, datetime) {
+  directives.directive('axReservationList', ['Reservation', 'dashboard', 'configService', 'datetime', '$timeout',
+    function (Reservation, dashboard, configService, datetime, $timeout) {
 
       var linker = function (scope, element, attrs) {
 
@@ -172,11 +172,13 @@ define(['./module'], function (directives) {
         // finds the specified reservation number in the displayed list and returns the list object's reservation_link
         // property
         var _setChecked = function (resLink) {
-
+          if (!resLink) return;
           scope.reservations.forEach(function (res) {
             if (res.reservation_link && res.reservation_link.number === resLink.number && res.reservation_link.room === resLink.room && res.reservation_link.guest === resLink.guest) {
-              scope.selectedResId = res.id;
-              scope.$apply();
+              $timeout(function () {
+                scope.selectedResId = res.id;
+                scope.$apply();
+              });
             }
           });
         }
@@ -201,10 +203,12 @@ define(['./module'], function (directives) {
 
 
         scope.$on(configService.constants.reservationChangedEvent, function (event, result) {
+          console.log("ax-reservation-list $on fired ");
            _updateList(); //todo- check to see if reservation is in ilist before updating don't want to respond to a reservation this directive doesn't care about.
         });
 
         scope.$watchCollection('[listDate, listMode, numberOnly, selectedReservation]', function (newvals) {
+          console.log("ax-reservation-list watcher fired " + newvals);
           if (newvals[2]) {
             useLink = !(scope.numberOnly === 'true');
           }

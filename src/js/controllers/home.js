@@ -7,7 +7,9 @@ define(['./module'], function (controllers) {
         '$rootScope',
         'datetime',
         'modals',
-        function ($scope, $state, $rootScope, datetime, modals) {
+        'configService',
+        '$timeout',
+        function ($scope, $state, $rootScope, datetime, modals, configService, $timeout) {
 
           // Required for nav and page header
           $scope.appTitle = $rootScope.appTitle;
@@ -15,7 +17,18 @@ define(['./module'], function (controllers) {
           $scope.url = $state.current.url;
           $scope.pageHeading = "Zimmer Plan " // + $scope.theDate.getDate() + '.' + ($scope.theDate.getMonth() + 1) + '.' + $scope.theDate.getFullYear()
 
-          $scope.theDate = datetime.dateOnly(new Date(Date.now()));// start at current date
+          // get the saved last date of the calendar but delay it till the end of the digest cycle so that
+          // the calendar gets time to 'settle down'
+          $timeout(function () {
+            configService.get('planDate', datetime.dateOnly(new Date(Date.now()))).then(function (val) {
+              val = new Date(Date.parse(val)); //seems to save date as its string value
+              $scope.theDate = val;
+              console.log("HOME CTRL INIT" + ' ' + val)
+              $rootScope.$broadcast(configService.constants.weekButtonsSetEvent, val);
+            });
+          }, 200);
+
+
           $scope.selected = {
             reservation: undefined,
             anCnt: 0,
@@ -24,7 +37,7 @@ define(['./module'], function (controllers) {
           };
           $scope.selectedEvent;
 
-          // monitor to scope properties. They do not interact with one another and we expect only
+          // monitor two scope properties. They do not interact with one another and we expect only
           // one to change at any given time.
           $scope.$watchCollection('[theDate, selectedEvent]', function (newvals, oldvals) {
             var varIndex = (oldvals[1] !== newvals[1]) ? 1 :
@@ -32,6 +45,7 @@ define(['./module'], function (controllers) {
 
             switch (varIndex) {
               case 0:
+                configService.set('planDate', datetime.dateOnly($scope.theDate));
                 $scope.theNextDate = datetime.dateOnly($scope.theDate, 1);
                 break;
               case 1:

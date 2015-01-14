@@ -1,8 +1,12 @@
 Development Notes
 =================
 
-**I left off here:**
+**Upgrade to angular 1.3**
+Since this app depends on angular-bootstrap, I will not upgrade until a new version of angular-bootstrap comes out. There
+appears to be too many bugs at this time (Jan/15)
 
+
+ **TASKS**
   Done ~~ax-reservation-details directive, need to work through logic for checkout.~~
 
   Done ~~ax-reservation-list directive, need a way of indicating when a reservation is fully checked in and when it is checked out (strike-through text?)~~
@@ -29,7 +33,7 @@ automatically added to the room guest (need guest1 and guest2 properties).
 If so then we need to expose the second person's name in the guest modal form. Also, will need to modify logic in
 the _updateRequiredExpenses method. left off at ~372 in reservationVM.
 
-** NEEDED CHANGES**
+**NEEDED CHANGES**
 
 1. **DONE** Resources also need a name associated with them (like rooms) for multiple room business reservations.
 

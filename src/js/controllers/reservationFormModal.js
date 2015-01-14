@@ -52,8 +52,7 @@ define(['./module'], function (controllers) {
         'configService',
         'datetime',
         '$timeout',
-        'utility',
-        function ($scope, $rootScope, $modalInstance, modalParams, Reservation, ReservationVM, configService, datetime, $timeout, utility) {
+        function ($scope, $rootScope, $modalInstance, modalParams, Reservation, ReservationVM, configService, datetime, $timeout) {
           console.log("ReservationFormModal controller fired");
 
           $scope.err = {};
@@ -88,12 +87,24 @@ define(['./module'], function (controllers) {
                 if (extraData) { //TODO- may need some better handling, eg date strings
                   resVM.res.start_date = extraData.start ? datetime.dateOnly(new Date(extraData.start)) : datetime.dateOnly(new Date());
                   resVM.res.end_date = extraData.end ? datetime.dateOnly(new Date(extraData.end)) : datetime.dateOnly(resVM.res.start_date, 1);
-                  resVM.nights = resVM.res.nights;
-                  $scope.title = extraData.room ? $scope.title + ' (' + configService.loctxt.selectedRoom + ' ' + extraData.room + ')' : $scope.title; //todo-can we figure out how to pre select room?
+                  resVM.updateAvailableRoomsAndResources().then(function () {  // update room list based on provided dates
+                    resVM.nights = resVM.res.nights;
+                    $scope.title = extraData.room ? $scope.title + ' (' + configService.loctxt.selectedRoom + ' ' + extraData.room + ')' : $scope.title; //todo-can we figure out how to pre select room?
+                    $scope.start_date = new Date(resVM.res.start_date);
+                    $scope.end_date = new Date(resVM.res.end_date);
+                    executeWatch = true;
+                  },
+                  function (err) {
+                    console.log('Available room update error ' + err);
+                    $scope.err = err; // returns an error object
+                    $scope.errLoad = true;
+                  });
                 }
-                $scope.start_date = new Date(resVM.res.start_date);
-                $scope.end_date = new Date(resVM.res.end_date);
-                executeWatch = true;
+                else {
+                  $scope.start_date = new Date(resVM.res.start_date);
+                  $scope.end_date = new Date(resVM.res.end_date);
+                  executeWatch = true;
+                }
               }, function (err) {
                 console.log('Create Error: ' + err);
                 $scope.err = err; // returns an error object

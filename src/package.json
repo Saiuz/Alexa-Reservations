@@ -1,4 +1,5 @@
 {
+  "main": "index.html",
   "name": "Alexa-Reservations",
   "description": "Hotel Reservation Manager for a German Kur Hotel. Desktop application developed using AngularJS and web technologies. Powered by node-webkit",
   "version": "0.2.0",

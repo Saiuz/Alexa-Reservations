@@ -30,11 +30,10 @@ define(['./module'], function (directives) {
 
       var linker = function (scope, element, attrs) {
         var wSpan = attrs.weekSpan ? Number(attrs.weekSpan) : 2,
+            sundayStart = attrs.startSunday === 'true',
+            startDate = attrs.startDate ? Date.parse(attrs.startDate) : new Date(),
             rooms = [],
             resources = [],
-            months = [],
-            dow = [],//day of week, name
-            dom = [], // day of month
             isMouseDown = false,
             selStart = 0,
             selRoom = -1, //needs to be < 0 since calendar items have a room of 0
@@ -43,22 +42,26 @@ define(['./module'], function (directives) {
             resResults;
 
         scope.txt = configService.loctxt;
-        scope.weekStart;
-        scope.weekEnd;
-        scope.dateInWeek;
+
+        //scope.weekStart;
+        //scope.weekEnd;
+        //scope.dateInWeek;
         scope.hasErr = false;
         scope.errMsg = '';
 
         //scope.dateInWeek = new Date();
 
-        // Need to get rooms and resources list and (calendar item eventually)
+        // Need to get rooms and resources list
         // Need room/resource number/name and for room type and class for color coding
-        dashboard.getRoomListInfo().then(function (result) {
-              rooms = result;
-              scope.roomCnt = result.length;
-              dashboard.getResourceListInfo().then(function (result) {
-                    resources = result;
-                    scope.resourceCnt = result.length;
+        dashboard.getRoomListInfo().then(function (rmResults) {
+              dashboard.getResourceListInfo().then(function (resResults) {
+                    resources = resResults;
+                    scope.resourceCnt = resResults.length;
+                    rooms = rmResults;
+                    scope.roomCnt = rmResults.length;
+                    scope.theDate = startDate;
+                    scope.dateInWeek = startDate;
+
                   },
                   function (err) {
                     scope.hasErr = true;
@@ -70,33 +73,50 @@ define(['./module'], function (directives) {
               scope.errMsg = err;
             });
 
-        scope.$watchCollection('[dateInWeek, weekStart, weekEnd]', function (newvals, oldvals) {
-          // respond to change in calendar.
-          console.log('*** ax-room-plan watch fired ' + newvals[0] + '|' + newvals[1] + '|' + newvals[2]);
-          var nd  = [datetime.daysSinceEpoch(newvals[0]), datetime.daysSinceEpoch(newvals[1]), datetime.daysSinceEpoch(newvals[2])] ;
-          var od  = [datetime.daysSinceEpoch(oldvals[0]), datetime.daysSinceEpoch(oldvals[1]), datetime.daysSinceEpoch(oldvals[2])] ;
-          if (nd[0] === od[0]) {
-            return;
-          }
-          if (nd[0] && nd[1] && nd[2]) {
-            // get reservation info during the dates represented by the calendar display
-            var paintOnly = (resResults && od[1] && (nd[1] === od[1] && nd[2] === od[2]));
-            _buildCalendar(false);
-          }
-        });
-
-        // Register events that this directive responds to
+        // Register events that this directive responds to. The first three events don't change the date
         angular.forEach([configService.constants.reservationChangedEvent, configService.constants.appReadyEvent,
-                         configService.constants.calEventChangedEvent], function (value) {
+          configService.constants.calEventChangedEvent], function (value) {
           scope.$on(value, function (event, result) {
             _buildCalendar();
           });
         });
+        //This event responds to external code wanting to set the current date of the calendar
+        scope.$on(configService.constants.weekButtonsSetEvent, function (event, dateval) {
+           if (datetime.isDate(dateval)) {
+             console.log('WeekButtonsSetEvent: ' + dateval);
+             startDate = dateval;
+             scope.theDate = dateval;
+           }
+        });
+
+        scope.$watch('theDate', function (newval, oldval) {
+          // respond to change in calendar.
+          console.log('*** ax-room-plan watch fired ' + newval + '|' + oldval);
+
+          if (newval) { //date selector directive value changed.
+            scope.dates = datetime.findWeek(newval, sundayStart);
+            scope.dateInWeek = newval;
+            _buildCalendar(false);
+          } //todo- may want to revisit logic that modifies reservations at start and end of calendar period. This
+            //todo- this breaks the paint logic. Although it is nice and simple this way. Not sure it gains much.
+/*          if (newvals && oldvals && newvals[0] && newvals[1] && newvals[2]) { //wait for all properties to initialize
+            var nd = [datetime.daysSinceEpoch(newvals[0]), datetime.daysSinceEpoch(newvals[1]), datetime.daysSinceEpoch(newvals[2])];
+            var od = [datetime.daysSinceEpoch(oldvals[0]), datetime.daysSinceEpoch(oldvals[1]), datetime.daysSinceEpoch(oldvals[2])];
+            if (nd[0] === od[0]) {
+              return;
+            }
+            if (nd[0] && nd[1] && nd[2]) {
+              // get reservation info during the dates represented by the calendar display
+              var paintOnly = (resResults && od[1] && (nd[1] === od[1] && nd[2] === od[2]));
+              _buildCalendar(false);
+            }
+          }*/
+        });
+
 
         // respond to a user clicking on a reservation item
         scope.rClick = function (link, start) {
-          var newdate = datetime.dseToDate(start);
-          $rootScope.$broadcast(configService.constants.weekButtonsSetEvent, newdate);
+          scope.theDate = datetime.dseToDate(start);
           scope.selectedReservation = link;
         };
 
@@ -128,37 +148,43 @@ define(['./module'], function (directives) {
 
         // function to retrieve items to build calendar, calls _updateCalendar which does the heavy lifting
         function _buildCalendar(paintOnly) {
-          var startCal = datetime.dateOnly(scope.weekStart, -7 * wSpan),
-              endCal = datetime.dateOnly(scope.weekEnd, 7 * wSpan),
-              cols = (wSpan * 2 + 1) * 7;
+          var startCal, endCal, cols;
 
-          scope.colCnt = cols;
-          if (paintOnly) { //there is a subtle bug with paint only. Since build calendar can change the reservation objects close to the end, currently set paintOnly to false.
-            _updateCalendar(resResults, startCal, endCal, cols);
-          }
-          else {
-            dashboard.findReservationsByDateRange(startCal, endCal).then(function (results) {
-              dashboard.findEventsByDateRange(startCal, endCal).then(function (events) {
-                if (results) {
-                  results.events = events;
-                  resResults = results; //cache last query.
-                  _updateCalendar(resResults, startCal, endCal, cols);
-                }
-              }, function (err) {
-                scope.hasErr = true;
-                scope.errMsg = err;
+          if (scope.dates) {
+            startCal = datetime.dateOnly(scope.dates.weekStart, -7 * wSpan);
+            endCal = datetime.dateOnly(scope.dates.weekEnd, 7 * wSpan);
+            cols = (wSpan * 2 + 1) * 7;
+            scope.colCnt = cols;
+            if (paintOnly) { //there is a subtle bug with paint only. Since build calendar can change the reservation objects close to the end, currently set paintOnly to false.
+              _updateCalendar(resResults, startCal, endCal, cols);
+            }
+            else {
+              dashboard.findReservationsByDateRange(startCal, endCal).then(function (results) {
+                dashboard.findEventsByDateRange(startCal, endCal).then(function (events) {
+                  if (results) {
+                    results.events = events;
+                    resResults = results; //cache last query.
+                    _updateCalendar(resResults, startCal, endCal, cols);
+                  }
+                }, function (err) {
+                  scope.hasErr = true;
+                  scope.errMsg = err;
+                });
               });
-            });
+            }
           }
         }
 
         // populates the scope variables with objects to build the calendar display
         function _updateCalendar(results, startCal, endCal, cols) {
-          scope.dow = _buildDowArray(startCal, endCal, cols); // calendar day and day of week
-          scope.mHeader = _buildMonthHeader(startCal, endCal, cols);
-          scope.cRooms = _buildRoomBody(startCal, endCal, cols, rooms, results.reservations);
-          scope.cResources = _buildResourceBody(startCal, endCal, cols, resources, results.resources);
-          scope.cEvents = _buildEventsBody(startCal, endCal, cols, results.events);
+          scope.calObj = {
+            dow: _buildDowArray(startCal, cols), // calendar day and day of week
+            mHeader: _buildMonthHeader(startCal, endCal, cols),
+            cRooms: _buildRoomBody(startCal, endCal, cols, rooms, results.reservations),
+            cResources: _buildResourceBody(startCal, endCal, cols, resources, results.resources),
+            cEvents: _buildEventsBody(startCal, endCal, cols, results.events)
+          };
+
           // use timeout kluge to map events to the table elements after it renders.
           $timeout(function () {
             if (element) {
@@ -197,7 +223,7 @@ define(['./module'], function (directives) {
               });
             }
           }, 200);
-        };
+        }
 
         function _buildMonthHeader(start, end, cols) {
           //[{span: 24, text: 'Dezember 2014', month: 11},{span: 11, text: 'Januar 2015', month: 0}]
@@ -241,13 +267,13 @@ define(['./module'], function (directives) {
           return mheader;
         }
 
-        function _buildDowArray(start, end, cols) {
+        function _buildDowArray(start, cols) {
           var dnow = [],
               std = start.getDay(),
               cDSE = datetime.daysSinceEpoch(start),
-              startDSE = datetime.daysSinceEpoch(scope.weekStart),
-              endDSE = datetime.daysSinceEpoch(scope.weekEnd),
-              dse = datetime.daysSinceEpoch(scope.dateInWeek);
+              startDSE = datetime.daysSinceEpoch(scope.dates.weekStart),
+              endDSE = datetime.daysSinceEpoch(scope.dates.weekEnd),
+              dse = datetime.daysSinceEpoch(scope.dates.currentDate);
 
           for (var i = 0; i < cols; i++) {
             var dow = {
@@ -269,7 +295,7 @@ define(['./module'], function (directives) {
           var bodyArr = [],
               sDSE = datetime.daysSinceEpoch(start),  //use date since epoch to avoid logic issues with day of year
               eDSE = datetime.daysSinceEpoch(end),    //that occur at end of the year.
-              dDSE = datetime.daysSinceEpoch(scope.dateInWeek);
+              dDSE = datetime.daysSinceEpoch(scope.dates.currentDate);
 
           // for each room in rooms..
           //  find all reservations in reservations array for the specified room
@@ -335,7 +361,7 @@ define(['./module'], function (directives) {
           var bodyArr = [],
               sDSE = datetime.daysSinceEpoch(start),  //use date since epoch to avoid logic issues with day of year
               eDSE = datetime.daysSinceEpoch(end),    //that occur at end of the year.
-              dDSE = datetime.daysSinceEpoch(scope.dateInWeek);
+              dDSE = datetime.daysSinceEpoch(scope.dates.currentDate);
 
           // for each r in resources..
           //  find all reservations in reservations array for the specified room
@@ -400,7 +426,7 @@ define(['./module'], function (directives) {
           var bodyArr = [],
               sDSE = datetime.daysSinceEpoch(start),  //use date since epoch to avoid logic issues with day of year
               eDSE = datetime.daysSinceEpoch(end),    //that occur at end of the year.
-              dDSE = datetime.daysSinceEpoch(scope.dateInWeek),
+              dDSE = datetime.daysSinceEpoch(scope.dates.currentDate),
               bins = [],
               binEnd = [];
 
@@ -608,7 +634,9 @@ define(['./module'], function (directives) {
           selectedReservation: '=',
           selectedEvent: '=',
           blankClickFunction: '=',
-          weekSpan: '@' // number of weeks each side of 'active' week
+          startDate: '@',
+          weekSpan: '@', // number of weeks each side of 'active' week
+          weeksStartSunday: '@' //boolean, defaults to false - Monday start
         }
       };
 

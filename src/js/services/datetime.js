@@ -42,7 +42,7 @@ define(['./module'], function (services) {
         }
         else if (typeof dateval === 'string') {
           var x = Date.parse(dateval);
-          var y = dateParseDeF(dateval);
+          var y = _dateParseDeF(dateval);
           return x || y ? true : false;
         }
       }
@@ -84,7 +84,7 @@ define(['./module'], function (services) {
         var weekEnd = new Date(weekStart.valueOf() + 6*millisecondsPerDay); //add 6 days to get last day
         var curDay = d - startDay;
         curDay = (curDay < 0 ? 6 : curDay) + 1; //Returns current day from 1 to 7 instead of 0 to 6
-        return { weekStart: weekStart, weekEnd: weekEnd, currentDay: curDay }
+        return { weekStart: weekStart, weekEnd: weekEnd, currentDate: currdate, currentDay: curDay }
       },
 
       //Calculate the number of nights stayed between the two dates
@@ -108,7 +108,7 @@ define(['./module'], function (services) {
       // returns the days in the month of the specified date. If the date is not specified returns
       // days in the month of the current month.
       daysInMonthOfDate: function (dateval) {
-        if (!dateval) {
+        if (!_isDate(dateval)) {
           var cdate = new Date();
           return new Date(cdate.getFullYear(), cdate.getMonth() + 1, 0).getDate();
         }

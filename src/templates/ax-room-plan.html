@@ -1,35 +1,35 @@
 <div class="panel panel-default">
     <div class="panel-heading">
-        {{txt.week_plan_for}} {{weekStart | date:'dd.MM.yyyy'}} {{txt.until}} {{weekEnd | date:'dd.MM.yyyy'}}
-        <ax-week-buttons week-start-date='weekStart' week-end-date='weekEnd' picked-date='dateInWeek'/>
+        {{txt.week_plan_for}} {{dates.weekStart | date:'dd.MM.yyyy'}} {{txt.until}} {{dates.weekEnd | date:'dd.MM.yyyy'}}
+        <ax-week-buttons picked-date='theDate'/>
     </div>
     <div class="panel-body zp-container">
         <table class="table-zp" ng-if="!hasErr">
             <thead>
             <tr>
                 <th class="zp-divColor"></th>
-                <th ng-repeat="m in mHeader track by $index" colspan="{{m.span}}" ng-class-odd="'zp-divColor'"
+                <th ng-repeat="m in calObj.mHeader track by $index" colspan="{{m.span}}" ng-class-odd="'zp-divColor'"
                     ng-class-even="'zp-endColor'">{{m.text}}
                 </th>
                 <th class="zp-divColor"></th>
             </tr>
             <tr class="zp-divColor">
                 <th></th>
-                <th ng-repeat="d in dow track by $index"  class="zpSel"
+                <th ng-repeat="d in calObj.dow track by $index"  class="zpSel"
                     ng-class="{'zp-dayColor': d.isDay, 'zp-weekColor': d.inWk}"  cdat="0|{{d.dse}}">{{d.day}}
                 </th>
                 <th></th>
             </tr>
             <tr class="zp-divColor">
                 <th>{{txt.calendar}}</th>
-                <th ng-repeat="d in dow track by $index" class="zpSel"
+                <th ng-repeat="d in calObj.dow track by $index" class="zpSel"
                     ng-class="{'zp-dayColor': d.isDay, 'zp-weekColor': d.inWk}" cdat="0|{{d.dse}}">{{d.date}}
                 </th>
                 <th>{{txt.calendar}}</th>
             </tr>
             </thead>
             <tbody>
-            <tr ng-repeat="e in cEvents">
+            <tr ng-repeat="e in calObj.cEvents">
                 <td class="zp-divColor"></td>
                 <td ng-repeat="i in e.evtItems track by $index" colspan="{{i.span}}"
                     ng-class="{'zp-resColor': i.resCol, 'zp-endColor': i.endCol,'zp-endButt': i.overLapCol,
@@ -41,12 +41,12 @@
             </tr>
             <tr class="zp-divColor">
                 <td>{{txt.room}}</td>
-                <th ng-repeat="d in dow track by $index" ng-class="{'zp-dayColor': d.isDay, 'zp-weekColor': d.inWk}">
+                <th ng-repeat="d in calObj.dow track by $index" ng-class="{'zp-dayColor': d.isDay, 'zp-weekColor': d.inWk}">
                     {{d.date}}
                 </th>
                 <td>{{txt.room}}</td>
             </tr>
-            <tr ng-repeat="r in cRooms">
+            <tr ng-repeat="r in calObj.cRooms">
                 <td class="{{r.rclass}}">{{r.room}}</td>
                 <td ng-repeat="i in r.resItems track by $index" colspan="{{i.span}}"
                     ng-class="{'zp-resColor': i.resCol, 'zp-endColor': i.endCol,'zp-endButt': i.overLapCol,
@@ -58,12 +58,12 @@
             </tr>
             <tr class="zp-divColor">
                 <td>{{txt.parkPlace}}</td>
-                <th ng-repeat="d in dow track by $index" ng-class="{'zp-dayColor': d.isDay, 'zp-weekColor': d.inWk}">
+                <th ng-repeat="d in calObj.dow track by $index" ng-class="{'zp-dayColor': d.isDay, 'zp-weekColor': d.inWk}">
                     {{d.date}}
                 </th>
                 <td>{{txt.parkPlace}}</td>
             </tr>
-            <tr ng-repeat="r in cResources">
+            <tr ng-repeat="r in calObj.cResources">
                 <td class="zp-ppColor">{{r.name}}</td>
                 <td ng-repeat="i in r.resItems track by $index" colspan="{{i.span}}"
                     ng-class="{'zp-resColor': i.resCol, 'zp-endColor': i.endCol,'zp-endButt': i.overLapCol, 'zp-dayColor': i.dayCol}">
