@@ -8,6 +8,7 @@ define("app", [
     'angular-bootstrap',
     'text!',
     'angular-xeditable',
+    'angular-i18n',
     './controllers/index',
     './directives/index',
     './filters/index',
@@ -29,6 +30,7 @@ define("app", [
         'ui.bootstrap',
         "ui.bootstrap.tpls",
         'ui.router',
+        'ngLocale',
         'xeditable'
     ]).run(function($state, nwService, $rootScope,  editableOptions) {
 

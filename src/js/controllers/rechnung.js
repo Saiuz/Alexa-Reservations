@@ -43,6 +43,26 @@ define(['./module'], function (controllers) {
             });
           });
 
+          //print bill
+          $scope.printBill = function() {
+            var printContents = $('#billPage').html(); //$('#billPage').innerHTML();
+            var popupWin = window.open('', '_blank', 'width=450,height=600,scrollbars=no,menubar=no,toolbar=no,location=no,status=no,titlebar=no');
+            popupWin.window.focus();
+            popupWin.document.write('<!DOCTYPE html><html><head>' +
+            '<link rel="stylesheet" type="text/css" href="css/app.css" />' +
+            '</head><body onload="window.print()"><div class="reward-body">' + printContents + '</div></html>');
+            popupWin.window.print();
+            popupWin.onbeforeunload = function (event) {
+              popupWin.close();
+              return '.\n';
+            };
+            popupWin.onabort = function (event) {
+              popupWin.document.close();
+              popupWin.close();
+            }
+          }
+
+
           // Checkout the reservation or the individuals part of the reservation.
           // todo- currently just sets the checkout flag.
           $scope.checkout = function () {

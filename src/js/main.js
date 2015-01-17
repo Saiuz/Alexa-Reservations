@@ -9,6 +9,7 @@ requirejs.config({
         'domReady': '../lib/requirejs-domready/domReady',
         'angular': '../lib/angular/angular',
         'angular-ui-router': '../lib/angular-ui-router/release/angular-ui-router',
+        'angular-i18n': '../lib/angular-i18n/angular-locale_de-de',
         'text': '../lib/requirejs-text/text',
         '_': '../lib/lodash/dist/lodash',
         '$': '../lib/jquery/dist/jquery',
@@ -25,6 +26,9 @@ requirejs.config({
             exports: 'angular'
         },
         'angular-ui-router':{
+            deps:['angular']
+        },
+        'angular-i18n':{
             deps:['angular']
         },
         '_':{

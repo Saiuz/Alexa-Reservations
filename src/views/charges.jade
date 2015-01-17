@@ -15,9 +15,9 @@ include nav_common.jade
       .panel.panel-default
         .panel-heading {{pTitle}}&nbsp;
           span(ng-show="showCharges") für: {{rvm.res.reservation_number}} - {{guest}} - {{txt.roomAbrv}} {{room}}, Abfahrt {{rvm.res.end_date | date:'dd.MM.yyyy'}}, {{rvm.res.nights}} {{txt.nights}}
-          span.input-group
-            a.btn.btn-default.btn-small.pull-right(ng-show="showCharges" href="#/rechnung/{{rvm.res.reservation_number}}/{{room}}/{{guest}}")
-              i.glyphicon.glyphicon-arrow-right(ng-show="showCharges") &nbsp;Zu Rechnung
+          span..input-group-btn
+            a.btn.btn-default.btn-small(ng-show="showCharges" href="#/rechnung/{{rvm.res.reservation_number}}/{{room}}/{{guest}}") {{txt.toBill}} &nbsp;
+              i.glyphicon.glyphicon-arrow-right(ng-show="showCharges")
         .panel-body
           .col-md-12
             div.table-bordered(ng-show="showCharges")

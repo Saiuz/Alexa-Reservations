@@ -17,11 +17,15 @@ include nav_common.jade
       .panel.panel-default
         .panel-heading {{pTitle}}&nbsp;
           span(ng-show="showCharges") für: {{rvm.res.reservation_number}} - {{guest}} - {{txt.roomAbrv}} {{room}}, Abfahrt {{rvm.res.end_date | date:'dd.MM.yyyy'}}, {{rvm.res.nights}} {{txt.nights}}
-          span.input-group
-            button.btn.btn-default.btn-small.pull-right(type="button" ng-if="showCharges && canCheckOut" ng-click="checkout()") Check Out
+          span.input-group-btn
+            a.btn.btn-default.btn-small(ng-show="showCharges" href="#/charges/{{rvm.res.reservation_number}}/{{room}}/{{guest}}")
+              i.glyphicon.glyphicon-arrow-left &nbsp;{{txt.toCharges}}
+            a.btn.btn-default.btn-small(href="" ng-if="showCharges && canCheckOut" ng-click="checkout()") {{txt.checkout}}
+            a.btn.btn-default.btn-small(href="" ng-if="showCharges && canCheckOut" ax-print print-element-id="printBill") {{txt.print}}
         .panel-body
           .col-md-12
             div(ng-show="showCharges")
-              img(src="./images/rechnung.png" alt="room calendar widget" width="600 px")
+              ax-business-bill(reservation-vm="rvm" room="{{room}}" guest="{{guest}}")
+
 
 

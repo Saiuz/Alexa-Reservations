@@ -8,10 +8,10 @@ include nav_common.jade
         tab(heading="{{selected.anCnt}} Ankunft: {{theDate | date:'dd.MM.yyyy'}}" select="clearSelected()")
           .tab-content-box
             ax-reservation-list(list-mode="arrival" list-date="theDate" selected-reservation="selected.reservation" res-count="selected.anCnt")
-        tab(heading="{{selected.ab1Cnt}} Abfahrt: {{theDate | date:'dd.MM.yyyy'}}" select="clearSelected()")
+        tab(heading="{{selected.ab1Cnt}} Abfahrt: {{theDate | date:'shortDate'}}" select="clearSelected()")
           .tab-content-box
             ax-reservation-list(list-mode="departure" list-date="theDate" selected-reservation="selected.reservation" res-count="selected.ab1Cnt")
-        tab(heading="{{selected.ab2Cnt}} Abfahrt: {{theNextDate | date:'dd.MM.yyyy'}}" select="clearSelected()")
+        tab(heading="{{selected.ab2Cnt}} Abfahrt: {{theNextDate | date:'shortDate'}}" select="clearSelected()")
           .tab-content-box
             ax-reservation-list(list-mode="departure" list-date="theNextDate" selected-reservation="selected.reservation" res-count="selected.ab2Cnt")
     .col-md-8

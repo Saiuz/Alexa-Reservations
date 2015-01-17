@@ -25,8 +25,8 @@
  */
 define(['./module'], function (directives) {
   'use strict';
-  directives.directive('axRoomPlan', ['dashboard', '$rootScope', 'configService', 'datetime', '$timeout',
-    function (dashboard, $rootScope, configService, datetime, $timeout) {
+  directives.directive('axRoomPlan', ['dashboard', '$rootScope', 'configService', 'datetime', '$timeout', '$filter',
+    function (dashboard, $rootScope, configService, datetime, $timeout, $filter) {
 
       var linker = function (scope, element, attrs) {
         var wSpan = attrs.weekSpan ? Number(attrs.weekSpan) : 2,
@@ -553,8 +553,8 @@ define(['./module'], function (directives) {
                 endCol: false,
                 link: {number: evt.id, room: 0, guest: ''},
                 overLapCol: overlapEnd,
-                hoverTxt: '<b>' + evt.title + '<b><br />Von: ' + datetime.toDeDateString(evt.start_date) + '<br />Bis: ' +
-                datetime.toDeDateString(evt.end_date) + (evt.comments ? '<br />' + evt.comments : ''),
+                hoverTxt: '<b>' + evt.title + '<b><br />Von: ' + $filter('date')(evt.start_date, 'shortDate') + '<br />Bis: ' +
+                $filter('date')(evt.end_date, 'shortDate') + (evt.comments ? '<br />' + evt.comments : ''),
                 isBlank: false
               },
               nextDSE = evt.end_dse + 1;
@@ -576,8 +576,8 @@ define(['./module'], function (directives) {
                 link: {number: res.reservation_number, room: res.room, guest: res.guest},
                 overLapCol: overlapEnd && res.end_dse !== edse,
                 hoverTxt: '<b>' + res.title + ( !res.oneRoom ? ' - ' + res.guest : '') + '</b><br />Von: '
-                + datetime.toDeDateString(res.start_date) +
-                '<br />Bis: ' + datetime.toDeDateString(res.end_date) + (res.resource_name ? '<br /> Zi. ' + res.room : ''),
+                + $filter('date')(res.start_date, 'shortDate') +
+                '<br />Bis: ' + $filter('date')(res.end_date, 'shortDate') + (res.resource_name ? '<br /> Zi. ' + res.room : ''),
                 isBlank: false
               },
               checkout = {

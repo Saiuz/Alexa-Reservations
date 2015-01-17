@@ -6457,3 +6457,107 @@ body {
   padding: 5px;
   margin-bottom: 5px;
 }
+.bill-body {
+  border-top: #000000 medium solid ;
+  border-left: #000000 thin solid;
+  padding-left: 3px;
+  padding-top: 3px;
+  height: 650px;
+}
+.table-bill-page {
+  width: 100%;
+  max-width: 100%;
+  margin: 0px;
+}
+.table-bill-page > thead > tr > td:first-child {
+  padding-left: 15px;
+  width: 60%;
+}
+.table-bill-page > thead > tr > td:last-child {
+  padding-right: 15px;
+  text-align: right;
+  width: 40%;
+}
+.table-bill-page > tbody {
+  padding-top: 10px;
+}
+.table-bill-page > tbody > tr {
+  border-left: #000000 thin solid;
+}
+.table-bill-page > tbody > tr:first-child {
+  border-top: #000000 medium solid ;
+  border-left: #000000 thin solid;
+}
+.table-bill-detail {
+  border: 0;
+  width: 100%;
+}
+.table-bill-detail > tbody > tr > td {
+  padding-top: 6px;
+  padding-bottom: 2px;
+}
+.table-bill-detail > tbody > tr > td:first-child {
+  padding-left: 30px;
+  width: 80%;
+}
+.table-bill-detail > tbody > tr > td:last-child {
+  border-left: #000000 thin dotted;
+  padding-right: 15px;
+  text-align: right;
+  width: 20%;
+}
+.table-bill-tax {
+  border: 0;
+  width: 100%;
+}
+.table-bill-tax > tbody > tr:first-child {
+  height: 30px;
+  text-decoration: underline;
+}
+.table-bill-tax > tbody > tr > td {
+  text-align: right;
+}
+.table-bill-tax > tbody > tr > td:first-child {
+  text-align: left;
+  padding-left: 30px;
+  width: 50%;
+}
+.table-bill-tax > tbody > tr > td:last-child {
+  padding-right: 15px;
+  text-align: right;
+  width: 10%;
+}
+.bill-section-heading {
+  font-weight: bold;
+  font-style: italic;
+  padding-top: 15px;
+  padding-left: 15px;
+}
+.bill-total {
+  text-decoration: underline;
+  border-bottom: 1px solid #000;
+}
+@media screen {
+  #printSection {
+    display: none;
+  }
+}
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  #printSection,
+  #printSection * {
+    visibility: visible;
+  }
+  #printSection {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 750px;
+  }
+  #printBill {
+    margin-top: 200px;
+    margin-left: 50px;
+  }
+}

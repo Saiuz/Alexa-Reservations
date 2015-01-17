@@ -343,7 +343,8 @@ define(['./module'], function (model) {
             plan = that.getPlanInReservation(),
             extras = {},
             rmObj = that.getRoomInReservation(room),
-            result = {roomGuest1: undefined, roomGuest2: undefined, groupRooms: [], displayText: '****'};
+            result = {roomGuest1: undefined, roomGuest2: undefined, groupRooms: [], displayText: '****'},
+            instructions = {price: 'c', roomprice: 'c'};
 
         if (rmExp) {
           rmObj = that.getRoomInReservation(room);
@@ -351,11 +352,11 @@ define(['./module'], function (model) {
           result.roomGuest2 = rmObj.guest2;
           if (that.isGroup && !that.oneBill) { //group business reservation
             extras = {nights: that.res.nights, roomType: rmObj.room_type, roomPrice: rmObj.price};
-           result.displayText = convert.formatDisplayString(plan,extras);
+           result.displayText = convert.formatDisplayString(plan,extras, instructions);
           }
           else if (that.isGroup && that.oneBill) { //group tour reservation.
             extras = {nights: that.res.nights, occupants: that.res.occupants, roomCnt: that.res.rooms.length};
-            result.displayText = convert.formatDisplayString(plan,extras);
+            result.displayText = convert.formatDisplayString(plan,extras, instructions);
 
             // for this case the UI needs to create buttons for each room
             that.res.rooms.forEach(function(rm) {
@@ -367,14 +368,14 @@ define(['./module'], function (model) {
             if (plan.is_plan) {
               extras.perPerson = that.res.occupants === 2 ? configService.loctxt.forTwoPeople : '';
             }
-            result.displayText = convert.formatDisplayString(plan,extras);
+            result.displayText = convert.formatDisplayString(plan,extras, instructions);
           }
           else if (that.oneRoom && !that.oneBill) { // covers business and kur plans
             extras = {nights: that.res.nights, roomprice: rmExp.price};
             if (plan.is_plan) {
               extras.perPerson = that.res.occupants === 2 ? configService.loctxt.forTwoPeople : '';
             }
-            result.displayText = convert.formatDisplayString(plan,extras);
+            result.displayText = convert.formatDisplayString(plan,extras, instructions);
           }
         }
 
@@ -687,7 +688,117 @@ define(['./module'], function (model) {
         return deferred.promise;
       };
 
+      // Calculate expense totals for included expense items. It returns an object with the sum, detail information and
+      // taxes for the specified items.
+      this.calculateTotals  = function (incItems, room, guest, extras, aggregate, aggrTxt) {
+        var net19 = 0,
+            sum19 = 0,
+            net7 = 0,
+            sum7 = 0,
+            tax19 = 0,
+            tax7 = 0,
+            calcResult = {sum: 0, detail: [], totalsTaxes: {}},
+            instructions = {price: 'c'}; //formatting instructions for price in bill item
+
+        // Expense detail object, for a bill
+        var LineItem = function (expItem, extras, instructions) {
+          this.text = convert.formatDisplayString(expItem, extras, instructions);
+          this.total = expItem.item_total;
+        };
+
+        angular.forEach(that.res.expenses, function (item) {
+          var includeIt = (that.oneBill || (item.guest === guest && item.room === Number(room))),
+              inCategory = ( !incItems || incItems.length === 0 ||  incItems.indexOf(item.bill_code) !== -1);
+
+          if (inCategory && includeIt) {
+            if (!item.no_display || item.is_room) {
+              if (item.price || item.taxable_price)
+              calcResult.detail.push(new LineItem(item, extras, instructions));
+            }
+
+            calcResult.sum += item.item_total;
+            if (item.low_tax_rate) {
+              tax7 += item.item_tax;
+              net7 += item.item_tax_net;
+              sum7 += item.item_tax_total;
+            }
+            else {
+              tax19 += item.item_tax;
+              net19 += item.item_tax_net;
+              sum19 += item.item_tax_total;
+            }
+          }
+        });
+
+        calcResult.taxes = {
+          tax7: tax7,
+          net7: net7,
+          sum7: sum7,
+          tax19: tax19,
+          net19: net19,
+          sum19: sum19
+        };
+
+        if (aggregate) {
+          calcResult.detail = _aggregateItems(calcResult.detail, aggrTxt, extras); // aggregate the same expenses into one item
+        }
+
+        return calcResult;
+      };
+
       // ******* private methods  and constructor initialization *******
+
+      // Function that will aggregate the descriptive items in the source array by combining all items
+      // with the same description into one item in which the item's total is the sum of all duplicate items.
+      function _aggregateItems (sourceArr, aggrText, extras) {
+        var aggArr = [],
+            firstOne = true,
+            ix;
+
+        sourceArr.forEach(function (item) {
+          if (firstOne) {
+            item.icount = 1; //add a property to the original item to keep track of the number of times aggregated
+            aggArr.push(item);
+            firstOne = false;
+          }
+          else {
+            ix = _hasDetailItem(item, aggArr);
+            if (ix !== -1) {
+              aggArr[ix].total += item.total;
+              aggArr[ix].icount++;
+              aggArr[ix].display_string = aggrText; //todo-bug? need to deal with not defined
+            }
+            else {
+              item.icount = 1;
+              aggArr.push(item);
+            }
+          }
+        });
+
+        // Now remove the count property and add the supplied text along with the count if provided
+        aggArr.forEach( function (item) {
+          if (aggrText && item.icount > 1) {
+            item.text = convert.formatDisplayString(item, extras);
+          }
+          delete item.icount;
+          delete item.display_string;
+        });
+
+        return aggArr; //currently does nothing
+      }
+
+      // helper for _aggregateItems
+      function _hasDetailItem (item, arr) {
+        var ix = -1;
+        for (var i = 0; i < arr.length; i++) {
+          if (arr[i].text === item.text) {
+            ix = i;
+            break;
+          }
+        }
+
+        return ix;
+      }
 
       // This method checks critical reservation properties for validity.
       //  It returns an object with an isValid property (true if valid) and a valErrors array of error
@@ -917,6 +1028,7 @@ define(['./module'], function (model) {
           exp.per_person = false;
           exp.no_delete = true; // To remove, we must remove by editing reservation.
           exp.no_display = false;
+          exp.display_string = configService.loctxt.parkCharge; //todo-need to change if we introduce other resource types
           exp.day_count = true;
           exp.display_order = 2;
           exp.taxable_price = 0;

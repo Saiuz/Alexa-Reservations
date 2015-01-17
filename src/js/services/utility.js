@@ -5,7 +5,7 @@
  */
 define(['./module'], function (services) {
   'use strict';
-  services.service('convert', [function () {
+  services.service('convert', ['$filter' , function ($filter) {
      // *** Private methods used by the public service methods
 
     // A function that returns an array of objects that are used by the formatDisplayString method to
@@ -48,8 +48,11 @@ define(['./module'], function (services) {
 
     // method that takes in an object with a 'display_string' property and returns the formated string
     // making substitutions for key words that are capped by '%' characters. The key words are either properties
-    // on the object or a properties of the extras object.
-    this.formatDisplayString = function (mainObj, extras) {
+    // on the object or a properties of the extras object. The instructions object can be used to give special
+    // formatting instructions to the values of a key word property. The allowed property values for instructions are:
+    // 'c' for currency and 'ds' for date in short date format. So for example if a key property is 'price' then
+    // instructions object could have a property price: 'c' which tells this function to format the value as currency.
+    this.formatDisplayString = function (mainObj, extras, instructions) {
 
       // Initialize, check for the existence of the extras object, create it if it does not exit.
       // Check if the mainObj is a Mongoose document. If so, then we perform property checking differently. (Need to
@@ -67,35 +70,51 @@ define(['./module'], function (services) {
       var mongoose = ('_id' in mainObj); //is this a Mongoose document?
 
       // search mainObj for a property called 'display_string' if not there we return empty string.
-      var dStr = mainObj['display_string']
+      var dStr = mainObj['display_string'];
+      result = dStr;
       if (dStr) {
         //find all of the keywords in the string and match them to properties in the main object.
         // if they are not found then we assume the missing properties are in the extras object.
         // we add the properties from the mainObject to the extra object. However, if the extra
         // object already has the property then we do not override it!
         var keywords = dStr.match(/%[^%]*%/g);
-        keywords.forEach(function (val) {
-          var prop = val.replace(/%/g, '');
-          if (mongoose ? (prop in mainObj) : mainObj.hasOwnProperty(prop)) {
-            if (!intExtras.hasOwnProperty(prop)) {
-              intExtras[prop] = mainObj[prop];
+        if (keywords) {
+          keywords.forEach(function (val) {
+            var prop = val.replace(/%/g, '');
+            if (mongoose ? (prop in mainObj) : mainObj.hasOwnProperty(prop)) {
+              if (!intExtras.hasOwnProperty(prop)) {
+                intExtras[prop] = mainObj[prop];
+              }
+            }
+          });
+          // now perform any special instructions for formatting the values of the properties
+          if (instructions) {
+            for (var ip in intExtras) {
+              if (instructions.hasOwnProperty(ip)) {
+                switch (instructions[ip]) {
+                  case 'c':
+                    intExtras[ip] = $filter('currency')(intExtras[ip]);
+                    break;
+                  case 'ds':
+                    intExtras[ip] = $filter('date')(intExtras[ip], 'sortDate');
+                    break;
+                }
+              }
             }
           }
-        });
-
-        // now replace the keywords in the display string with the values of the matching properties
-        result = dStr;
-        keywords.forEach(function (key) {
-          var prop = key.replace(/%/g, '');
-          var value = intExtras[prop];
-          result = result.replace(new RegExp(key, 'gi'), value);
+          // now replace the keywords in the display string with the values of the matching properties
+          keywords.forEach(function (key) {
+            var prop = key.replace(/%/g, '');
+            var value = intExtras[prop];
+            result = result.replace(new RegExp(key, 'gi'), value);
+          });
+        }
+        // now correct plurals
+        var plurals = _getPluralMatches(result);
+        plurals.forEach(function (match) {
+          result = result.replace(match.replace, match.withWord);
         });
       }
-      // now correct plurals
-      var plurals = _getPluralMatches(result);
-      plurals.forEach(function (match) {
-        result = result.replace(match.replace, match.withWord);
-      });
       return result;
     }
   }]);

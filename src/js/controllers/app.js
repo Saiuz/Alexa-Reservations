@@ -290,7 +290,7 @@ define(['./module'], function (controllers) {
                 one_per: false,
                 edit_name: false,
                 bus_pauschale: true,
-                display_string: '%count% %name% à € %price%',
+                display_string: '%count% %name% à %price%',
                 display_order: 2,
                 price: 4.80,
                 count: 1
@@ -311,7 +311,7 @@ define(['./module'], function (controllers) {
                 one_per: true,
                 edit_name: false,
                 bus_pauschale: false,
-                display_string: '%count% %name% à € %price%',
+                display_string: '%count% %name% à %price%',
                 display_order: 2,
                 price: 19,
                 count: 1
@@ -333,7 +333,7 @@ define(['./module'], function (controllers) {
                 edit_name: false,
                 bus_pauschale: false,
                 low_tax_rate: true,
-                display_string: '%count% %name% à € %price%',
+                display_string: '%count% %name% à %price%',
                 display_order: 2,
                 price: 10,
                 count: 4
@@ -355,7 +355,7 @@ define(['./module'], function (controllers) {
                 edit_name: false,
                 bus_pauschale: false,
                 low_tax_rate: true,
-                display_string: '%count% %name% à € %price%',
+                display_string: '%count% %name% à %price%',
                 display_order: 2,
                 price: 15,
                 count: 4
@@ -377,7 +377,7 @@ define(['./module'], function (controllers) {
                 edit_name: false,
                 bus_pauschale: false,
                 low_tax_rate: true,
-                display_string: '%count% %name% à € %price%',
+                display_string: '%count% %name% à %price%',
                 display_order: 2,
                 price: 10,
                 count: 4
@@ -397,7 +397,7 @@ define(['./module'], function (controllers) {
                 day_count: false,
                 one_per: false,
                 edit_name: false,
-                display_string: '%name% à € %price%',
+                display_string: '%name% à %price%',
                 display_order: 3,
                 price: 10,
                 count: 1
@@ -417,7 +417,7 @@ define(['./module'], function (controllers) {
                 day_count: false,
                 one_per: false,
                 edit_name: false,
-                display_string: '%name% à € %price%',
+                display_string: '%name% à %price%',
                 display_order: 3,
                 taxable_rate: 19,
                 price: 8,
@@ -438,7 +438,7 @@ define(['./module'], function (controllers) {
                 day_count: false,
                 one_per: false,
                 edit_name: false,
-                display_string: '%name% à € %price%',
+                display_string: '%name% à %price%',
                 display_order:3,
                 taxable_rate: 19,
                 price: 30,
@@ -459,7 +459,7 @@ define(['./module'], function (controllers) {
                 day_count: false,
                 one_per: false,
                 edit_name: false,
-                display_string: '%name% à € %price%',
+                display_string: '%name% à %price%',
                 display_order: 3,
                 taxable_rate: 19,
                 price: 6.5,
@@ -480,7 +480,7 @@ define(['./module'], function (controllers) {
                 day_count: false,
                 one_per: false,
                 edit_name: false,
-                display_string: '%name% à € %price%',
+                display_string: '%name% à %price%',
                 display_order: 3,
                 taxable_rate: 19,
                 price: 4.80,
@@ -502,7 +502,7 @@ define(['./module'], function (controllers) {
                 one_per: true,
                 edit_name: false,
                 bus_pauschale: true,
-                display_string: '%count% %name% à € %price%',
+                display_string: '%count% %name% à %price%',
                 display_order: 2,
                 price_lookup: 'breakfast',
                 price: 0,
@@ -523,7 +523,7 @@ define(['./module'], function (controllers) {
                 day_count: true,
                 one_per: true,
                 edit_name: false,
-                display_string: '%count% %name% à € %price%',
+                display_string: '%count% %name% à %price%',
                 display_order: 4,
                 price_lookup: 'halfpension',
                 price: 19.0,
@@ -544,7 +544,7 @@ define(['./module'], function (controllers) {
                 day_count: true,
                 one_per: true,
                 edit_name: false,
-                display_string: '%count% %name% à € %price%',
+                display_string: '%count% %name% à %price%',
                 display_order: 5,
                 price_lookup: 'fullpension',
                 price: 29.0,
@@ -609,7 +609,7 @@ define(['./module'], function (controllers) {
                 edit_count: true,
                 edit_name: false,
                 bus_pauschale: true,
-                display_string: 'Telefon: %count% Einheiten à € %price%',
+                display_string: 'Telefon: %count% Einheiten à %price%',
                 display_order: 3,
                 price_lookup: 'telephone',
                 price: 0,
@@ -631,7 +631,7 @@ define(['./module'], function (controllers) {
                 one_per: false,
                 edit_name: false,
                 bus_pauschale: true,
-                display_string: '%count% Parkgebühr à € %price%',
+                display_string: '%count% Parkgebühr à %price%',
                 display_order: 1,
                 price: -1,
                 count: 1
@@ -651,7 +651,7 @@ define(['./module'], function (controllers) {
                 one_per: false,
                 edit_name: false,
                 edit_count: true,
-                display_string: '%count% %name% à € %price%',
+                display_string: '%count% %name% à %price%',
                 display_order: 1,
                 price: 1.5,
                 count: 1
@@ -672,7 +672,7 @@ define(['./module'], function (controllers) {
                 one_per: false,
                 edit_name: false,
                 edit_count: true,
-                display_string: '%count% %name% à € %price%',
+                display_string: '%count% %name% à %price%',
                 display_order: 1,
                 price: 2.1,
                 count: 1
@@ -693,7 +693,7 @@ define(['./module'], function (controllers) {
                 one_per: false,
                 edit_name: false,
                 edit_count: true,
-                display_string: '%count% %name% à € %price%',
+                display_string: '%count% %name% à %price%',
                 display_order: 1,
                 price: 2.0,
                 count: 1
@@ -714,7 +714,7 @@ define(['./module'], function (controllers) {
                 one_per: false,
                 edit_name: false,
                 edit_count: true,
-                display_string: '%count% %name% à € %price%',
+                display_string: '%count% %name% à %price%',
                 display_order: 1,
                 price: 1.0,
                 count: 1
@@ -736,7 +736,7 @@ define(['./module'], function (controllers) {
                 edit_name: false,
                 edit_count: true,
                 low_tax_rate: true,
-                display_string: '%count% %name% à € %price%',
+                display_string: '%count% %name% à %price%',
                 display_order: 1,
                 price: 19,
                 count: 1
@@ -758,7 +758,7 @@ define(['./module'], function (controllers) {
                 edit_name: false,
                 edit_count: true,
                 low_tax_rate: true,
-                display_string: '%count% %name% à € %price%',
+                display_string: '%count% %name% à %price%',
                 display_order: 1,
                 price: 2,
                 count: 1
@@ -780,7 +780,7 @@ define(['./module'], function (controllers) {
                 edit_name: false,
                 edit_count: true,
                 low_tax_rate: true,
-                display_string: '%count% %name% à € %price%',
+                display_string: '%count% %name% à %price%',
                 display_order: 1,
                 price: 8.19,
                 count: 1
@@ -802,7 +802,7 @@ define(['./module'], function (controllers) {
                 edit_name: false,
                 edit_count: true,
                 low_tax_rate: true,
-                display_string: '%count% %name% à € %price%',
+                display_string: '%count% %name% à %price%',
                 display_order: 1,
                 price: 15.5,
                 count: 1
@@ -824,7 +824,7 @@ define(['./module'], function (controllers) {
                 edit_name: false,
                 edit_count: true,
                 low_tax_rate: true,
-                display_string: '%count% %name% à € %price%',
+                display_string: '%count% %name% à %price%',
                 display_order: 1,
                 price: 14.06,
                 count: 1
@@ -844,7 +844,7 @@ define(['./module'], function (controllers) {
                day_count: false,
                one_count: false,
                edit_name: false,
-               display_string: '%count% %name% à € %price%',
+               display_string: '%count% %name% à %price%',
                display_order: 1,
                price: 4.80,
                count: 1
@@ -874,7 +874,7 @@ define(['./module'], function (controllers) {
                 needs_firm: false,
                 needs_insurance: false,
                 includes_breakfast: true,
-                display_string: '%nights% Tag|Tage %name% à € %roomprice%',
+                display_string: '%nights% Tag|Tage %name% à %roomprice%',
                 required_items: ['Zimmer']
               },function(err){if (err)console.log(err)});
               RoomPlan.create({
@@ -890,7 +890,7 @@ define(['./module'], function (controllers) {
                 needs_firm: false,
                 needs_insurance: false,
                 includes_breakfast: true,
-                display_string: '%nights% Tag|Tage %name% à € %roomprice%',
+                display_string: '%nights% Tag|Tage %name% à %roomprice%',
                 required_items: ['Zimmer']
               },function(err){if (err)console.log(err)});
               RoomPlan.create({
@@ -944,7 +944,7 @@ define(['./module'], function (controllers) {
                 second_guest: false,
                 needs_firm: true,
                 needs_insurance: false,
-                display_string: '%nights%X - 1 Tag %name% à € %roomprice%',
+                display_string: '%nights% Tag|Tage %name% à %roomprice%',
                 required_items: ['BusZimmer']
               },function(err){if (err)console.log(err)});
               RoomPlan.create({
@@ -959,7 +959,7 @@ define(['./module'], function (controllers) {
                 second_guest: true,
                 needs_firm: true,
                 needs_insurance: false,
-                display_string: '%nights%X - 1 Tag %name% à € %roomprice%',
+                display_string: '%nights% Tag|Tage %name% à %roomprice%',
                 required_items: ['BusZimmer']
               },function(err){if (err)console.log(err)});
               RoomPlan.create({
@@ -1014,7 +1014,7 @@ define(['./module'], function (controllers) {
                 second_guest: true,
                 needs_firm: true,
                 needs_insurance: false,
-                display_string: '%nights%X - 1 Tag Übernachtung im %roomType% à € %roomPrice%',
+                display_string: '%nights% Tag|Tage Übernachtung im %roomType% à %roomPrice%',
                 required_items: ['BusZimmer']
               },function(err){if (err)console.log(err)});
               RoomPlan.create({

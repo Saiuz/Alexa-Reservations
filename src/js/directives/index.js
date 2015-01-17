@@ -17,5 +17,7 @@ define([
   './ax-mini-bill',
   './ax-room-plan',
   './ax-week-buttons',
+  './ax-business-bill',
+  './ax-print',
   './dateFix'
 ], function () {});

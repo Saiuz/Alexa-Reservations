@@ -20,3 +20,4 @@ single room guest_count is 2.
 10. **FIXED ISSUE** Need way of editing name and price of existing rooms in reservation. If we delete room, it does not show
 up as available automatically. - still can't edit room info but we have included the selected rooms in the list of available
 rooms so that the same room can be re-added.
+11. **BUG** removing a resource from reservation does not remove the associated expense item.
