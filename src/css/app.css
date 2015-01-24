@@ -6457,6 +6457,13 @@ body {
   padding: 5px;
   margin-bottom: 5px;
 }
+.bill-container {
+  margin-left: auto;
+  margin-right: auto;
+  width: 550px;
+  max-height: 700px;
+  overflow-y: auto;
+}
 .bill-body {
   border-top: #000000 medium solid ;
   border-left: #000000 thin solid;
@@ -6471,14 +6478,14 @@ body {
 }
 .table-bill-page > thead > tr > td:first-child {
   padding-left: 15px;
-  width: 60%;
+  width: 75%;
 }
 .table-bill-page > thead > tr > td:last-child {
   padding-right: 15px;
   text-align: right;
-  width: 40%;
+  width: 25%;
 }
-.table-bill-page > tbody {
+.table-bill-page > tbody > tr:first-child > td {
   padding-top: 10px;
 }
 .table-bill-page > tbody > tr {
@@ -6488,8 +6495,13 @@ body {
   border-top: #000000 medium solid ;
   border-left: #000000 thin solid;
 }
+.table-bill-page > tfoot > tr > td {
+  padding-top: 15px;
+  font-size: small;
+}
 .table-bill-detail {
   border: 0;
+  border-collapse: collapse;
   width: 100%;
 }
 .table-bill-detail > tbody > tr > td {
@@ -6501,18 +6513,23 @@ body {
   width: 80%;
 }
 .table-bill-detail > tbody > tr > td:last-child {
-  border-left: #000000 thin dotted;
+  border-left: #919191 thin solid;
   padding-right: 15px;
   text-align: right;
   width: 20%;
 }
 .table-bill-tax {
   border: 0;
+  border-top: #919191 thin solid;
+  border-bottom: #919191 thin solid;
   width: 100%;
 }
 .table-bill-tax > tbody > tr:first-child {
   height: 30px;
   text-decoration: underline;
+}
+.table-bill-tax > tbody > tr:last-child {
+  height: 20px;
 }
 .table-bill-tax > tbody > tr > td {
   text-align: right;
@@ -6520,12 +6537,12 @@ body {
 .table-bill-tax > tbody > tr > td:first-child {
   text-align: left;
   padding-left: 30px;
-  width: 50%;
+  width: 55%;
 }
 .table-bill-tax > tbody > tr > td:last-child {
   padding-right: 15px;
   text-align: right;
-  width: 10%;
+  width: 5%;
 }
 .bill-section-heading {
   font-weight: bold;
@@ -6538,26 +6555,40 @@ body {
   border-bottom: 1px solid #000;
 }
 @media screen {
-  #printSection {
+  frame#printf {
     display: none;
+  }
+  .bill-next-page-header {
+    display: none;
+  }
+  .no-print {
+    visibility: visible;
   }
 }
 @media print {
-  body * {
-    visibility: hidden;
+  .no-print {
+    display: none;
   }
-  #printSection,
-  #printSection * {
+  .print-div {
+    font-size: 12pt;
+    width: 550px;
+  }
+  .bill-page-2 {
+    page-break-before: always;
+  }
+  .bill-next-page-header {
     visibility: visible;
   }
-  #printSection {
-    position: absolute;
-    left: 0;
-    top: 0;
-    width: 750px;
-  }
   #printBill {
-    margin-top: 200px;
-    margin-left: 50px;
+    margin-top: 0px;
+    margin-left: 40px;
+  }
+  iframe#printf {
+    visibility: visible;
+  }
+  @page {
+    size: 210mm 297mm;
+    margin: 25mm;
+    margin-top: 45mm;
   }
 }

@@ -212,6 +212,13 @@ body {
   margin-bottom: 5px;
 }
 //for bill
+.bill-container {
+  margin-left: auto;
+  margin-right: auto;
+  width: 550px;
+  max-height: 700px;
+  overflow-y: auto;
+}
 .bill-page-1 {
 
 }
@@ -227,18 +234,16 @@ body {
   width: 100%;
   max-width: 100%;
   margin: 0px;
-  > thead > tr >
-  td:first-child, {
+  > thead > tr > td:first-child, {
     padding-left: 15px;
-    width: 60%;
+    width: 75%;
   }
-  > thead > tr >
-  td:last-child, {
+  > thead > tr > td:last-child, {
     padding-right: 15px;
     text-align: right;
-    width: 40%;
+    width: 25%;
   }
-  > tbody {
+  > tbody > tr:first-child > td {
     padding-top: 10px;
   }
   > tbody > tr {
@@ -248,10 +253,14 @@ body {
     border-top: #000000 medium solid ;
     border-left: #000000 thin solid;
   }
-
+  > tfoot > tr > td {
+    padding-top: 15px;
+    font-size: small;
+  }
 }
 .table-bill-detail {
   border: 0;
+  border-collapse: collapse;
   width: 100%;
   > tbody > tr > td {
     padding-top: 6px;
@@ -263,7 +272,7 @@ body {
     width: 80%;
   }
   > tbody > tr > td:last-child {
-    border-left: #000000 thin dotted;
+    border-left: #919191 thin solid;
     padding-right: 15px;
     text-align: right;
     width: 20%;
@@ -271,10 +280,15 @@ body {
 }
 .table-bill-tax {
   border: 0;
+  border-top: #919191 thin solid;
+  border-bottom: #919191 thin solid;
   width: 100%;
   > tbody > tr:first-child {
     height: 30px;
     text-decoration:underline;
+  }
+  > tbody > tr:last-child {
+    height: 20px;
   }
   > tbody > tr > td {
     text-align: right;
@@ -283,12 +297,12 @@ body {
     //border-right: #000000 thin dotted;
     text-align: left;
     padding-left: 30px;
-    width: 50%;
+    width: 55%;
   }
   > tbody > tr > td:last-child {
     padding-right: 15px;
     text-align: right;
-    width: 10%;
+    width: 5%;
   }
 }
 .bill-section-heading {
@@ -304,26 +318,44 @@ body {
 
 //for printing directive ax-print
 @media screen {
-  #printSection {
+ frame#printf {
     display: none;
   }
+ .bill-next-page-header {
+   display: none;
+ }
+ .no-print {
+   visibility: visible;
+ }
 }
 
 @media print {
-  body * {
-    visibility:hidden;
+  .no-print {
+    display: none;
   }
-  #printSection, #printSection * {
+  .print-div {
+    font-size: 12pt;
+    width: 550px;
+  }
+
+  .bill-page-2 {
+    page-break-before: always;
+  }
+  .bill-next-page-header {
     visibility:visible;
   }
-  #printSection {
-    position:absolute;
-    left:0;
-    top:0;
-    width: 750px;
-  }
   #printBill {
-    margin-top: 200px;
-    margin-left: 50px;
+    margin-top: 0px;
+    margin-left: 40px;
+  }
+
+  iframe#printf {
+    visibility:visible;
+    @page {
+      size: 210mm 297mm;
+      margin: 25mm;
+      margin-top: 45mm;
+      //margin-right: 45mm;
+    }
   }
 }

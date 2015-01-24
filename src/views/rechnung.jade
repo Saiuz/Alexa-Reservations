@@ -4,28 +4,33 @@ include nav_common.jade
 .container
   .row
     .col-md-4
-      .panel.panel-default
-        .panel-heading {{txt.currentReservations}}
-          span.input-group
-            input.form-control(type=text ng-model="searchTxt")
-            span.input-group-btn
-              button.btn.btn-small.pull-right(type="button" ng-click="findRes()")
-                i.glyphicon.glyphicon-search
-        .panel-body
-          ax-reservation-list(list-mode="c" list-date="theDate" selected-reservation="selectedReservation" res-count="resCount")
+      tabset(justified="true")
+        tab(heading="{{txt.currentReservations}}" select="clearSelected()")
+          .tab-content-box
+            ax-reservation-list(list-mode="c" selected-reservation="selected.reservation" res-count="resCount")
+        tab(heading="{{txt.recent}}" select="clearSelected()")
+          .tab-content-box
+            ax-reservation-list(list-mode="r" selected-reservation="selected.reservation" res-count="resCount2")
     .col-md-8
       .panel.panel-default
-        .panel-heading {{pTitle}}&nbsp;
-          span(ng-show="showCharges") für: {{rvm.res.reservation_number}} - {{guest}} - {{txt.roomAbrv}} {{room}}, Abfahrt {{rvm.res.end_date | date:'dd.MM.yyyy'}}, {{rvm.res.nights}} {{txt.nights}}
-          span.input-group-btn
-            a.btn.btn-default.btn-small(ng-show="showCharges" href="#/charges/{{rvm.res.reservation_number}}/{{room}}/{{guest}}")
+        .panel-heading
+          div(ng-show="!showCharges") {{pTitle}}&nbsp;
+          div(ng-show="showCharges") {{pTitle}} für: {{rvm.res.reservation_number}} - {{guest}} - {{txt.roomAbrv}} {{room}}, Abfahrt {{rvm.res.end_date | date:'dd.MM.yyyy'}}, {{rvm.res.nights}} {{txt.nights}}
+          div.btn-group
+            a.btn.btn-default.btn-small(ng-if="showCharges && canCheckOut" href="#/charges/{{rvm.res.reservation_number}}/{{room}}/{{guest}}")
               i.glyphicon.glyphicon-arrow-left &nbsp;{{txt.toCharges}}
-            a.btn.btn-default.btn-small(href="" ng-if="showCharges && canCheckOut" ng-click="checkout()") {{txt.checkout}}
-            a.btn.btn-default.btn-small(href="" ng-if="showCharges && canCheckOut" ax-print print-element-id="printBill") {{txt.print}}
+            a.btn.btn-info.btn-small(href="" ng-if="showCharges && canCheckOut" ng-click="checkout()") {{txt.checkout}}
+            a.btn.btn-warning.btn-small(href="" ng-if="showCharges" ax-print print-element-id="printBill") {{txt.print}}
+          div.input-group-lg(ng-show="busRes && showCharges")
+            input(type="checkbox" ng-model="busPauschale")
+            span &nbsp;{{txt.busPauschale}}
+          div.input-group-lg(ng-show="stdRes && showCharges")
+            input(type="checkbox" ng-model="resDetails")
+            span &nbsp;{{txt.miscellaneousDetails}}
         .panel-body
           .col-md-12
-            div(ng-show="showCharges")
-              ax-business-bill(reservation-vm="rvm" room="{{room}}" guest="{{guest}}")
-
+            div.bill-container(ng-show="showCharges")
+              ax-standard-bill(ng-if="stdRes" reservation-vm="rvm" details="resDetails")
+              ax-business-bill(ng-if="busRes" reservation-vm="rvm" room="{{room}}" guest="{{guest}}" pauschale="busPauschale")
 
 

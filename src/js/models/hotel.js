@@ -12,7 +12,7 @@ define(['./module'], function (model) {
   var itemTypeEnum =['Plan', 'Allgemein', 'Speisen', 'Getränke', 'Dienste', 'VDAK', 'AOK & Andere', 'Privat'];
   // enums used in Room and ReservedRoom schemas
   var roomTypeEnum = ['Einzelzimmer', 'Doppelzimmer', 'Suite'];
-  var roomTypeAbbrEnum = ['EZ', 'DZ', 'SU', '']
+  var roomTypeAbbrEnum = ['EZ', 'DZ', 'SU', ''];
   var roomClassEnum = ['Economy', 'Standart', 'Komfort', 'Balkon', ''];
   var roomClassAbbrEnum=['Econ', 'Std', 'Komf', 'BK', ''];
   // enums used in Reservation Schema
@@ -93,6 +93,7 @@ define(['./module'], function (model) {
                         // set, or only one item per room if the 'per_room' flag is set. If no_display is true then this is ignored.
       edit_name: Boolean,  //If true then the item_name stored in the reservation for this type can be edited.
       edit_count: Boolean, // If true then the UI allows the count value to be edited.
+      fix_price: Boolean, // If true then the UI will NOT allow the price value to be edited. Normal behavior is to have price editable.
       bus_pauschale: Boolean, // If true this expense item  can be rolled up along with others like it into one expense item on the bill "Business Pauschale"
       low_tax_rate: Boolean, // If true then tax calculations will use the low (room tax rate) vs the normal sales tax rate.
       //type_id: Number, // the id of the ItemTypes document that created this ExpenseItem document.
@@ -162,7 +163,7 @@ define(['./module'], function (model) {
       if (docArray) {
         var newDoc = {};
         var plist = [];
-        var idval;
+        var idval = 0;
 
         this.schema.eachPath(function (p) {
           plist.push(p);
@@ -218,7 +219,7 @@ define(['./module'], function (model) {
 
   // define a child schema for a reserved resource such as a parking spot. Used in Reservation schema
   model.factory('ReservedResource', function (db){
-    var schema = new db.Schema({
+    return new db.Schema({
       name: String, // the resource name (unique)
       resource_type: String, //the resource type from the resource table
       display_name: String,
@@ -226,8 +227,6 @@ define(['./module'], function (model) {
       room_number: Number,
       guest: String
     });
-
-    return schema;
   });
 
   // Guest Schema
@@ -280,7 +279,7 @@ define(['./module'], function (model) {
     return db.model('itemtype', ExpenseItem);
   }) ;
 
-  model.factory('RoomPlan', function (db, ExpenseItem){
+  model.factory('RoomPlan', function (db) {
     var schema = new db.Schema({
       name: {type: String, required: true, unique: true },
       resTypeFilter: [String], //A string array of allowed reservation types for this plan.

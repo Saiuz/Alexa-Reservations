@@ -5,7 +5,7 @@ include nav_common.jade
   .row
     .col-md-4
       tabset(justified="true")
-        tab(heading="{{selected.anCnt}} Ankunft: {{theDate | date:'dd.MM.yyyy'}}" select="clearSelected()")
+        tab(heading="{{selected.anCnt}} Ankunft: {{theDate | date:'shortDate'}}" select="clearSelected()")
           .tab-content-box
             ax-reservation-list(list-mode="arrival" list-date="theDate" selected-reservation="selected.reservation" res-count="selected.anCnt")
         tab(heading="{{selected.ab1Cnt}} Abfahrt: {{theDate | date:'shortDate'}}" select="clearSelected()")

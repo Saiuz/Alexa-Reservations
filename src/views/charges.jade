@@ -10,12 +10,14 @@ include nav_common.jade
               button.btn.btn-small.pull-right(type="button" ng-click="findRes()")
                 i.glyphicon.glyphicon-search
         .panel-body
-          ax-reservation-list(list-mode="c" selected-reservation="selectedReservation" res-count="resCount")
+          ax-reservation-list(list-mode="c" selected-reservation="selected.reservation" res-count="selected.acCnt")
     .col-md-8
       .panel.panel-default
-        .panel-heading {{pTitle}}&nbsp;
-          span(ng-show="showCharges") für: {{rvm.res.reservation_number}} - {{guest}} - {{txt.roomAbrv}} {{room}}, Abfahrt {{rvm.res.end_date | date:'dd.MM.yyyy'}}, {{rvm.res.nights}} {{txt.nights}}
-          span..input-group-btn
+        .panel-heading
+          div(ng-show="!showCharges") {{pTitle}}&nbsp;
+          div(ng-show="showCharges") {{pTitle}} für: {{rvm.res.reservation_number}} - {{guest}} - {{txt.roomAbrv}} {{room}}, Abfahrt {{rvm.res.end_date | date:'dd.MM.yyyy'}}, {{rvm.res.nights}} {{txt.nights}}
+          div.btn-group
+            a.btn.btn-info.btn-small(href="" ng-if="showCharges" ng-click="edit()") {{txt.edit}}
             a.btn.btn-default.btn-small(ng-show="showCharges" href="#/rechnung/{{rvm.res.reservation_number}}/{{room}}/{{guest}}") {{txt.toBill}} &nbsp;
               i.glyphicon.glyphicon-arrow-right(ng-show="showCharges")
         .panel-body

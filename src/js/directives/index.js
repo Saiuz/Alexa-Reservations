@@ -18,6 +18,8 @@ define([
   './ax-room-plan',
   './ax-week-buttons',
   './ax-business-bill',
+  './ax-standard-bill',
+  './ax-bill-taxes',
   './ax-print',
   './dateFix'
 ], function () {});

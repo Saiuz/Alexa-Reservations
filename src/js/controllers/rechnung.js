@@ -23,12 +23,23 @@ define(['./module'], function (controllers) {
           $scope.txt = configService.loctxt;
           $scope.showCharges = false;
           // for reservation-list directive
-          $scope.selectedReservation;
+          // note with tabs, had to imbed selectedReservation in an object:
+          $scope.selected = {
+            reservation: undefined,
+            acCnt: 0,
+            ap1Cnt: 0
+          };
+          //$scope.selectedReservation = {};
           $scope.resCount = 0;
+          $scope.resCount2 = 0;
           $scope.pTitle = configService.loctxt.selectReservation;
 
-          $scope.$watch('selectedReservation', function (newval) {
-            if (!newval || !newval.number) return; //We expect an object with (res) number, room and guest properties
+          $scope.$watch('selected.reservation', function (newval) {
+            if (!newval || !newval.number) {  //We expect an object with (res) number, room and guest properties
+              $scope.showCharges = false;
+              $scope.pTitle = configService.loctxt.selectReservation;
+              return;
+            }
             // Get reservation and prepare the room plan text and handle the special case
             // where we have a group reservation with one bill- need to show the rooms
             ReservationVM.getReservationVM(newval.number, true).then(function (resVM) {
@@ -38,10 +49,24 @@ define(['./module'], function (controllers) {
                 $scope.showCharges = true;
                 $scope.room = newval.room;
                 $scope.guest = newval.guest;
+                $scope.busPauschale = false;
+                $scope.resDetails = false;
                 $scope.canCheckOut = resVM.canCheckOut($scope.room);
+                //todo-determine type of resivation for bill Need to move logic to VM
+                $scope.busRes = resVM.isBusiness;
+                $scope.stdRes = resVM.isStandard;
+                $scope.kurRes = resVM.isKur;
+                $scope.tourRes = resVM.isTour;
               }
             });
           });
+
+          // removes the selected marker on the reservation lists
+          $scope.clearSelected = function() {
+            if ($scope.selected.reservation) {
+              $scope.selected.reservation = undefined;
+            }
+          };
 
           //print bill
           $scope.printBill = function() {
@@ -60,9 +85,11 @@ define(['./module'], function (controllers) {
               popupWin.document.close();
               popupWin.close();
             }
-          }
+          };
 
-
+          $scope.togglePauschale = function () {
+            $scope.busPauschale = !$scope.busPauschale;
+          };
           // Checkout the reservation or the individuals part of the reservation.
           // todo- currently just sets the checkout flag.
           $scope.checkout = function () {
@@ -77,7 +104,7 @@ define(['./module'], function (controllers) {
 
           // See if we were passed a reservation link in the URL
           if ($stateParams.resNum && $stateParams.resNum > 0){
-            $scope.selectedReservation = {number: Number($stateParams.resNum), room: Number($stateParams.resRoom), guest: $stateParams.resGuest};
+            $scope.selected.reservation = {number: Number($stateParams.resNum), room: Number($stateParams.resRoom), guest: $stateParams.resGuest};
           }
         }]);
 });

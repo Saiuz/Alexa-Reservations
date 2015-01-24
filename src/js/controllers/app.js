@@ -95,7 +95,7 @@ define(['./module'], function (controllers) {
               AppConstants.create({
                 name: 'cityTaxDiscount',
                 display_name: 'Kurtax Ermäßigung',
-                nvalue: 10,
+                nvalue: 50,
                 units: '%'
               }, function (err) {
                 console.log(err);
@@ -275,7 +275,7 @@ define(['./module'], function (controllers) {
               }, function (err) {
                 if (err)console.log(err)
               });
-              Itemtype.create({
+              /*Itemtype.create({
                 name: configService.loctxt.breakfastInc,
                 category: 'Plan',
                 bill_code: configService.constants.bcPackageItem,
@@ -296,7 +296,7 @@ define(['./module'], function (controllers) {
                 count: 1
               }, function (err) {
                 if (err)console.log(err)
-              });
+              });*/
               Itemtype.create({
                 name: configService.loctxt.halfPensionInc,
                 category: 'Plan',
@@ -441,7 +441,7 @@ define(['./module'], function (controllers) {
                 display_string: '%name% à %price%',
                 display_order:3,
                 taxable_rate: 19,
-                price: 30,
+                price: 14.52,
                 count: 1
               }, function (err) {
                 if (err)console.log(err)
@@ -640,7 +640,7 @@ define(['./module'], function (controllers) {
               Itemtype.create({
                 name: 'Classic Mineralwasser 0,2l',
                 category: 'Getränke',
-                bill_code: configService.constants.bcFoodDrink,
+                bill_code: configService.constants.bcDrink,
                 guest: '',
                 room: 0,
                 per_room: false,
@@ -661,7 +661,7 @@ define(['./module'], function (controllers) {
               Itemtype.create({
                 name: 'Distelhäuser Landbier dunkel 0,5l',
                 category: 'Getränke',
-                bill_code: configService.constants.bcFoodDrink,
+                bill_code: configService.constants.bcDrink,
                 guest: '',
                 room: 0,
                 per_room: false,
@@ -682,7 +682,7 @@ define(['./module'], function (controllers) {
               Itemtype.create({
                 name: 'Kuchen',
                 category: 'Speisen',
-                bill_code: configService.constants.bcFoodDrink,
+                bill_code: configService.constants.bcFood,
                 guest: '',
                 room: 0,
                 per_room: false,
@@ -703,7 +703,7 @@ define(['./module'], function (controllers) {
               Itemtype.create({
                 name: 'Erdnüsse',
                 category: 'Speisen',
-                bill_code: configService.constants.bcFoodDrink,
+                bill_code: configService.constants.bcFood,
                 guest: '',
                 room: 0,
                 per_room: false,

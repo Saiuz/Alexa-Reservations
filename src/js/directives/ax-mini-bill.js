@@ -3,8 +3,8 @@
  */
 define(['./module'], function (directives) {
   'use strict';
-  directives.directive('axMiniBill', ['$filter', '$rootScope', 'configService', 'convert',
-    function ($filter, $rootScope, configService, convert) {
+  directives.directive('axMiniBill', ['$filter', '$rootScope', 'configService',
+    function ($filter, $rootScope, configService) {
       var linker = function (scope, element, attrs) {
         console.log("axMiniBill linker fired");
         var c = configService.constants,
@@ -15,6 +15,7 @@ define(['./module'], function (directives) {
             calcResult = {sum: 0, detail: [], totalsTaxes: {}},
             haveAttributes = false,
             room,
+            guest,
             rmObj;
 
 
@@ -69,22 +70,22 @@ define(['./module'], function (directives) {
             scope.section1text = "Unterkunft Summe ";  //todo - move to configService
             calcResult = scope.rvm.calculateTotals(unterItems, scope.room, scope.guest, extras, true);
             scope.section1total = calcResult.sum;
-            scope.section1items = calcResult.detail.slice(0);
+            scope.section1items = calcResult.detail;
 
             scope.section2text = "Kurtaxe Summe ";
             calcResult = scope.rvm.calculateTotals(kurtaxItems, scope.room, scope.guest, extras, true, ktext);
             scope.section2total = calcResult.sum;
-            scope.section2items = calcResult.detail.slice(0);
+            scope.section2items = calcResult.detail;
 
             scope.section3text = "Kur-und Heilmittel Summe ";
             calcResult = scope.rvm.calculateTotals(kurItems, scope.room, scope.guest, extras, false);
             scope.section3total = calcResult.sum;
-            scope.section3items = calcResult.detail.slice(0);
+            scope.section3items = calcResult.detail;
 
             scope.section4text = "Diverses Summe ";
             calcResult = scope.rvm.calculateTotals(miscItems, scope.room, scope.guest, extras, false);
             scope.section4total = calcResult.sum;
-            scope.section4items = calcResult.detail.slice(0);
+            scope.section4items = calcResult.detail;
           }
         };
       }; //end link function

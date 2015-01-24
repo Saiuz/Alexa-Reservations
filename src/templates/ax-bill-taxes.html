@@ -1,0 +1,26 @@
+<table class="table-bill-tax">
+    <tbody>
+    <tr>
+        <td>Aufteilung der Netto und Ust Beträge</td>
+        <td> Netto</td>
+        <td>Ust</td>
+        <td>Brutto</td>
+        <td></td>
+    </tr>
+    <tr>
+        <td>Beträge mit {{tax7}}% Ust</td>
+        <td>{{taxes.net7 | currency}}</td>
+        <td>{{taxes.tax7 | currency}}</td>
+        <td>{{taxes.sum7 | currency}}</td>
+        <td></td>
+    </tr>
+    <tr>
+        <td>Beträge mit {{tax19}}% Ust</td>
+        <td>{{taxes.net19 | currency}}</td>
+        <td>{{taxes.tax19 | currency}}</td>
+        <td>{{taxes.sum19 | currency}}</td>
+        <td></td>
+    </tr>
+    <tr><td colspan="5"></td></tr>
+    </tbody>
+</table>

@@ -22,10 +22,30 @@
         </tr>
         </thead>
         <tbody>
-        <tr ng-repeat="item in rvm.res.expenses | filter:{category: itemType, guest: guest}" ng-show="!item.no_display || showHidden">
-            <td>
+        <tr ng-repeat="item in rvm.res.expenses | filter:{category: itemType, guest: guest, name: '!' + txt.breakfastInc}" ng-show="!item.no_display || showHidden">
+            <td ng-if="item.name !== txt.cityTax && item.bill_code !== con.bcPackageItem">
                 <span ng-if="!item.edit_name">
-                    {{item.name}} ({{item.room}} - {{item.guest}})
+                    {{item.name}} ({{item.room}} - {{item.guest}} - {{item.last_updated | date:'shortDate'}})
+                </span>
+                <span ng-if="item.edit_name">
+                    <a href="#" editable-text="item.name" onaftersave="updateExpense(item._id)">{{item.name}}</a>  ({{item.room}} - {{item.guest}})
+                </span>
+            </td>
+            <td ng-if="item.name !== txt.cityTax && item.bill_code === con.bcPackageItem">
+                <span ng-if="!item.edit_name">
+                    {{item.name}} ({{item.room}} - {{item.guest}})&nbsp;
+                    <button class="btn btn-xs" ng-click="credit(item)">{{txt.credit}}</button>
+                </span>
+                <span ng-if="item.edit_name">
+                    <a href="#" editable-text="item.name" onaftersave="updateExpense(item._id)">{{item.name}}</a>  ({{item.room}} - {{item.guest}})
+                </span>
+            </td>
+            <td ng-if="item.name === txt.cityTax">
+                <span ng-if="!item.edit_name">
+                    {{item.name}} ({{item.room}} - {{item.guest}})&nbsp;
+                    <button class="btn btn-xs" ng-click="noKurtax(item)">{{txt.free}}</button>&nbsp;
+                    <button class="btn btn-xs" ng-click="discountKurtax(item)">{{txt.reduction}}</button>&nbsp;
+                    <button ng-show="item.price < ktax" class="btn btn-xs" ng-click="fullKurtax(item)">{{txt.fullCityTax}}</button>
                 </span>
                 <span ng-if="item.edit_name">
                     <a href="#" editable-text="item.name" onaftersave="updateExpense(item._id)">{{item.name}}</a>  ({{item.room}} - {{item.guest}})
@@ -40,8 +60,8 @@
             </td>
             <td class="text-center">
                 <span>
-                    <a href="#" editable-text="item.price" onaftersave="updateExpense(item._id)">{{item.price | currency :
-                        '€'}}</a>
+                    <span ng-if="item.fix_price">{{item.price | currency}}</span>
+                    <a ng-if="!item.fix_price" href="#" editable-text="item.price" onaftersave="updateExpense(item._id)">{{item.price | currency}}</a>
                 </span>
             </td>
             <td class="text-center">
@@ -52,7 +72,7 @@
     </table>
     <div>
         <span class="text-muted" ng-show="total > 0">
-            {{itemType}} Total: {{total | currency : '€'}}<br />
+            {{itemType}} Total: {{total | currency}}<br />
         </span>
     </div>
 </div>

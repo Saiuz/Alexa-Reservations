@@ -6,6 +6,8 @@
  *     d (departure) = shows reservations with the end date equal to the specified date.
  *     u (upcomming) - shows departures within two days of the specified date
  *     c (current) - shows reservations that are currently active (have check-in date but no check-out date).
+ *     r (recent) - shows reservations that have checked out between the current date and the specified date. If
+ *                  the spcified date is not provided, the date defaults to the last week.
  * The attributes for this directive are:
  *    the-date - the specified date for the reservation queries (not used for mode c).
  *    selected-reservation - parent scope variable that receives the selected reservation object/number
@@ -111,6 +113,7 @@ define(['./module'], function (directives) {
 
         // updates the reservation list, retrives the reservation info and rebuilds the list
         var _updateList = function () {
+          var afterDate;
 
           scope.reservations = [];
           if (haveAttributes) {
@@ -124,6 +127,17 @@ define(['./module'], function (directives) {
                       function (err) {
                         scope.error = err;
                       });
+                break;
+              case 'r':
+                scope.show = true;
+                afterDate = theDate ? theDate : datetime.dateOnly(new Date(), -7); //default to last 7 days
+                dashboard.getPastReservations(afterDate).then(function (result) {
+                      scope.reservations = _buildList(result, useLink);
+                      _setChecked(scope.selectedReservation);
+                    },
+                    function (err) {
+                      scope.error = err;
+                    });
                 break;
               case 'a':
                 dashboard.getArrivals(theDate).then(function (result) {
@@ -181,7 +195,7 @@ define(['./module'], function (directives) {
               });
             }
           });
-        }
+        };
 
         scope.txt = configService.loctxt;
         scope.show = false;
@@ -209,7 +223,7 @@ define(['./module'], function (directives) {
 
         scope.$watchCollection('[listDate, listMode, numberOnly, selectedReservation]', function (newvals) {
           console.log("ax-reservation-list watcher fired " + newvals);
-          if (newvals[2]) {
+          if (newvals[2]) {  //todo-may want to deprecate this feature
             useLink = !(scope.numberOnly === 'true');
           }
           if (!newvals[3]) {
@@ -229,7 +243,7 @@ define(['./module'], function (directives) {
           }
           if (newvals[1]) {
             listType = newvals[1].toLowerCase().substring(0, 1);
-            if (listType !== 'c' && !newvals[0]) return;
+            if (!(listType === 'c' || listType === 'r') && !newvals[0]) return;
 
             haveAttributes = true;
             theDate = newvals[0];

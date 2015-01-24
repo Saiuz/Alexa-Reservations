@@ -40,6 +40,10 @@ define(['./module'], function (model) {
       this.isGroup = false; //viewmodel property that is true if the selected plan is a group plan with multiple rooms.
       this.oneBill = false; // viewmodel property that is true if the selected plan is a group plan and requires a single bill.
       this.oneRoom = true; // viewmodel property that is true if the selected plan has the one_room flag set
+      this.isStandard = false; // True if the reservation type is "Standard";
+      this.isBusiness = false; // True if the reservation type is "Business" or is a group reservation with multiple bills.
+      this.isKur = false; // True if the reservation type is "Kur"
+      this.isTour = false; // True if the reservation type is a group reservation with one bill.
       this.secondGuest = false; // VM property that is true if selected plan has the second_guest flag set
       this.showSecondGuest = false; // VM property that is true if selected plan has the second_guest flag set and the
                                     // reservation has 2 guests and  and the plan has the one_room flag set
@@ -62,7 +66,7 @@ define(['./module'], function (model) {
       this.resTypeOptions = rOpts;
       this.occupantOptions = [
         {value: 1, text: '1'},
-        {value: 2, text: '2'},
+        {value: 2, text: '2'}
       ];
 
       // used by pre-save function. Set to the initial value of the plan property of the reservation
@@ -80,7 +84,7 @@ define(['./module'], function (model) {
       // Utility method to return a room type abbreviation from a reservedRoom item
       this.generateRoomAbbrv = function (rrObj) {
         return dbEnums.getRoomDisplayAbbr(rrObj);
-      }
+      };
 
       // Respond to change of reservation type from UI.
       // If a reservation type is changed, then we will remove any rooms currently attached, remove any expenses
@@ -149,6 +153,10 @@ define(['./module'], function (model) {
           this.isGroup = plan.is_group;
           this.oneBill = plan.one_bill;
           this.oneRoom = plan.one_room;
+          this.isStandard = this.res.type === dbEnums.getReservationTypeEnum()[0];
+          this.isBusiness = (this.res.type === dbEnums.getReservationTypeEnum()[1]) || (this.res.type === dbEnums.getReservationTypeEnum()[3] && !plan.one_bill);
+          this.isKur = (this.res.type === dbEnums.getReservationTypeEnum()[2]);
+          this.isTour = (this.res.type === dbEnums.getReservationTypeEnum()[3] && plan.one_bill);
           this.secondGuest = plan.second_guest;
           this.includesBreakfast = plan.includes_breakfast;
           this.showSecondGuest = plan.second_guest && this.res.occupants === 2 && plan.one_room;
@@ -301,7 +309,7 @@ define(['./module'], function (model) {
           }
         }
         return roomExp;
-      }
+      };
 
       // Utility to retrieve the specified reservedRoom object from the reservation's rooms property
       this.getRoomInReservation = function (roomNum) {
@@ -313,7 +321,7 @@ define(['./module'], function (model) {
           }
         }
         return room;
-      }
+      };
 
       // method retrieves the plan object that is associated with the reservation, or if
       // the 'planID' parameter is specified  then it retrieves that plan object.
@@ -328,7 +336,7 @@ define(['./module'], function (model) {
         });
 
         return curPlan;
-      }
+      };
 
       // method to generate the plan / room display string for the reservation. It returns an object with the following
       // properties:
@@ -614,7 +622,8 @@ define(['./module'], function (model) {
         else {
           item.room = room;
           item.guest = guest;
-          item.date_added = new Date();
+          item.date_added = datetime.dateOnly(new Date()); //date only ignore time
+          item.last_updated = datetime.dateOnly(new Date()); //date only ignore time
           if (item.price_lookup) {
             item.price = configService.constants.get(item.price_lookup);
           }
@@ -654,7 +663,7 @@ define(['./module'], function (model) {
         }
         else {
           that.res.expenses[0].date_added = new Date();  //test for bug work around  TODO-This works but is not ideal
-          that.res.save(function (err, res, numEffected) {
+          that.res.save(function (err) {
             if (err) {
               deferred.reject(err);
             }
@@ -668,7 +677,7 @@ define(['./module'], function (model) {
 
       // method to save reservation after an expense item is edited. The only business logic implemented is
       // if the edited expense item is a room expense item and the price is modified. We must recalculate
-      // the taxable amount if the room includes breakfast.
+      // the taxable amount if the room includes breakfast. We also update the last_updated field
       this.updateExpenseItemSave = function(itemID) {
         var deferred = $q.defer(),
             item = that.res.expenses.id(itemID);
@@ -676,8 +685,9 @@ define(['./module'], function (model) {
         if (item && item.is_room) {
           _updateRoomTaxablePrice(item);
         }
+        item.last_updated = datetime.dateOnly(new Date()); //date only ignore time
 
-        that.res.save(function (err, res, numEffected) {
+        that.res.save(function (err) {
           if (err) {
             deferred.reject(err);
           }
@@ -690,7 +700,7 @@ define(['./module'], function (model) {
 
       // Calculate expense totals for included expense items. It returns an object with the sum, detail information and
       // taxes for the specified items.
-      this.calculateTotals  = function (incItems, room, guest, extras, aggregate, aggrTxt) {
+      this.calculateTotals  = function (incItems, room, guest, extras, aggregate, aggrTxt, busPauschale) {
         var net19 = 0,
             sum19 = 0,
             net7 = 0,
@@ -704,6 +714,11 @@ define(['./module'], function (model) {
         var LineItem = function (expItem, extras, instructions) {
           this.text = convert.formatDisplayString(expItem, extras, instructions);
           this.total = expItem.item_total;
+          this.bus_pauschale = expItem.bus_pauschale;
+          this.count = expItem.count;
+          this.display_string = expItem.display_string;
+          this.bill_code = expItem.bill_code;
+          this.price = expItem.price;
         };
 
         angular.forEach(that.res.expenses, function (item) {
@@ -738,26 +753,81 @@ define(['./module'], function (model) {
           net19: net19,
           sum19: sum19
         };
-
-        if (aggregate) {
+        if (busPauschale) {
+          calcResult.detail = _aggregatePauschaleItems(calcResult.detail, configService.loctxt.busPauschale);
+        }
+        else if (aggregate) {
           calcResult.detail = _aggregateItems(calcResult.detail, aggrTxt, extras); // aggregate the same expenses into one item
         }
 
         return calcResult;
       };
 
+      // Aggregates the array of bill items (LineItem class) by bill code. The billItems parameter is an array
+      // of LineItem objects. The aggrOptions is an array of objects with two properties 'code' and 'text'. The
+      // code property is the bill_code value (as defined in the constants service) and the 'text' property is
+      // the display text for the aggregated category.
+      this.aggregateByBillType = function (billItems, aggrOptions) {
+        var aggArr,
+            locItems = billItems ? JSON.parse(JSON.stringify(billItems)) : [];
+
+         if (!aggrOptions || aggrOptions.length === 0) {
+           return locItems;
+         }
+
+        // first pass through items, look for matching item codes and change the text
+        locItems.forEach(function (item) {
+          aggrOptions.forEach( function (opt) {
+            if (item.bill_code === opt.code) {
+              item.text = opt.text;
+            }
+          });
+        });
+
+        // now perform a standard aggregation
+         aggArr = _aggregateItems(locItems);
+        return aggArr;
+      };
       // ******* private methods  and constructor initialization *******
+
+      // Aggregates all items with the "bus_pauschale" flag set into one item with the total value the sum of all items
+      function _aggregatePauschaleItems(sourceArr, pText) {
+        var paschale = { text: pText, total: 0},
+            aggArr = [];
+
+        sourceArr.forEach(function (item) {
+           if (item.bus_pauschale) {
+             paschale.total += item.total;
+           }
+          else {
+             aggArr.push(item);
+           }
+        });
+
+        if (paschale.total) {
+          aggArr.push(paschale);
+        }
+
+        return aggArr;
+      }
 
       // Function that will aggregate the descriptive items in the source array by combining all items
       // with the same description into one item in which the item's total is the sum of all duplicate items.
+      // If text is provided for aggrText parameter then the items are counted by the number of matches and the
+      // provided text is used to reformat the message. If the aggrText parameter is not provided, then if the
+      // text begins with a number, that number is used as the count  of the aggregated item. The
+      // aggregated item display text is adjusted to reflect the count.
+      //
       function _aggregateItems (sourceArr, aggrText, extras) {
         var aggArr = [],
             firstOne = true,
+            hasTxt = !!(aggrText),// boolean is true if aggrText has a value.
             ix;
 
         sourceArr.forEach(function (item) {
+          _addCountModifyText(item, hasTxt);
           if (firstOne) {
-            item.icount = 1; //add a property to the original item to keep track of the number of times aggregated
+            //item.count = (aggrText) ? 1 : _getItemCount(item.text); //add a property to the original item to keep track of the number of times aggregated
             aggArr.push(item);
             firstOne = false;
           }
@@ -765,29 +835,35 @@ define(['./module'], function (model) {
             ix = _hasDetailItem(item, aggArr);
             if (ix !== -1) {
               aggArr[ix].total += item.total;
-              aggArr[ix].icount++;
-              aggArr[ix].display_string = aggrText; //todo-bug? need to deal with not defined
+              aggArr[ix].count += item.count;
+              if (aggrText) {
+                aggArr[ix].display_string = aggrText;
+              }
             }
             else {
-              item.icount = 1;
               aggArr.push(item);
             }
           }
         });
 
-        // Now remove the count property and add the supplied text along with the count if provided
-        aggArr.forEach( function (item) {
-          if (aggrText && item.icount > 1) {
-            item.text = convert.formatDisplayString(item, extras);
+        // Now modify the text property, either returning the number at the
+        // start or adding the aggregation text, then remove the added properties.
+        aggArr.forEach( function (agItem) {
+          if (hasTxt && agItem.count > 1) {
+            agItem.text = convert.formatDisplayString(agItem, extras);
+            //delete agItem.display_string;
           }
-          delete item.icount;
-          delete item.display_string;
+          else if (agItem.numStart) {
+            agItem.text = agItem.count + ' ' + agItem.text; //add back number to text
+          }
+          //delete agItem.count;
+          delete agItem.numStart;
         });
 
-        return aggArr; //currently does nothing
+        return aggArr;
       }
 
-      // helper for _aggregateItems
+      // helper for _aggregateItems, checks for a match with existing items
       function _hasDetailItem (item, arr) {
         var ix = -1;
         for (var i = 0; i < arr.length; i++) {
@@ -800,6 +876,21 @@ define(['./module'], function (model) {
         return ix;
       }
 
+      // helper for _aggregateItems
+      function _addCountModifyText(item, skip) {
+        var m = item.text.match(/^\d+\s/),
+            n;
+        if (m && !skip) { //update text with correct count
+          n = Number(m[0]);
+          item.count = n;
+          item.text = item.text.replace(/^\d+\s/, ''); // remove number at start for correct comparison with other items
+          item.numStart = true;
+        }
+        else { // doesn't start with number or we have text, set count to 1 for aggregation
+          item.count = 1;
+          item.numStart = false;
+        }
+      }
       // This method checks critical reservation properties for validity.
       //  It returns an object with an isValid property (true if valid) and a valErrors array of error
       // messages if the reservation is not valid.
@@ -848,8 +939,7 @@ define(['./module'], function (model) {
               guest2 = that.res.guest2 ? that.res.guest2.name : '',
               roomsChanged = (lastRoomHash !== _buildRoomHash(that.res.rooms, that.res.occupants)),
               changesMade = false,
-              replaceAll = false,
-              extraDaysItem;
+              replaceAll = false;
 
         // Perform checks that don't require async operations
         //Update the count property of items based on the number of nights of the reservation
@@ -1022,7 +1112,10 @@ define(['./module'], function (model) {
           var exp = new Itemtype();
           exp.name = res.resource_type;
           exp.category = dbEnums.getItemTypeEnum()[0];
-          exp.bill_code = configService.constants.bcPlanDiverses,
+          exp.bill_code = configService.constants.bcPlanDiverses;
+          exp.date_added = datetime.dateOnly(new Date()); //date only ignore time
+          exp.last_updated = datetime.dateOnly(new Date()); //date only ignore time
+          exp.bus_pauschale = true;
           exp.room = res.room_number;
           exp.guest = res.guest;
           exp.per_person = false;
@@ -1198,30 +1291,33 @@ define(['./module'], function (model) {
           var exp = new Itemtype();
           exp.name = configService.loctxt.breakfastInc;
           exp.category = dbEnums.getItemTypeEnum()[0];
-          exp.bill_code = configService.constants.bcPackageItem,
+          exp.bill_code = configService.constants.bcPackageItem;
           exp.per_person = true;
           exp.no_delete = true;
           exp.no_display = true;
           exp.included_in_room = true;
           exp.day_count = true;
+          exp.fix_price = true;
           exp.low_tax_rate = false;
           exp.display_order = 2;
           exp.taxable_price = includedInPrice;
           exp.price = 0;
           _addExpenseItem(room, exp);
         }
-        //now add city tax
+        //now add city tax (kurtax)
         exp = new Itemtype();
         exp.name = configService.loctxt.cityTax;
         exp.category = dbEnums.getItemTypeEnum()[0];
-        exp.bill_code = configService.constants.bcKurTax,
+        exp.bill_code = configService.constants.bcKurTax;
+        exp.bus_pauschale = true;
         exp.per_person = true;
         exp.day_count = true;
         exp.no_delete = true;
+        exp.fix_price = true;
         exp.one_per = true;
         exp.low_tax_rate = true;
-        exp.display_string = '%count% Tag|Tage Kurtaxe à € %price%';
-        exp.display_order = 2;
+        exp.display_string = configService.loctxt.addedKurtaxDisplayString;
+        exp.display_order = 3;
         _addExpenseItem(room, exp, configService.constants.cityTax);
       }
       //Simple method to add an expense item, It will duplicate item if needed based on the item flags and room guest
@@ -1233,7 +1329,8 @@ define(['./module'], function (model) {
 
         item.room = room.number;
         item.guest = guest ? guest : room.guest;
-        item.date_added = new Date();
+        item.date_added = datetime.dateOnly(new Date()); //date only ignore time
+        item.last_updated = datetime.dateOnly(new Date()); //date only ignore time
         count =  count ? count : (item.day_count ? that.res.nights : null);
         item.addThisToDocArray(that.res.expenses, price, count);
 
@@ -1263,7 +1360,7 @@ define(['./module'], function (model) {
           var exp = new Itemtype();
           exp.name = configService.loctxt.extra_days_item;
           exp.category = dbEnums.getItemTypeEnum()[0]; //plan
-          exp.bill_code = configService.constants.bcExtraRoom,
+          exp.bill_code = configService.constants.bcExtraRoom;
           exp.is_room = true;
           exp.per_person = false;
           exp.no_delete = true;
@@ -1272,7 +1369,7 @@ define(['./module'], function (model) {
           exp.day_count = true;
           exp.low_tax_rate = true;
           exp.display_order = 3;
-          exp.display_string = '%count% ' + days !== 1 ? configService.loctxt.extra_days : configService.loctxt.extra_day;
+          exp.display_string = configService.loctxt.addedExtraDaysDisplayString;
           exp.price = roomItem.price;
           exp.count = days;
           exp.taxable_price = roomItem.taxable_price;
@@ -1308,7 +1405,6 @@ define(['./module'], function (model) {
         var nights = that.res.nights,
             includedInRoom = 0,
             roomItem,
-            guest,
             duration,
             extraDaysItem,
             id,
@@ -1346,7 +1442,6 @@ define(['./module'], function (model) {
             if (diff !== 0) {
               if (extraDaysItem) {
                 extraDaysItem.count = diff;
-                extraDaysItem.display_string = '%count% ' + diff !== 1 ? configService.loctxt.extra_days : configService.loctxt.extra_day;
               }
               else { //need to add an extradays items
                 _addExtraPackageDaysExpense(roomItem, diff);
@@ -1413,7 +1508,7 @@ define(['./module'], function (model) {
         rooms.forEach(function(room) {
           hash = hash + (room.number * room.price * ix * occupants);
           ix--;
-        })
+        });
         return hash;
       }
 
@@ -1467,7 +1562,7 @@ define(['./module'], function (model) {
         that.roomPlans = rPlans;
         that.selectedPlan = selected ? selected : that.roomPlans[defIndex];
         that.roomPlanChanged(); //update certain VM model properties based on plan.
-      };
+      }
 
       // Returns the complete room plan object based on which plan was chosen. (selectedPlan)
       // The plan list displayed to the UI only contains the name and id of the actual plan object
@@ -1479,7 +1574,7 @@ define(['./module'], function (model) {
           }
         });
         return selPlan;
-      };
+      }
 
       // *** Constructor initialization ***
       // Now that everything is defined, initialize the VM based on the reservation model
@@ -1520,8 +1615,7 @@ define(['./module'], function (model) {
       // NOTE: this method does not reserve the reservation number so it only works in a single user environment.
       newReservationVM: function () {
         var deferred = $q.defer();
-        var resource = 'Parkplatz'; //currently the only bookable resource type.
-        // Create the VM and get the required data from other collections to populate various static lists
+         // Create the VM and get the required data from other collections to populate various static lists
         // in the VM.
         var rvm;
         dashboard.getRoomPlanList().then(function (roomPlanList) {

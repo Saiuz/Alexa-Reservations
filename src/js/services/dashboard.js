@@ -1,5 +1,5 @@
 /**
- * Service to retrieve reservation statistics for the dashboard
+ * Service to retrieve reservation information for various directives
  */
 define(['./module'], function (services) {
   'use strict';
@@ -97,9 +97,9 @@ define(['./module'], function (services) {
                   deferred.resolve(reservation);
                 }
                 else {
-                  var err = configService.loctxt.reservation + ': ' + resnum + ' ' + configService.loctxt.notFound;
-                  console.log(err);
-                  deferred.reject(err);
+                  var errs = configService.loctxt.reservation + ': ' + resnum + ' ' + configService.loctxt.notFound;
+                  console.log(errs);
+                  deferred.reject(errs);
                 }
               }
             });
@@ -113,6 +113,22 @@ define(['./module'], function (services) {
               if (err) {
                 deferred.reject(err);
                 console.log("getCurrentReservations query failed: " + err);
+              }
+              else {
+                deferred.resolve(reservations);
+              }
+            });
+        return deferred.promise;
+      },
+      getPastReservations: function (after) {
+        var deferred = $q.defer();
+
+        Reservation.find({checked_out: {$gte: after}})
+            .sort({checked_out: 1})
+            .exec(function (err, reservations) {
+              if (err) {
+                deferred.reject(err);
+                console.log("getPastReservations query failed: " + err);
               }
               else {
                 deferred.resolve(reservations);
@@ -293,9 +309,7 @@ define(['./module'], function (services) {
       // ends after the specified date.
       findEventsByDateRange: function(start, end) {
         var deferred = $q.defer(),
-            results = [],
-            startDoy = datetime.dayOfYear(start),
-            endDoy = datetime.dayOfYear(end);
+            results = [];
 
         Event.find({start_date: {$lt: end}, end_date: {$gt: start}})
             .sort({start_date: 1})

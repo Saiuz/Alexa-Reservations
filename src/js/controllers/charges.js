@@ -1,7 +1,7 @@
 /**
  * Created by Owner on 05.08.2014.
  *
- * Controller for charges  todo - make viewmodel or extend ReservationVM for any business logic
+ * Controller for charges
  */
 define(['./module'], function (controllers) {
   'use strict';
@@ -14,7 +14,9 @@ define(['./module'], function (controllers) {
         'ReservationVM',
         'dashboard',
         'configService',
-        function ($scope, $state, $rootScope, $stateParams, ReservationVM, dashboard, configService) {
+        'modals',
+        'datetime',
+        function ($scope, $state, $rootScope, $stateParams, ReservationVM, dashboard, configService, modals, datetime) {
           $scope.appTitle = $rootScope.appTitle;
           $scope.appBrand = $rootScope.appBrand;
           $scope.url = $state.current.url;
@@ -24,17 +26,20 @@ define(['./module'], function (controllers) {
           $scope.showCharges = false;
           $scope.showHiddenExpenses = false;
           $scope.planText = '***';
-          $scope.resCount = 0;
           $scope.pTitle = configService.loctxt.selectReservation;
 
           // for reservation-list directive
-          $scope.selectedReservation;
+          $scope.selected = {
+            reservation: undefined,
+            rcCnt: 0
+          };
+
 
           dashboard.getItemTypeListExcept('').then(function(items){
             $scope.itemTypes = items;
           });
 
-          $scope.$watch('selectedReservation', function (newval) {
+          $scope.$watch('selected.reservation', function (newval) {
             if (!newval || !newval.number) return; //We expect an object with (res) number, room and guest properties
             // Get reservation and prepare the room plan text and handle the special case
             // where we have a group reservation with one bill- need to show the rooms
@@ -56,6 +61,68 @@ define(['./module'], function (controllers) {
             });
           });
 
+          // Edit button click. Bring up modal form in edit mode;
+          $scope.edit = function () {
+            var dataObj = {data: $scope.selected.reservation.number, extraData: undefined},
+                model = modals.getModelEnum().reservation;
+
+            if (datetime.isDate($scope.rvm.res.checked_out)) {
+              modals.yesNoShow(configService.loctxt.wantToEdit,function (result) {
+                if (result){
+                  modals.update(model, dataObj, function(result) {  // Retrieve reservation after edit by changing selected reservation object
+                    ReservationVM.getReservationVM($scope.selected.reservation.number, true).then(function (resVM) {
+                      $scope.rvm = resVM;
+                      $scope.showCharges=true;
+                      if (resVM.oneRoom && resVM.oneBill) {  //update selectedReservation with current values.
+                        $scope.room = resVM.res.rooms[0].number;
+                        $scope.guest = resVM.res.rooms[0].guest;
+                        $scope.selected.reservation = {
+                          number: $scope.selectedReservation.number,
+                          room: resVM.res.rooms[0].number,
+                          guest: resVM.res.rooms[0].guest
+                        };
+                      }
+                      else {  // Todo- need logic to determine if room or guest name has changed.
+                        $scope.room = 0; // currently we disable the link until we can work out the logic.
+                        $scope.guest = '';
+                      }
+                    }, function (err) {
+                      console.log('Read Error: ' + err);
+                      $scope.err = err;
+                      $scope.errLoad = true;
+                    });
+                  });
+                }
+              },'','','danger');
+            }
+            else { //not checked out
+              modals.update(model, dataObj, function(result) {  // Retrieve reservation after edit
+                ReservationVM.getReservationVM($scope.selected.reservation.number, true).then(function (resVM) {
+                  $scope.rvm = resVM;
+                  $scope.hasResults=true;
+                  if (resVM.oneRoom && resVM.oneBill) {    //update button link with current values.
+                    $scope.room = resVM.res.rooms[0].number;
+                    $scope.guest = resVM.res.rooms[0].guest;
+                    $scope.selected.reservation = {
+                      number: $scope.selectedReservation.number,
+                      room: resVM.res.rooms[0].number,
+                      guest: resVM.res.rooms[0].guest
+                    };
+                  }
+                  else {  // Todo- need logic to determine if room or guest name has changed.
+                    $scope.room = 0; // currently we disable the link until we can work out the logic.
+                    $scope.guest = '';
+                  }
+                }, function (err) {
+                  console.log('Read Error: ' + err);
+                  $scope.err = err;
+                  $scope.errLoad = true;
+                });
+              });
+            }
+          };
+
+
           // guest buttons click event
           $scope.changeGuest = function(guest) {
             $scope.guest = guest;
@@ -68,7 +135,7 @@ define(['./module'], function (controllers) {
 
           // See if we were passed a reservation link in the URL
           if ($stateParams.resNum && $stateParams.resNum > 0){
-            $scope.selectedReservation = {number: Number($stateParams.resNum), room: Number($stateParams.resRoom), guest: $stateParams.resGuest};
+            $scope.selected.reservation = {number: Number($stateParams.resNum), room: Number($stateParams.resRoom), guest: $stateParams.resGuest};
           }
         }]);
 });

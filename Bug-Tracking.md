@@ -21,3 +21,8 @@ single room guest_count is 2.
 up as available automatically. - still can't edit room info but we have included the selected rooms in the list of available
 rooms so that the same room can be re-added.
 11. **BUG** removing a resource from reservation does not remove the associated expense item.
+12 **BUG-ISSUE** Changing plan of an existing reservation with a room does not update room price. For example, create res single room 1 day,
+then change reservation plan to Schnupper, which changes duration to 3 days does not change room price!!!
+13 **BUG** When adding extra days to a fixed plan, the room expense (part of plan) item is getting updated with the extra days. It should not change.
+thought I already fixed that. NOTE: This only happens when the reservation is edited after creation and an extra day is added. If the day is added when
+the reservation is initially created it works fine.

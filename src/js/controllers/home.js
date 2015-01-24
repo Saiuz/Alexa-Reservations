@@ -15,7 +15,7 @@ define(['./module'], function (controllers) {
           $scope.appTitle = $rootScope.appTitle;
           $scope.appBrand = $rootScope.appBrand;
           $scope.url = $state.current.url;
-          $scope.pageHeading = "Zimmer Plan " // + $scope.theDate.getDate() + '.' + ($scope.theDate.getMonth() + 1) + '.' + $scope.theDate.getFullYear()
+          $scope.pageHeading = "Zimmer Plan "; // + $scope.theDate.getDate() + '.' + ($scope.theDate.getMonth() + 1) + '.' + $scope.theDate.getFullYear()
 
           // get the saved last date of the calendar but delay it till the end of the digest cycle so that
           // the calendar gets time to 'settle down'
@@ -23,7 +23,7 @@ define(['./module'], function (controllers) {
             configService.get('planDate', datetime.dateOnly(new Date(Date.now()))).then(function (val) {
               val = new Date(Date.parse(val)); //seems to save date as its string value
               $scope.theDate = val;
-              console.log("HOME CTRL INIT" + ' ' + val)
+              console.log("HOME CTRL INIT" + ' ' + val);
               $rootScope.$broadcast(configService.constants.weekButtonsSetEvent, val);
             });
           }, 200);
@@ -35,7 +35,7 @@ define(['./module'], function (controllers) {
             ab1Cnt: 0,
             ab2Cnt: 0
           };
-          $scope.selectedEvent;
+          $scope.selectedEvent = undefined;
 
           // monitor two scope properties. They do not interact with one another and we expect only
           // one to change at any given time.
@@ -78,7 +78,7 @@ define(['./module'], function (controllers) {
             }
           };
 
-
+          // removes the selected marker on the reservation lists
           $scope.clearSelected = function() {
             if ($scope.selected.reservation) {
               $scope.selected.reservation.number = 0;
