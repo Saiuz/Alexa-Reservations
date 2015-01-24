@@ -44,9 +44,9 @@ module.exports = function(grunt) {
             options: {
                 version: nwVer,
                 build_dir: './',
-                platforms: ['osx', 'win32'],
-                //mac: isMac,
-                //win: isWin,
+                //platforms: ['osx', 'win32'],
+                osx: isMac64,
+                win32: isWin,
                 //linux32: isLinux32,
                 //linux64: isLinux64,
                 keep_nw: false,
