@@ -629,10 +629,16 @@ define(['./module'], function (model) {
           }
           var count = item.day_count ? that.res.nights : item.count;
           item.addThisToDocArray(that.res.expenses, null, count);
-          // now check to see if we need to add a copy
+          // now check to see if we need to add a copy or just double the count
           if (item.per_person && that.oneBill && !that.isGroup && that.res.rooms[0].guest_count === 2) {
-            item.guest = item.guest + '-' + configService.loctxt.roommate;
-            item.addThisToDocArray(that.res.expenses, null, count);
+            if (item.bill_code === configService.constants.bcPackageItem) { //just up count for the extra person
+              var rlen = that.res.expenses.length - 1;
+              that.res.expenses[rlen].count = that.res.expenses[rlen].count * 2; //double count
+            }
+            else { // add the extra item
+              item.guest = item.guest + '-' + configService.loctxt.roommate;
+              item.addThisToDocArray(that.res.expenses, null, count);
+            }
           }
 
           // Now save reservation with new expense
@@ -662,7 +668,7 @@ define(['./module'], function (model) {
           deferred.reject(configService.loctxl.expenseItemErr2);
         }
         else {
-          that.res.expenses[0].date_added = new Date();  //test for bug work around  TODO-This works but is not ideal
+          that.res.expenses[0].last_updated = new Date();  //test for bug work around  TODO-This works but is not ideal
           that.res.save(function (err) {
             if (err) {
               deferred.reject(err);
@@ -699,7 +705,10 @@ define(['./module'], function (model) {
       };
 
       // Calculate expense totals for included expense items. It returns an object with the sum, detail information and
-      // taxes for the specified items.
+      // taxes for the specified items. The method calculates totals and taxes for the specific items specified in
+      // the incItems parameter. It will also filter by guest and room if the reservation does not require one bill.
+      // It will generate the expense item details for bill creation. It can perform various aggregation functions
+      // on the items.
       this.calculateTotals  = function (incItems, room, guest, extras, aggregate, aggrTxt, busPauschale) {
         var net19 = 0,
             sum19 = 0,
@@ -708,7 +717,10 @@ define(['./module'], function (model) {
             tax19 = 0,
             tax7 = 0,
             calcResult = {sum: 0, detail: [], totalsTaxes: {}},
-            instructions = {price: 'c'}; //formatting instructions for price in bill item
+            instructions = {price: 'c', credit: 'c'}, //formatting instructions for price/credit in bill item
+            hidden = [], //for holding hidden items.
+            roomItem = undefined, //for holding room item
+            hiddenTotal = 0;
 
         // Expense detail object, for a bill
         var LineItem = function (expItem, extras, instructions) {
@@ -719,16 +731,29 @@ define(['./module'], function (model) {
           this.display_string = expItem.display_string;
           this.bill_code = expItem.bill_code;
           this.price = expItem.price;
+          this.isRoom = expItem.is_room;
         };
 
+        // process each expense item and create detail items for display as well as calculating totals and taxes
         angular.forEach(that.res.expenses, function (item) {
           var includeIt = (that.oneBill || (item.guest === guest && item.room === Number(room))),
               inCategory = ( !incItems || incItems.length === 0 ||  incItems.indexOf(item.bill_code) !== -1);
 
           if (inCategory && includeIt) {
-            if (!item.no_display || item.is_room) {
+            if (!item.no_display && !item.is_room) {
               if (item.price || item.taxable_price)
               calcResult.detail.push(new LineItem(item, extras, instructions));
+            }
+            else if (item.is_room) { // filter down to one room entry only
+              if (roomItem) {
+                 roomItem.total += item.item_total;
+              }
+              else {
+                roomItem = new LineItem(item, extras, instructions); //add one room item
+              }
+            }
+            else if(item.no_display) {
+              hidden.push(item); //gather hidden items.
             }
 
             calcResult.sum += item.item_total;
@@ -745,6 +770,30 @@ define(['./module'], function (model) {
           }
         });
 
+        //If we have hidden items, then add to the total of the detail item that is identified as the room item.
+        //If the hidden item has a value in the credit field and a 0 price then add a credit item to the details array.
+        hidden.forEach(function (item) {
+          hiddenTotal += item.item_total;
+          if (item.price === 0 && item.credit) {
+            var hitem = new LineItem(item, extras, instructions); //create credit item
+            hitem.display_string = configService.loctxt.creditForDisplayString; //need different display text
+            hitem.name = item.name; //needed to properly format text.
+            hitem.credit = item.credit; //ditto
+            hitem.text = convert.formatDisplayString(hitem, extras, instructions); //New display string
+            hitem.total = undefined; //dont want 0 to show in bill
+            calcResult.detail.push(hitem)
+          }
+        });
+
+        if (hiddenTotal) {
+          roomItem.total += hiddenTotal;
+        }
+        // now pop the room item at the top of the details array
+        if (roomItem) {
+          calcResult.detail.unshift(roomItem);
+        }
+
+        //add taxes object to results
         calcResult.taxes = {
           tax7: tax7,
           net7: net7,
@@ -788,6 +837,7 @@ define(['./module'], function (model) {
          aggArr = _aggregateItems(locItems);
         return aggArr;
       };
+
       // ******* private methods  and constructor initialization *******
 
       // Aggregates all items with the "bus_pauschale" flag set into one item with the total value the sum of all items
@@ -939,7 +989,8 @@ define(['./module'], function (model) {
               guest2 = that.res.guest2 ? that.res.guest2.name : '',
               roomsChanged = (lastRoomHash !== _buildRoomHash(that.res.rooms, that.res.occupants)),
               changesMade = false,
-              replaceAll = false;
+              replaceAll = false,
+              curPlan = that.getPlanInReservation();
 
         // Perform checks that don't require async operations
         //Update the count property of items based on the number of nights of the reservation
@@ -947,10 +998,19 @@ define(['./module'], function (model) {
         // we add or adjust extra nights.
         if (lastNights !== that.res.nights) {
           changesMade = true;
-          // first update current expense items
+
+          // first update current expense items. We need to be careful about updating the room items
+          // if the plan is a package with fixed days then don't update the room count. Need to add extra days.
           that.res.expenses.forEach(function (exp) {
             if (exp.day_count) {
-              exp.count = that.res.nights;
+              if (exp.is_room) {
+                if(!curPlan.is_plan) {
+                  exp.count = that.res.nights;
+                }
+              }
+              else {
+                exp.count = that.res.nights;
+              }
             }
           });
         }
@@ -1172,6 +1232,12 @@ define(['./module'], function (model) {
         resExp.forEach(function(id) {
           that.res.expenses.id(id).remove();
         });
+        // NOTE: This code is a kluge to work around a Tingus driver bug that will not save a removed sub-document correctly
+        // unless some other sub-document is modified. We do this here incase the user only removes a resource and nothing
+        // else.
+        if (that.res.expenses.length) {
+          that.res.expenses[0].last_updated = new Date(); //typically the room expense
+        }
       }
 
 
@@ -1338,10 +1404,19 @@ define(['./module'], function (model) {
         // For business reservations, and kur reservations we need a name of the second quest.
         // For personal reservations, we only expect one room and we go by the # of occupants
         // For tour group reservations, we can have multiple rooms but only one name is needed.
+        // For standard reservation with package items, for two people don't add another, just modify the
+        // count of the last item added
         if (item.per_person && room.guest_count === 2) {
-          item.guest = room.guest2 ? room.guest2 : room.guest + '-' + configService.loctxt.roommate;
-          item.addThisToDocArray(that.res.expenses, price, count);
+          if (that.oneBill && !that.isGroup && item.bill_code === configService.constants.bcPackageItem) {
+            var rlen = that.res.expenses.length - 1;
+            that.res.expenses[rlen].count = that.res.expenses[rlen].count * 2; //double count
+          }
+          else { //add item
+            item.guest = room.guest2 ? room.guest2 : room.guest + '-' + configService.loctxt.roommate;
+            item.addThisToDocArray(that.res.expenses, price, count);
+          }
         }
+
 
         //Now return the item or items just added
         for (i = expCnt; i < that.res.expenses.length; i++) {
@@ -1361,7 +1436,7 @@ define(['./module'], function (model) {
           exp.name = configService.loctxt.extra_days_item;
           exp.category = dbEnums.getItemTypeEnum()[0]; //plan
           exp.bill_code = configService.constants.bcExtraRoom;
-          exp.is_room = true;
+          exp.is_room = false;
           exp.per_person = false;
           exp.no_delete = true;
           exp.no_display = false;

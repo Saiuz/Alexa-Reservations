@@ -113,31 +113,26 @@ define(['./module'], function (directives) {
 
       // for read only mode we just need to display the rooms that are found in the rooms array
       scope.$watchCollection('[readOnly,rooms.length, guestLookup, oneRoom, secondGuest]', function (newvals) {
+        // create scope booleans from the attributes that take boolean values but are translated to the words 'true'
+        // and 'false'
         scope.displayOnly = (newvals[0] === 'true');
+        scope.guestLookupB = (newvals[2] === 'true');
+        scope.oneRoomB = newvals[3] === 'true';
+        scope.secondGuestB = newvals[4] === 'true';
+
         if (scope.displayOnly && newvals[1]) {
           buildDisplayArray();
         }
         else if (!scope.displayOnly && !newvals[1])  //edit mode but no existing rooms in rooms array
         {
           scope.prooms = [];
-          scope.showRooms = (scope.oneRoom === 'false' || (scope.oneRoom === 'true' && scope.rooms.length < 1));
+          scope.showRooms = (!scope.oneRoomB || (scope.oneRoomB && scope.rooms.length < 1));
         }
 
-        // create scope booleans from the attributes that take boolean values but are translated to the words 'true'
-        // and 'false'
-        if (newvals[2]) {
-          scope.guestLookupB = (newvals[2] === 'true');
-        }
-        if (newvals[3]) {
-          scope.oneRoomB = newvals[3] === 'true';
-        }
-        if (newvals[4]) {
-          scope.secondGuestB = newvals[4] === 'true';
-        }
-        updateTitle();
+         updateTitle();
       });
 
-      // Watch for a change in roomList. If the list changes then we need to remove the rooms currently
+      // Watch for a change in roomList. If the list changes then we may need to remove the rooms currently
       // on the reservation. The roomList will change if some other important property has changed,
       // such as start or end dates, number of occupants, etc.
       scope.$watch('roomList', function (newval) {
@@ -155,11 +150,17 @@ define(['./module'], function (directives) {
             // First check to see if the reservation has one or more rooms, if so then check each room to see
             // if it is still present in the list. If not then remove the room from the reservation and from
             // prooms. If it still exists then keep it.
+            var p = Number(scope.planPrice),
+                f = Number(scope.firmPrice),
+                delrooms = [];
+
             if (scope.rooms && scope.rooms.length > 0) {
-              var delrooms = [];
               scope.rooms.forEach(function (rm){
                 if (roomNotInList(rm.number)) {
                   delrooms.push(rm._id);
+                }
+                else { //update room price in case plan  or firm price has changed
+                  rm.price = f > 0 ? f : p > 0 ? p : rm.price;
                 }
               });
               delrooms.forEach(function (id) {

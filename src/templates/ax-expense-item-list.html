@@ -34,7 +34,8 @@
             <td ng-if="item.name !== txt.cityTax && item.bill_code === con.bcPackageItem">
                 <span ng-if="!item.edit_name">
                     {{item.name}} ({{item.room}} - {{item.guest}})&nbsp;
-                    <button class="btn btn-xs" ng-click="credit(item)">{{txt.credit}}</button>
+                    <button class="btn btn-xs" ng-click="credit(item)">{{txt.credit}}</button>&nbsp;
+                    <button ng-show="item.credit" class="btn btn-xs" ng-click="reinstate(item)">{{txt.reinstate}}</button>
                 </span>
                 <span ng-if="item.edit_name">
                     <a href="#" editable-text="item.name" onaftersave="updateExpense(item._id)">{{item.name}}</a>  ({{item.room}} - {{item.guest}})

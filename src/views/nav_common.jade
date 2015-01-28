@@ -9,13 +9,13 @@
     .navbar-brand: a(href="")  {{appBrand}}
   ul.nav.navbar-nav
     li(ng-class="{active: (url == '/home')}")
-      a(href="#/home") Home
-    li(ng-class="{active: (url == '/reservations')}")
-      a(href="#/reservations") Reservierung
+      a(href="#/home") Zimmer Plan
     li(ng-class="{active: (url == '/charges/0')}")
       a(href="#/charges/0/0/0") Gebühren
     li(ng-class="{active: (url == '/rechnung/0')}")
       a(href="#/rechnung/0/0/0") Rechnung
+    li(ng-class="{active: (url == '/reservations')}")
+      a(href="#/reservations") Reservierung
     li(ng-class="{active: (url == '/addresse')}")
       a(href="#/addresse") Addresse
     li(ng-class="{active: (url == '/liste')}")

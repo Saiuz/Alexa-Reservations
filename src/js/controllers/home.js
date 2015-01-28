@@ -9,7 +9,9 @@ define(['./module'], function (controllers) {
         'modals',
         'configService',
         '$timeout',
-        function ($scope, $state, $rootScope, datetime, modals, configService, $timeout) {
+        '$filter',
+        function ($scope, $state, $rootScope, datetime, modals, configService, $timeout, $filter) {
+          var init = true;
 
           // Required for nav and page header
           $scope.appTitle = $rootScope.appTitle;
@@ -41,13 +43,26 @@ define(['./module'], function (controllers) {
           // one to change at any given time.
           $scope.$watchCollection('[theDate, selectedEvent]', function (newvals, oldvals) {
             var varIndex = (oldvals[1] !== newvals[1]) ? 1 :
-                (oldvals[0] !== newvals[0]) ? 0 : -1;
+                (oldvals[0] !== newvals[0]) ? 0 : -1,
+                isToday = false,
+                isTomorrow = false;
 
             switch (varIndex) {
               case 0:
-                configService.set('planDate', datetime.dateOnly($scope.theDate));
+                if (!init) {
+                  configService.set('planDate', datetime.dateOnly($scope.theDate));
+                }
+                else {
+                  init = false;
+                }
+
                 $scope.theNextDate = datetime.dateOnly($scope.theDate, 1);
+                isToday = datetime.daysSinceEpoch($scope.theDate) === datetime.daysSinceEpoch(new Date());
+                isTomorrow = datetime.daysSinceEpoch($scope.theDate) === datetime.daysSinceEpoch(datetime.dateOnly(new Date(), 1));
+                $scope.theDateDisplay = isToday ? configService.loctxt.today : isTomorrow ? configService.loctxt.tomorrow : $filter('date')($scope.theDate, 'shortDate');
+                $scope.theNextDateDisplay = isToday ? configService.loctxt.tomorrow : isTomorrow ? configService.loctxt.tomorrowNext : $filter('date')($scope.theNextDate, 'shortDate');
                 break;
+
               case 1:
                 var dataObj = { data: newvals[1].number, extraData: undefined },
                     model = modals.getModelEnum().event;

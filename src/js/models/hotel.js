@@ -105,7 +105,8 @@ define(['./module'], function (model) {
       taxable_price: Number, // If a non 0 value is provided, then this number is used to calculate the tax while the
                              // value of the price field will be used as a displayed value on the bill, otherwise the
                              // value of price is used in the tax calculation.
-      single_price: Number,
+      single_price: Number, // ditto to double_price
+      credit: Number, //If an item is credited e.g. plan item not available, the credited amount is stored here.
       price: Number, //either single item/unit price or total price if one_count true.
       count: Number   //number of days or item count or the default count value in the case of the ExpenseType collection.
     });
@@ -259,7 +260,8 @@ define(['./module'], function (model) {
         return this.first_name + " " + this.last_name;
       }
     });
-
+      // Note there is no equivalent function for update. Unique name does not get updated
+    // when say the firm name is changed and the guests firm fields are updated with an update command.
       schema.pre('save', function(next) {
         var nam = this.salutation ? this.salutation : '';
         nam = this.first_name ? nam.length > 0 ? nam + ' ' + this.first_name : this.first_name : nam;

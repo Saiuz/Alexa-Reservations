@@ -38,10 +38,11 @@ define(['./module'], function (controllers) {
         '$modalInstance',
         'modalParams',
         'Firm',
+        'dashboard',
         'configService',
         '$timeout',
         'utility',
-        function ($scope, $modalInstance, modalParams, Firm, configService, $timeout, utility) {
+        function ($scope, $modalInstance, modalParams, Firm, dashboard, configService, $timeout, utility) {
           console.log("FirmFormModal controller fired");
 
           $scope.err = {};
@@ -60,6 +61,8 @@ define(['./module'], function (controllers) {
           var mode = modalParams.mode.substring(0, 1).toLowerCase();
           var qry = parseInt(modalParams.data) ? {'_id': parseInt(modalParams.data)} : {'firm_name': modalParams.data};
           var notFound = configService.loctxt.firm + ' "' + modalParams.data + '" ' + configService.loctxt.notFound;
+          var lastFirm = '';
+
           switch (mode) {
             case 'c':
               $scope.title = configService.loctxt.firm_titleCreate;
@@ -100,6 +103,7 @@ define(['./module'], function (controllers) {
                 }
                 else {
                   if (firm) {
+                    lastFirm = firm.firm_name;
                     $scope.firm = firm;
                     $scope.edit = true;
                     $scope.read = false;
@@ -154,6 +158,11 @@ define(['./module'], function (controllers) {
           // save button handler
           $scope.save = function () {
             //perform any pre save form validation or logic here
+            // If we change the name of the firm, then we must update the guests that are
+            // associated with the previous firm name!
+            // TODO-NOTE: by updating guest firm field, the unique name does not get regenerated. Need to find all firms then modify and save each!!!
+            var nameChanged = lastFirm && (lastFirm !== $scope.firm.firm_name),
+                msg = '';
 
             //save/update firm and return
             $scope.firm.save(function (err) {
@@ -164,10 +173,24 @@ define(['./module'], function (controllers) {
                 $scope.$apply();
               }
               else {
-                var msg = (mode === 'c' ? configService.loctxt.firm + configService.loctxt.success_saved :
-                           configService.loctxt.success_changes_saved);
+                if (nameChanged) {
+                  dashboard.updateFirmInGuests(lastFirm, $scope.firm.firm_name).then(function (numAffected) {
+                        msg = configService.loctxt.success_changes_saved + ' ' + numAffected + ' ' + configService.loctxt.guests;
+                        autoClose(msg, $scope.firm);
+                      },
+                      function (err) {
+                        console.log('Guest update error: ' + err);
+                        $scope.err = new utility.errObj(err);
+                        $scope.errSave = true;
+                        $scope.$apply();
+                      });
+                }
+                else {
+                  msg = (mode === 'c' ? configService.loctxt.firm + configService.loctxt.success_saved :
+                      configService.loctxt.success_changes_saved);
+                  autoClose(msg, $scope.firm);
+                }
 
-                autoClose(msg, $scope.firm);
               }
             });
           };

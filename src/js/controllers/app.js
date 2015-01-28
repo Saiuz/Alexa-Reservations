@@ -20,6 +20,8 @@ define(['./module'], function (controllers) {
         function ($scope, $rootScope, db, Firm, Guest, Reservation, Resource,
                   Room, Itemtype, RoomPlan, AppConstants, configService, datetime, $state, $timeout) {
           console.log("App controller fired");
+          // Set the saved date for the home page room plan to the current date
+          configService.set('planDate', datetime.dateOnly(new Date()));
 
           // Add base db collections if needed.
 
@@ -150,7 +152,7 @@ define(['./module'], function (controllers) {
                 edit_name: false,
                 edit_count: false,
                 low_tax_rate: true,
-                display_string: '%count% Tage %planName%',
+                display_string: '%planName%',
                 display_order: 1,
                 single_price: 53.3349, // times 3 rounds up to 175.00
                 double_price: 51.0, //per person
@@ -174,10 +176,10 @@ define(['./module'], function (controllers) {
                 one_per: false,
                 edit_name: false,
                 low_tax_rate: true,
-                display_string: '%count% Tage %planName%',
+                display_string: '%planName%',
                 display_order: 1,
                 single_price: 53.53,
-                double_price: 46.2, //per person
+                double_price: 47.6967, //per person
                 price: 0,
                 count: 0
               }, function (err) {

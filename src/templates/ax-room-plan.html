@@ -1,6 +1,6 @@
 <div class="panel panel-default">
     <div class="panel-heading">
-        {{txt.week_plan_for}} {{dates.weekStart | date:'dd.MM.yyyy'}} {{txt.until}} {{dates.weekEnd | date:'dd.MM.yyyy'}}
+        {{txt.week_plan_for}} {{dates.weekStart | date:'shortDate'}} {{txt.until}} {{dates.weekEnd | date:'shortDate'}}
         <ax-week-buttons picked-date='theDate'/>
     </div>
     <div class="panel-body zp-container">

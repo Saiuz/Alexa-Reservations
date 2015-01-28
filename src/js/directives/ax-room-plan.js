@@ -116,7 +116,7 @@ define(['./module'], function (directives) {
 
         // respond to a user clicking on a reservation item
         scope.rClick = function (link, start) {
-          scope.theDate = datetime.dseToDate(start);
+          //scope.theDate = datetime.dseToDate(start);
           scope.selectedReservation = link;
         };
 
@@ -129,11 +129,15 @@ define(['./module'], function (directives) {
         $(document).mouseup(function () {
           if (isMouseDown) {
             isMouseDown = false;
+            if (selEnd === 0) { //happens if only one cell is clicked, we need at least one night for a reservation.
+              selEnd = selStart + 1;
+            }
             var cObj = {
               start: datetime.dseToDate(selStart),
               end: datetime.dseToDate(selEnd),
               room: Number(selRoom)
-            }
+            };
+
             if (scope.blankClickFunction) {
               scope.blankClickFunction(cObj);
             }
@@ -188,14 +192,14 @@ define(['./module'], function (directives) {
           // use timeout kluge to map events to the table elements after it renders.
           $timeout(function () {
             if (element) {
-              element.find(".zpSel")
-                  .mousedown(function () {
+              var zpsel = element.find(".zpSel"); //broke out find, was getting occasional error on mousedown that "undefined is not a function"
+                  $(zpsel).mousedown(function () {
                     if (selRoom < 0) {
                       var sr = $(this).attr("cdat");
                       if (sr) {
                         isMouseDown = true;
                         selRoom = sr.split('|')[0];
-                        selStart = sr.split('|')[1];
+                        selStart = Number(sr.split('|')[1]);
                         $(this).toggleClass("zp-selColor");
                         isHighlighted = $(this).hasClass("zp-selColor");
                       }
@@ -207,7 +211,7 @@ define(['./module'], function (directives) {
                       var sr = $(this).attr("cdat");
                       if (sr) {
                         if (sr.split('|')[0] === selRoom) {
-                          selEnd = sr.split('|')[1];
+                          selEnd = Number(sr.split('|')[1]);
                           $(this).toggleClass("zp-selColor", isHighlighted);
                         }
                       }
@@ -217,7 +221,8 @@ define(['./module'], function (directives) {
                     return false;
                   });
 
-              element.find(".zpRes").each(function () {
+               var xpres = element.find(".zpRes"); //ditto with this find
+               $(xpres).each(function () {
                 var pw = $(this).parent().width();
                 $(this).width(pw);
               });
@@ -576,8 +581,10 @@ define(['./module'], function (directives) {
                 link: {number: res.reservation_number, room: res.room, guest: res.guest},
                 overLapCol: overlapEnd && res.end_dse !== edse,
                 hoverTxt: '<b>' + res.title + ( !res.oneRoom ? ' - ' + res.guest : '') + '</b><br />Von: '
-                + $filter('date')(res.start_date, 'shortDate') +
-                '<br />Bis: ' + $filter('date')(res.end_date, 'shortDate') + (res.resource_name ? '<br /> Zi. ' + res.room : ''),
+                + $filter('date')(res.start_date, 'shortDate')
+                + '<br />Bis: ' + $filter('date')(res.end_date, 'shortDate')
+                + (res.resource_name ? '<br /> Zi. ' + res.room : '')
+                + (res.comments ? '<br />' + res.comments : ''),
                 isBlank: false
               },
               checkout = {

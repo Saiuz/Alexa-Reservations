@@ -50,14 +50,14 @@ define(['./module'], function (directives) {
       scope.$watchCollection('[readOnly,resources, rooms.length, oneRoom]', function(newvals){
         scope.displayOnly = (newvals[0] === 'true');
         scope.showRooms = (newvals[3] !== 'true');
-        if (scope.displayOnly && (newvals[1] && newvals[1].length) && (newvals[2] && newvals[2].length)) {
+        scope.oneRoomB = newvals[3] === 'true';
+
+        if (scope.displayOnly && (newvals[1] && newvals[1].length) && newvals[2]) {
           scope.$apply();
         }
         if (newvals[2]) {
           scope.selectedRoom = scope.rooms[0];
-        }
-        if (newvals[3]) {
-          scope.oneRoomB = newvals[3] === 'true';
+          scope.showResources = (!scope.oneRoomB || (scope.oneRoomB && scope.resources.length < 1));
         }
       });
       // Watch for a change in resourceList. If the list changes then we need to remove the resources currently
@@ -81,10 +81,16 @@ define(['./module'], function (directives) {
         updateTitle();
       });
 
-      //pass in the selected value just in case the method gets called before the resourceSelect property gets updated.
-      scope.onResourceSelect = function(newval) {
+      // method fired when user selects a resource. If the showRooms flag is false then we imediately add the
+      // resource selected. Otherwise we show the form for the user to select the room.
+      scope.onResourceSelect = function() {
         scope.resourcePrice =  Number(scope.resourceSelect.price);
-        scope.showfrm = true;
+        if (scope.showRooms) {
+          scope.showfrm = true;
+        }
+        else {
+          scope.addResource(); //add it
+        }
       };
 
       scope.onRoomSelect = function(room) {
@@ -125,6 +131,8 @@ define(['./module'], function (directives) {
         scope.resourceSelect = scope.resourceList[0];
         scope.resourcePrice = 0;  //price for room
         scope.showfrm = false;
+        scope.isCollapsed = !scope.showRooms;
+        scope.showResources = (!scope.oneRoomB || (scope.oneRoomB && scope.resources.length < 1));
       };
 
       // function that removes a room from the reservation.resources array.
@@ -135,7 +143,7 @@ define(['./module'], function (directives) {
             break;
           }
         };
-
+        scope.showResources = (!scope.oneRoomB || (scope.oneRoomB && scope.resources.length < 1));
         updateTitle();
         //scope.$apply();
       };

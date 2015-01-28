@@ -187,6 +187,27 @@ define(['./module'], function (services) {
             });
         return deferred.promise;
       },
+      // updates the firm for guests that are associated with a firm that's name has changed. Note: because the
+      // Guest collection has a pre 'save' function, we can't just do an update, we have to do a find then save the
+      // individual matches.
+      updateFirmInGuests: function (oldFirm, newFirm) {
+        var deferred = $q.defer();
+        Guest.find({firm: oldFirm})
+            .exec(function (err, guests) {
+              if (err) {
+                deferred.reject(err);
+                console.log("updateFirmInGuests query failed: " + err);
+              }
+              else {
+                guests.forEach(function (guest) {
+                  guest.firm = newFirm;
+                  guest.save();
+                });
+                return deferred.resolve(guests.length);
+              }
+            });
+        return deferred.promise;
+      },
       getFirmByName: function (name) {
         var deferred = $q.defer();
         Firm.findOne({'firm_name': name})
@@ -274,7 +295,8 @@ define(['./module'], function (services) {
                     after_end: rendDse > endDoy,
                     nights: res.nights,
                     title: res.title,
-                    oneRoom: res.rooms.length === 1
+                    oneRoom: res.rooms.length === 1,
+                    comments: res.comments
                   };
                   results.reservations.push(r);
                 });

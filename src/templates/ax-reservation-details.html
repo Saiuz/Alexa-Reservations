@@ -83,11 +83,11 @@
     </div>
     <div class="modal-footer">
         <div class="btn-group">
-            <button class="btn btn-default" type="button" ng-click="edit()">{{txt.edit}}</button>
+            <button class="btn btn-info" type="button" ng-click="edit()">{{txt.edit}}</button>
             <button ng-if="canCheckIn" class="btn btn-info" type="button" ng-click="checkin(room)">{{txt.checkin}}
             </button>
-            <a class="btn btn-info" href="#/charges/{{rvm.res.reservation_number}}/{{room}}/{{guest}}"
-               ng-if="canCheckOut">{{txt.checkout}}</a>
+            <a class="btn btn-default" href="#/charges/{{rvm.res.reservation_number}}/{{room}}/{{guest}}"
+               ng-if="canCheckOut">{{txt.toCharges}} &nbsp;<i class="glyphicon glyphicon-arrow-right"></i></a>
             <button class="btn btn-default" type="button" ng-click="clearSelected()"><i
                     class="glyphicon glyphicon-eye-close"></i></button>
         </div>

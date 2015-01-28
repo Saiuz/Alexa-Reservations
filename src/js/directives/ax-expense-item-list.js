@@ -96,6 +96,16 @@ define(['./module'], function (directives) {
           _updateRes(item._id);
         };
 
+        scope.credit = function (item) {
+          item.credit = item.price;
+          item.price = 0;
+          _updateRes(item._id);
+        };
+
+        scope.reinstate = function (item) {
+          item.price = item.credit;
+          item.credit = 0;
+          _updateRes(item._id);        };
         //Private methods
 
         var _updateRes = function (id) {

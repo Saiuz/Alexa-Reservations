@@ -13,10 +13,10 @@
     </div>
     <div class="panel-body" collapse="isCollapsed">
         <table class="small">
-            <tr>
+            <tr ng-show="showResources">
                 <th>{{txt.free}} {{resourceTitle}}</th>
             </tr>
-            <tr>
+            <tr ng-show="showResources">
                 <td>
                     <select ng-model="resourceSelect" ng-change="onResourceSelect(resourceSelect)"
                             ng-options="r.name for r in resourceList | filter:filterAlreadySelected"></select>
