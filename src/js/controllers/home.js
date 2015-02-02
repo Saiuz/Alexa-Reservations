@@ -5,12 +5,13 @@ define(['./module'], function (controllers) {
       ['$scope',
         '$state',
         '$rootScope',
+        '$stateParams',
         'datetime',
         'modals',
         'configService',
         '$timeout',
         '$filter',
-        function ($scope, $state, $rootScope, datetime, modals, configService, $timeout, $filter) {
+        function ($scope, $state, $rootScope, $stateParams, datetime, modals, configService, $timeout, $filter) {
           var init = true;
 
           // Required for nav and page header
@@ -57,7 +58,7 @@ define(['./module'], function (controllers) {
                 }
 
                 $scope.theNextDate = datetime.dateOnly($scope.theDate, 1);
-                isToday = datetime.daysSinceEpoch($scope.theDate) === datetime.daysSinceEpoch(new Date());
+                isToday = datetime.daysSinceEpoch($scope.theDate) === datetime.daysSinceEpoch(datetime.dateOnly(new Date()));
                 isTomorrow = datetime.daysSinceEpoch($scope.theDate) === datetime.daysSinceEpoch(datetime.dateOnly(new Date(), 1));
                 $scope.theDateDisplay = isToday ? configService.loctxt.today : isTomorrow ? configService.loctxt.tomorrow : $filter('date')($scope.theDate, 'shortDate');
                 $scope.theNextDateDisplay = isToday ? configService.loctxt.tomorrow : isTomorrow ? configService.loctxt.tomorrowNext : $filter('date')($scope.theNextDate, 'shortDate');
@@ -99,5 +100,13 @@ define(['./module'], function (controllers) {
               $scope.selected.reservation.number = 0;
             }
           }
+
+          // See if we were passed a reservation link in the URL
+          if ($stateParams.resNum && $stateParams.resNum > 0){
+            $timeout(function () { // use timeout to make sure this happens at the end of the digest cycle
+              $scope.selected.reservation = {number: Number($stateParams.resNum), room: Number($stateParams.resRoom), guest: $stateParams.resGuest};
+            },10);
+          }
+
         }]);
 });

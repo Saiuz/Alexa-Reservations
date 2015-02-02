@@ -37,9 +37,9 @@ define(['./module'], function (directives) {
         //scope.selectedReservation = {number: 0, room: 0, guest: ''};
         //scope.selectedResId = -1;
 
-        // Private function to build the reservation list. It will separate group reservations that
+        // Private function to build the reservation list. It will separate group reservations and Kur reservations that
         // require individual checkins and bills.
-        var _buildList = function (resList, splitNames) {
+        var _buildList = function (resList) {
           var rlist = [],
               rlistItem = {},
               ix = 0,
@@ -52,13 +52,13 @@ define(['./module'], function (directives) {
             sdse = datetime.daysSinceEpoch(datetime.dateOnly(res.start_date));
             edse = datetime.daysSinceEpoch(datetime.dateOnly(res.end_date));
 
-            if (res.rooms.length > 1 && res.individualBill) {
+            if (res.individualBill) {
               // list res under each room with name defined in room list
               res.rooms.forEach(function (room) {
                 rlistItem = {
                   id: ix,
                   roomNumber: room.number,
-                  title: res.firm + ' (' + room.guest + (room.guest2 && !splitNames ? '/' + room.guest2 : '') + ')',
+                  title: res.firm ? res.firm + ' (' + room.guest +')' : configService.loctxt.cure + ': '+ room.guest,
                   reservation_number: res.reservation_number,
                   reservation_link: {number: res.reservation_number, room: room.number, guest: room.guest},
                   multiroom: false,
@@ -70,11 +70,11 @@ define(['./module'], function (directives) {
                 };
                 rlist.push(rlistItem);
                 ix++;
-                if (splitNames && room.guest_count > 1) {
+                if (room.guest_count > 1) {
                   rlistItem = {
                     id: ix,
                     roomNumber: room.number,
-                    title: res.firm + ' (' + room.guest2 + ')',
+                    title: res.firm ? res.firm + ' (' + room.guest2 +')' : configService.loctxt.cure + ': '+ room.guest2,
                     reservation_number: res.reservation_number,
                     reservation_link: {number: res.reservation_number, room: room.number, guest: room.guest2},
                     multiroom: false,
@@ -207,12 +207,7 @@ define(['./module'], function (directives) {
           //console.log("resSelected function fired: " + resObj.reservation_number);
           scope.selectedResId = resObj.id;
           ignore = true;
-          if (useLink) {
-            scope.selectedReservation = resObj.reservation_link;
-          }
-          else {
-            scope.selectedReservation = {number: resObj.reservation_number};
-          }
+          scope.selectedReservation = resObj.reservation_link;
         };
 
 
@@ -223,9 +218,6 @@ define(['./module'], function (directives) {
 
         scope.$watchCollection('[listDate, listMode, numberOnly, selectedReservation]', function (newvals) {
           console.log("ax-reservation-list watcher fired " + newvals);
-          if (newvals[2]) {  //todo-may want to deprecate this feature
-            useLink = !(scope.numberOnly === 'true');
-          }
           if (!newvals[3]) {
             scope.selectedResId = -1;
           }
@@ -264,8 +256,7 @@ define(['./module'], function (directives) {
           listDate: '=',
           selectedReservation: '=',
           resCount: '=',
-          listMode: '@',
-          numberOnly: '@'
+          listMode: '@'
         }
       };
     }

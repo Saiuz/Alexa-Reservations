@@ -44,7 +44,8 @@ define(['./module'], function (services) {
       bcFood: 7,
       bcDrink: 8,
       bcKur: 9,
-
+      bcKurPackageItem: 10,
+      bcKurSpecial: 11, //for copay and prescription charges
 
       // Method to retrieve value of the specified constant. (For programmatic retrieval of constant value.)
       get: function (constName) {
@@ -92,6 +93,7 @@ define(['./module'], function (services) {
       'contact_email': 'Kontakt E-Mail',
       'contact_name': 'Kontakt Name',
       'contact_tel': 'Kontakt Tf.',
+      'copay': 'Eigenanteil',
       'country': 'Land',
       'credit': 'Kredit',
       'creditForDisplayString': '(%credit% Kredit für %name%)',
@@ -116,6 +118,7 @@ define(['./module'], function (services) {
       'event_titleDelete': 'Veranstaltung Informationen Löschen',
       'event_titleRead': 'Veranstaltung zur Firma',
       'event_titleUpdate': 'Veranstaltung Informationen Bearbeiten',
+      'extra': 'Extra',
       'firmName': 'Firma Name',
       'firm': 'Firma',
       'firm_titleCreate': 'Firma Informationen Erstellen',
@@ -139,11 +142,13 @@ define(['./module'], function (services) {
       'guest_titleRead': 'Informationen zur Gast',
       'halfPension': 'Halbpension',
       'halfPensionInc': 'HalbpensionInc',
+      'includedInPlan': 'In Plan Preis inbegriffen',
       'insurance': 'Krankenkasse',
       'item': 'Artikel',
       'item_notFound': 'Artikel nicht gefunden',
       'lastName': 'Nachname',
       'leave': 'Abfahrt',
+      'minus': 'Minus',
       'miscellaneous': 'Diverses',
       'miscellaneousDetails': 'Diverses Einzelheiten',
       'night': 'Nacht',
@@ -161,6 +166,7 @@ define(['./module'], function (services) {
       'parkCharge': 'Parkgebür',
       'perPersonAbrv': 'p.P.',
       'postCode': 'PLZ',
+      'prescription_charge': ' Rezeptgebühr',
       'price': 'Preis',
       'priceSymbol': '€',
       'print': 'Drucken',
@@ -201,6 +207,7 @@ define(['./module'], function (services) {
       'title': 'Titel',
       'toBill': 'Zu Rechnung',
       'toCharges': 'Zu Gebüren',
+      'toRoomPlan': 'Zu Zimmer Plan',
       'today': 'Heute',
       'tomorrow': 'Morgen',
       'tomorrowNext':'Übermorgen',
@@ -213,7 +220,9 @@ define(['./module'], function (services) {
       'val_invalidRoom': 'At least one room is required',
       'val_invalidDates': 'Missing or invalid Reservation dates',
       'val_invalidInsurance': 'An insurance plan must be selected',
+      'val_invalidPlanInsurance': 'The Kur package plan requires "Privat" insurance',
       'wantToEdit': 'This reservation has been checked out. Are you sure you want to edit it?',
+      'wantToCheckout': 'The reservation end date is in the future. Are you sure you want to check out now? The reservation end date will NOT be adjusted',
       'yes': 'Ja',
       'week_plan_for': 'Wochen Plan für',
       'xxx': '***'

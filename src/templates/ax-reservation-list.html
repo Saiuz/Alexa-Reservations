@@ -6,7 +6,7 @@
             <span ng-show="res.multiroom">...</span>
         </dt>
         <dd class="btn-link" ng-repeat-end ng-click="resSelected(res.id)" ng-class="{'text-delete': res.isCheckedOut, 'late-chkin': res.lateCheckIn, 'late-chkout': res.lateCheckOut}">
-            <span>{{res.title}}</span><span ng-if="show">&nbsp&nbsp({{res.end_date | date:'dd.MM.yyyy'}})</span>
+            <span>{{res.title}}</span><span ng-if="show">&nbsp&nbsp({{res.end_date | date:'shortDate'}})</span>
             <span ng-if="res.isCheckedIn && !res.isCheckedOut" class="glyphicon glyphicon-saved"></span>
         </dd>
     </dl>

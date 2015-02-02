@@ -573,7 +573,7 @@ define(['./module'], function (directives) {
         function _addResItem(res, overlapEnd, rArr, edse) {
           var resItem = {
                 resNum: res.reservation_number,
-                text: res.resource_name ? configService.loctxt.roomAbrv + ' ' + res.room : res.title + ( !res.oneRoom ? ' - ' + res.guest : ''),
+                text: res.resource_name ? configService.loctxt.roomAbrv + ' ' + res.room : res.title + ( !res.oneRoom ? ' - ' + res.guest + (res.guest2 ? ' / ' + res.guest2 : '') : ''),
                 span: res.nights,
                 start: datetime.daysSinceEpoch(res.start_date), //used to move calendar to start date of reservation when selected
                 resCol: true,

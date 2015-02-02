@@ -23,7 +23,7 @@
         </thead>
         <tbody>
         <tr ng-repeat="item in rvm.res.expenses | filter:{category: itemType, guest: guest, name: '!' + txt.breakfastInc}" ng-show="!item.no_display || showHidden">
-            <td ng-if="item.name !== txt.cityTax && item.bill_code !== con.bcPackageItem">
+            <td ng-if="item.name !== txt.cityTax && (item.bill_code !== con.bcPackageItem && item.bill_code !== con.bcKurPackageItem)">
                 <span ng-if="!item.edit_name">
                     {{item.name}} ({{item.room}} - {{item.guest}} - {{item.last_updated | date:'shortDate'}})
                 </span>
@@ -31,7 +31,7 @@
                     <a href="#" editable-text="item.name" onaftersave="updateExpense(item._id)">{{item.name}}</a>  ({{item.room}} - {{item.guest}})
                 </span>
             </td>
-            <td ng-if="item.name !== txt.cityTax && item.bill_code === con.bcPackageItem">
+            <td ng-if="item.name !== txt.cityTax && (item.bill_code === con.bcPackageItem || item.bill_code === con.bcKurPackageItem)">
                 <span ng-if="!item.edit_name">
                     {{item.name}} ({{item.room}} - {{item.guest}})&nbsp;
                     <button class="btn btn-xs" ng-click="credit(item)">{{txt.credit}}</button>&nbsp;
@@ -62,7 +62,7 @@
             <td class="text-center">
                 <span>
                     <span ng-if="item.fix_price">{{item.price | currency}}</span>
-                    <a ng-if="!item.fix_price" href="#" editable-text="item.price" onaftersave="updateExpense(item._id)">{{item.price | currency}}</a>
+                    <a ng-if="!item.fix_price" href="#" editable-text="textPrice['_'+item._id.id]" onaftersave="updateExpense(item._id)">{{item.price | currency}}</a>
                 </span>
             </td>
             <td class="text-center">

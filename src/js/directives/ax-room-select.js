@@ -32,6 +32,12 @@ define(['./module'], function (directives) {
   'use strict';
   directives.directive('axRoomSelect', ['dbEnums', 'configService', function (dbEnums, configService) {
     var linker = function (scope, element, attrs) {
+      var lastDeleted = {
+        guest: '',
+        guest2: '',
+        checkedIn: false
+      }; //object to hold information about a deleted room such as if it was checked in.
+
       scope.txt = configService.loctxt;
       // private rooms array. Contains slightly different structure than is required by the reservation object.
       // mimics the rooms array.
@@ -50,6 +56,7 @@ define(['./module'], function (directives) {
           if (scope.rooms.length === 1) {
             scope.selectTitle = configService.loctxt.roomNumberAbrv +
             ' ' + scope.rooms[0].number + ' ' + configService.loctxt.selected;
+            scope.rprice = scope.rooms[0].price;
           }
           else {
             scope.selectTitle = scope.rooms.length + ' ' + configService.loctxt.room + ' ' + configService.loctxt.selected;
@@ -194,8 +201,8 @@ define(['./module'], function (directives) {
         var p = Number(scope.planPrice);
         var f = Number(scope.firmPrice);
         scope.roomData.price = f > 0 ? f : p > 0 ? p : scope.roomSelect.price;   //firmPrice then planPrice then room price
-        scope.roomData.name = scope.guestLookup === 'true' ? '' : scope.name;
-        scope.roomData.name2 = scope.guestLookup === 'true' ? '' : scope.name2;
+        scope.roomData.name = lastDeleted.guest ? lastDeleted.guest :  scope.guestLookup === 'true' ? '' : scope.name;
+        scope.roomData.name2 = lastDeleted.guest2 ? lastDeleted.guest2 :  scope.guestLookup === 'true' ? '' : scope.name2;
         scope.roomData.oneInDZ = false;
         scope.roomData.showOneCnt = scope.roomSelect.max_occupants > 1;
         scope.roomData.guest_count = scope.roomSelect.max_occupants > Number(scope.guestCount) ? Number(scope.guestCount) : scope.roomSelect.max_occupants;
@@ -225,8 +232,9 @@ define(['./module'], function (directives) {
           guest: name,
           guest2: name2,
           price: scope.roomData.price,
-          guest_count: scope.roomData.guest_count
-        }
+          guest_count: scope.roomData.guest_count,
+          isCheckedIn: lastDeleted.checkedIn
+        };
 
         scope.rooms.push(resRoom);
         scope.prooms.push({
@@ -246,6 +254,7 @@ define(['./module'], function (directives) {
         scope.roomData.oneInDZ = false;
         scope.showRooms = (!scope.oneRoomB || (scope.oneRoomB && scope.rooms.length < 1));
         scope.isCollapsed = !scope.showRooms;
+        lastDeleted = {guest: '', guest2: '', checkedIn: false}; //clear lastDeleted object
       };
 
       // function that removes a room from the reservation.rooms array. If we remove it, we must re-add it to the
@@ -255,7 +264,11 @@ define(['./module'], function (directives) {
       scope.removeRoom = function (roomnum) {
         for (var ix = 0; ix < scope.rooms.length; ix++) {
           if (scope.rooms[ix].number === roomnum) {
-            scope.rooms.splice(ix, 1);
+            lastDeleted.guest = scope.rooms[ix].guest;
+            lastDeleted.guest2 = scope.rooms[ix].guest2;
+            lastDeleted.checkedIn = scope.rooms[ix].isCheckedIn;
+            var id = scope.rooms[ix]._id;
+            scope.rooms.id(id).remove(); //Mongoose sub doc remove
             break;
           }
         }
@@ -266,7 +279,7 @@ define(['./module'], function (directives) {
             break;
           }
         }
-
+        scope.rprice = undefined;
         updateTitle();
         scope.showRooms = (scope.oneRoom === 'false' || (scope.oneRoom === 'true' && scope.rooms.length < 1));
         //scope.$apply();

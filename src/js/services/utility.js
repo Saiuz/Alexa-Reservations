@@ -117,6 +117,25 @@ define(['./module'], function (services) {
       }
       return result;
     }
+
+    // converts the text representation of a German number such as "1.000,55" to decimal "1000.55". If the
+    // asNumber parameter is true then it returns the numeric value. Otherwise it returns the text value.
+    // It has some basic logic that will accept a decimal deliniated number if the value (without the decimal)
+    // is less than 1000.
+    // For example, "3.30" will be treated as a decimal value, but "2.000"  will be converted to 2000.
+    //TODO-this logic is a bit week may want to be more careful about accepting decimal values
+    this.deNumberToDecimal = function (input, asNumber) {
+      var p = input.indexOf('.') !== -1,
+          result;
+      if (p && Number(input.replace('.', '')) < 1000) { //treat as decimal number
+        return asNumber ? Number(input) : input;
+      }
+      else {
+        result = input.replace('.', '').replace(',', '.');
+        return asNumber ? Number(result) : result;
+      }
+
+    };
   }]);
 
   services.service('utility', [function () {

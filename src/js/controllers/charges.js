@@ -53,6 +53,7 @@ define(['./module'], function (controllers) {
                 $scope.gRooms = [];
                 var rmObj = resVM.generatePlanRoomString(newval.room, newval.guest);
                 $scope.roomGuest1 = rmObj.roomGuest1;
+                $scope.insurance = resVM.res.insurance;
                 $scope.roomGuest2 = rmObj.roomGuest2;
                 $scope.gRooms = rmObj.groupRooms;
                 $scope.planText = rmObj.displayText;
@@ -77,7 +78,7 @@ define(['./module'], function (controllers) {
                         $scope.room = resVM.res.rooms[0].number;
                         $scope.guest = resVM.res.rooms[0].guest;
                         $scope.selected.reservation = {
-                          number: $scope.selectedReservation.number,
+                          number: $scope.selected.reservation.number,//number won't change
                           room: resVM.res.rooms[0].number,
                           guest: resVM.res.rooms[0].guest
                         };
@@ -104,7 +105,7 @@ define(['./module'], function (controllers) {
                     $scope.room = resVM.res.rooms[0].number;
                     $scope.guest = resVM.res.rooms[0].guest;
                     $scope.selected.reservation = {
-                      number: $scope.selectedReservation.number,
+                      number: $scope.selected.reservation.number,
                       room: resVM.res.rooms[0].number,
                       guest: resVM.res.rooms[0].guest
                     };
@@ -126,6 +127,7 @@ define(['./module'], function (controllers) {
           // guest buttons click event
           $scope.changeGuest = function(guest) {
             $scope.guest = guest;
+            $scope.insurance = guest == $scope.roomGuest2 ? $scope.rvm.res.insurance2 : $scope.rvm.res.insurance;
           };
           // room/guest buttons click event
           $scope.changeRoomGuest = function(room, guest) {

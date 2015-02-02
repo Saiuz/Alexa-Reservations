@@ -20,6 +20,8 @@ define([
   './ax-business-bill',
   './ax-standard-bill',
   './ax-bill-taxes',
+  './ax-kur-bill',
+  './ax-de-number',
   './ax-print',
   './dateFix'
 ], function () {});

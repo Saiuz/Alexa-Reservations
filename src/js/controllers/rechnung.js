@@ -14,7 +14,9 @@ define(['./module'], function (controllers) {
         'ReservationVM',
         'dashboard',
         'configService',
-        function ($scope, $state, $rootScope, $stateParams, ReservationVM, dashboard, configService) {
+        'datetime',
+        'modals',
+        function ($scope, $state, $rootScope, $stateParams, ReservationVM, dashboard, configService, datetime, modals) {
           $scope.appTitle = $rootScope.appTitle;
           $scope.appBrand = $rootScope.appBrand;
           $scope.url = $state.current.url;
@@ -52,7 +54,6 @@ define(['./module'], function (controllers) {
                 $scope.busPauschale = false;
                 $scope.resDetails = false;
                 $scope.canCheckOut = resVM.canCheckOut($scope.room);
-                //todo-determine type of resivation for bill Need to move logic to VM
                 $scope.busRes = resVM.isBusiness;
                 $scope.stdRes = resVM.isStandard;
                 $scope.kurRes = resVM.isKur;
@@ -93,13 +94,34 @@ define(['./module'], function (controllers) {
           // Checkout the reservation or the individuals part of the reservation.
           // todo- currently just sets the checkout flag.
           $scope.checkout = function () {
-            $scope.rvm.checkOut($scope.room).then(function () {
-              $scope.canCheckOut = false;
-              $rootScope.$broadcast(configService.constants.reservationChangedEvent, {data: $scope.rvm.res.reservation_number});
-            },function (err) {
-              $scope.err = err;
-              $scope.errSave = true;
-            });
+            var cdse = datetime.daysSinceEpoch(datetime.dateOnly(new Date())),
+                rdse = datetime.daysSinceEpoch(datetime.dateOnly($scope.rvm.res.end_date));
+
+            // first check that we are not checking out early. If so then ask if we want to continue.
+            if (cdse < rdse) {
+              modals.yesNoShow(configService.loctxt.wantToCheckout,function (result) {
+                if (result) {
+                  $scope.rvm.checkOut($scope.room, $scope.guest).then(function () {
+                    $scope.canCheckOut = false;
+                    $rootScope.$broadcast(configService.constants.reservationChangedEvent, {data: $scope.rvm.res.reservation_number});
+                    $scope.clearSelected();
+                  }, function (err) {
+                    $scope.err = err;
+                    $scope.errSave = true;
+                  });
+                }
+              });
+            }
+            else {
+              $scope.rvm.checkOut($scope.room, $scope.guest).then(function () {
+                $scope.canCheckOut = false;
+                $rootScope.$broadcast(configService.constants.reservationChangedEvent, {data: $scope.rvm.res.reservation_number});
+                $scope.clearSelected();
+              }, function (err) {
+                $scope.err = err;
+                $scope.errSave = true;
+              });
+            }
           };
 
           // See if we were passed a reservation link in the URL

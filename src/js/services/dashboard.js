@@ -124,7 +124,7 @@ define(['./module'], function (services) {
         var deferred = $q.defer();
 
         Reservation.find({checked_out: {$gte: after}})
-            .sort({checked_out: 1})
+            .sort({end_date: -1})
             .exec(function (err, reservations) {
               if (err) {
                 deferred.reject(err);
@@ -291,6 +291,7 @@ define(['./module'], function (services) {
                     end_dse: rendDse,
                     room: room.number,
                     guest: room.guest,
+                    guest2: room.guest2,
                     before_start: rstartDse < startDoy,
                     after_end: rendDse > endDoy,
                     nights: res.nights,

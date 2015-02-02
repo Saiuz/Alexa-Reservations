@@ -1,4 +1,5 @@
-var isWin = /^win/.test(process.platform);
+var isWin32 = /^win/.test(process.platform);
+var isWin64 = false;// /^win/.test(process.platform) && /^x64/.test(process.arch);;
 var isMac32 = /^darwin/.test(process.platform) && /^ia32/.test(process.arch);
 var isMac64 = /^darwin/.test(process.platform) && /^x64/.test(process.arch);
 var isLinux32 = /^linux/.test(process.platform);
@@ -6,8 +7,10 @@ var isLinux64 = /^linux64/.test(process.platform);
 
 var os = "unknown";
 
-if (isWin)
-    os = "win32";
+if (isWin32)
+  os = "win32";
+//if (isWin64)
+//  os = "win64";
 if (isMac32)
     os = "osx32";
 if (isMac64)
@@ -17,7 +20,7 @@ if (isLinux32)
 if (isLinux64)
     os = "linux64";
 
-var nwVer = '0.10.5';
+var nwVer = '0.10.5';  //NOTE: tried 0.11.6 but it broke the print functionality
 var appDir = "~//Alexa-Reservations";  //hard wired todo - figure out how to get this programmatically for mac
 
 var nwExec = "";
@@ -44,9 +47,10 @@ module.exports = function(grunt) {
             options: {
                 version: nwVer,
                 build_dir: './',
-                //platforms: ['osx', 'win32'],
-                osx: isMac64,
-                win32: isWin,
+                //platforms: ['osx', 'win'],
+                osx64: isMac64,
+                win32: isWin32,
+                win64: isWin64,
                 //linux32: isLinux32,
                 //linux64: isLinux64,
                 keep_nw: false,

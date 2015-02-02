@@ -10,7 +10,7 @@ define(['./module'], function (states) {
       function ($stateProvider, $urlRouterProvider, viewProvider) {
 
         $stateProvider.state('home', {
-            url:'/home',
+            url:'/home/:resNum/:resRoom/:resGuest',
             template: viewProvider.renderView('home'),
             controller: 'HomeCtrl'
 

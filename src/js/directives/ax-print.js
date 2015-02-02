@@ -24,19 +24,21 @@ define(['./module'], function (directives) {
 
         // app.less has special media print instructions
         function _printWithIframe(data) {
+
           if ($('iframe#printf').size() === 0) {
             $('body').append('<iframe id="printf" name="printf"></iframe>');  // an iFrame is added to the html content, then your div's contents are added to it and the iFrame's content is printed
-
-            var mywindow = window.frames["printf"];
+            var frames = window.frames || window.document.frames;
+            var mywindow = frames["printf"].window; //= window.frames["printf"];
             var htm = '<html><head><title></title>'  // Your styles here, I needed the margins set up like this
             + '<link rel="stylesheet" type="text/css" href="css/app.css">'
             + '</head><body><div class="print-div">'
             + data
             + '</div></body></html>';
             mywindow.document.write(htm);
-
+            //mywindow.print();
             $(mywindow.document).ready(function () {
               mywindow.print();
+              console.log("axPrint - print function executed");
               setTimeout(function () {
                     $('iframe#printf').remove();
                   },

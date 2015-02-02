@@ -19,6 +19,8 @@ define(['./module'], function (directives) {
         scope.showRoomText = false;
         scope.selected = {};
         scope.ktax = configService.constants.get("cityTax");
+        scope.textPrice = {}; //Object that will hold each item's price in text form. (Needed for handling number format
+                              //localization since the xeditable directive doesn;t handle German number format.
 
          // contains key information about the current items, use by the item filter
         scope.$watchCollection('[reservationVm, itemType, room, guest]', function (newvals) {
@@ -67,6 +69,7 @@ define(['./module'], function (directives) {
 
         scope.removeItem = function (id) {
           scope.rvm.removeExpenseItemSave(id).then(function () {
+            delete scope.textPrice['_' + id];
             scope.calculateTotals();
             buildInitialList(); //need to re-add removed item to the pick list
           }, function (err) {
@@ -76,6 +79,10 @@ define(['./module'], function (directives) {
 
         // We have edited an expense simply save reservation to lock it in.
         scope.updateExpense = function (id) {
+          var item = scope.rvm.res.expenses.id(id),
+              price = scope.textPrice['_'+ id.id];
+
+              item.price = convert.deNumberToDecimal(price, true);
            _updateRes(id);
         };
 
@@ -107,6 +114,15 @@ define(['./module'], function (directives) {
           item.credit = 0;
           _updateRes(item._id);        };
         //Private methods
+
+        var _buildTextPriceObj = function () {
+          var tpObj = {}; //build the textPrice object.
+          scope.rvm.res.expenses.forEach(function (item){
+            var fname = '_' + item._id.id;
+            tpObj[fname] = item.price.toString();
+          });
+          scope.textPrice = tpObj;
+        };
 
         var _updateRes = function (id) {
           scope.rvm.updateExpenseItemSave(id).then(function () {
@@ -162,6 +178,7 @@ define(['./module'], function (directives) {
 
         // function that builds the initial (filtered) expense item array
         var buildInitialList = function () {
+          _buildTextPriceObj();
           hasHiddenItems(); //first check for hidden items
           //scope.itemList = $filter('filter')(scope.itemTypeArray, {category: attrs.itemType, no_display: false}, true);
           scope.itemList = $filter('filter')(scope.rvm.expenseItemTypes, function (item) {

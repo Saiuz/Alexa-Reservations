@@ -230,6 +230,54 @@ define(['./module'], function (controllers) {
                 if (err)console.log(err)
               });
               Itemtype.create({
+                name: 'ZimmerKurKneipp',
+                category: 'Plan',
+                bill_code: configService.constants.bcRoom,
+                guest: '',
+                room: 0,
+                is_room: true,
+                per_room: true,
+                per_person: true,
+                no_delete: true,
+                no_display: true,
+                day_count: true,
+                one_per: false,
+                edit_name: false,
+                low_tax_rate: true,
+                display_string: '%planName%',
+                display_order: 1,
+                single_price: 51.20,
+                double_price: 46.2, //per person
+                price: 0,
+                count: 0
+              }, function (err) {
+                if (err)console.log(err)
+              });
+              Itemtype.create({
+                name: 'ZimmerKörnerKur',
+                category: 'Plan',
+                bill_code: configService.constants.bcRoom,
+                guest: '',
+                room: 0,
+                is_room: true,
+                per_room: true,
+                per_person: true,
+                no_delete: true,
+                no_display: true,
+                day_count: true,
+                one_per: false,
+                edit_name: false,
+                low_tax_rate: true,
+                display_string: '%planName%',
+                display_order: 1,
+                single_price: 53.53,
+                double_price: 46.2, //per person
+                price: 0,
+                count: 0
+              }, function (err) {
+                if (err)console.log(err)
+              });
+              Itemtype.create({
                 name: 'ZimmerKurKStd',
                 category: 'Plan',
                 bill_code: configService.constants.bcRoom,
@@ -321,9 +369,140 @@ define(['./module'], function (controllers) {
                 if (err)console.log(err)
               });
               Itemtype.create({
-                name: 'Fangopackungen',
+                name: configService.loctxt.fullPensionInc,
                 category: 'Plan',
                 bill_code: configService.constants.bcPackageItem,
+                guest: '',
+                room: 0,
+                per_room: false,
+                per_person: true,
+                no_delete: true,
+                no_display: true,
+                day_count: true,
+                one_per: true,
+                edit_name: false,
+                bus_pauschale: false,
+                display_string: '%count% %name% à %price%',
+                display_order: 2,
+                price: 29,
+                count: 1
+              }, function (err) {
+                if (err)console.log(err)
+              });
+              Itemtype.create({
+                name: 'Kneippgüsse',
+                category: 'Plan',
+                bill_code: configService.constants.bcKurPackageItem,
+                guest: '',
+                room: 0,
+                per_room: false,
+                per_person: true,
+                no_delete: true,
+                no_display: true,
+                day_count: false,
+                one_per: false,
+                edit_name: false,
+                bus_pauschale: false,
+                low_tax_rate: true,
+                display_string: '%count% %name% à %price%',
+                display_order: 2,
+                price: 3.5,
+                count: 3
+              }, function (err) {
+                if (err)console.log(err)
+              });
+              Itemtype.create({
+                name: 'Kräuterbad-Kneipp',
+                category: 'Plan',
+                bill_code: configService.constants.bcKurPackageItem,
+                guest: '',
+                room: 0,
+                per_room: false,
+                per_person: true,
+                no_delete: true,
+                no_display: true,
+                day_count: false,
+                one_per: false,
+                edit_name: false,
+                bus_pauschale: false,
+                low_tax_rate: true,
+                display_string: '%count% %name% à %price%',
+                display_order: 2,
+                price: 21,
+                count: 1
+              }, function (err) {
+                if (err)console.log(err)
+              });
+              Itemtype.create({
+                name: 'Blitzguss-Kneipp',
+                category: 'Plan',
+                bill_code: configService.constants.bcKurPackageItem,
+                guest: '',
+                room: 0,
+                per_room: false,
+                per_person: true,
+                no_delete: true,
+                no_display: true,
+                day_count: false,
+                one_per: false,
+                edit_name: false,
+                bus_pauschale: false,
+                low_tax_rate: true,
+                display_string: '%count% %name% à %price%',
+                display_order: 2,
+                price: 11,
+                count: 1
+              }, function (err) {
+                if (err)console.log(err)
+              });
+              Itemtype.create({
+                name: 'Kopfmassage-Kneipp',
+                category: 'Plan',
+                bill_code: configService.constants.bcKurPackageItem,
+                guest: '',
+                room: 0,
+                per_room: false,
+                per_person: true,
+                no_delete: true,
+                no_display: true,
+                day_count: false,
+                one_per: false,
+                edit_name: false,
+                bus_pauschale: false,
+                low_tax_rate: true,
+                display_string: '%count% %name% à %price%',
+                display_order: 2,
+                price: 16,
+                count: 1
+              }, function (err) {
+                if (err)console.log(err)
+              });
+              Itemtype.create({
+                name: 'Heublumensack-Kneipp',
+                category: 'Plan',
+                bill_code: configService.constants.bcKurPackageItem,
+                guest: '',
+                room: 0,
+                per_room: false,
+                per_person: true,
+                no_delete: true,
+                no_display: true,
+                day_count: false,
+                one_per: false,
+                edit_name: false,
+                bus_pauschale: false,
+                low_tax_rate: true,
+                display_string: '%count% %name% à %price%',
+                display_order: 2,
+                price: 15,
+                count: 1
+              }, function (err) {
+                if (err)console.log(err)
+              });
+              Itemtype.create({
+                name: 'Fangopackungen',
+                category: 'Plan',
+                bill_code: configService.constants.bcKurPackageItem,
                 guest: '',
                 room: 0,
                 per_room: false,
@@ -345,7 +524,7 @@ define(['./module'], function (controllers) {
               Itemtype.create({
                 name: 'Medizinische Sprudelbäder',
                 category: 'Plan',
-                bill_code: configService.constants.bcPackageItem,
+                bill_code: configService.constants.bcKurPackageItem,
                 guest: '',
                 room: 0,
                 per_room: false,
@@ -367,7 +546,7 @@ define(['./module'], function (controllers) {
               Itemtype.create({
                 name: 'Klassische Massage',
                 category: 'Plan',
-                bill_code: configService.constants.bcPackageItem,
+                bill_code: configService.constants.bcKurPackageItem,
                 guest: '',
                 room: 0,
                 per_room: false,
@@ -401,7 +580,7 @@ define(['./module'], function (controllers) {
                 edit_name: false,
                 display_string: '%name% à %price%',
                 display_order: 3,
-                price: 10,
+                price: 9.70,
                 count: 1
               }, function (err) {
                 if (err)console.log(err)
@@ -485,7 +664,7 @@ define(['./module'], function (controllers) {
                 display_string: '%name% à %price%',
                 display_order: 3,
                 taxable_rate: 19,
-                price: 4.80,
+                price: 5.10,
                 count: 1
               }, function (err) {
                 if (err)console.log(err)
@@ -525,7 +704,8 @@ define(['./module'], function (controllers) {
                 day_count: true,
                 one_per: true,
                 edit_name: false,
-                display_string: '%count% %name% à %price%',
+                edit_count: true,
+                display_string: '%count% Tag|Tage %name% à %price%',
                 display_order: 4,
                 price_lookup: 'halfpension',
                 price: 19.0,
@@ -546,7 +726,8 @@ define(['./module'], function (controllers) {
                 day_count: true,
                 one_per: true,
                 edit_name: false,
-                display_string: '%count% %name% à %price%',
+                edit_count: true,
+                display_string: '%count% Tag|Tage %name% à %price%',
                 display_order: 5,
                 price_lookup: 'fullpension',
                 price: 29.0,
@@ -833,6 +1014,94 @@ define(['./module'], function (controllers) {
               }, function (err) {
                 if (err)console.log(err)
               });
+              Itemtype.create({
+                name: 'X1501 Warmpackung mit Paraffin',
+                category: 'AOK & Andere',
+                bill_code: configService.constants.bcKur,
+                guest: '',
+                room: 0,
+                per_room: false,
+                per_person: false,
+                no_delete: false,
+                no_display: false,
+                day_count: false,
+                one_per: false,
+                edit_name: false,
+                edit_count: true,
+                low_tax_rate: true,
+                display_string: '%count% %name% à %price%',
+                display_order: 1,
+                price: 8.16,
+                count: 1
+              }, function (err) {
+                if (err)console.log(err)
+              });
+              Itemtype.create({
+                name: 'X0106 Klassische Massage',
+                category: 'AOK & Andere',
+                bill_code: configService.constants.bcKur,
+                guest: '',
+                room: 0,
+                per_room: false,
+                per_person: false,
+                no_delete: false,
+                no_display: false,
+                day_count: false,
+                one_per: false,
+                edit_name: false,
+                edit_count: true,
+                low_tax_rate: true,
+                display_string: '%count% %name% à %price%',
+                display_order: 1,
+                price: 10.51,
+                count: 1
+              }, function (err) {
+                if (err)console.log(err)
+              });
+              Itemtype.create({
+                name: 'Klassische Massagetherapie',
+                category: 'Privat',
+                bill_code: configService.constants.bcKur,
+                guest: '',
+                room: 0,
+                per_room: false,
+                per_person: false,
+                no_delete: false,
+                no_display: false,
+                day_count: false,
+                one_per: false,
+                edit_name: false,
+                edit_count: true,
+                low_tax_rate: true,
+                display_string: '%count% %name% à %price%',
+                display_order: 1,
+                price: 16,
+                count: 1
+              }, function (err) {
+                if (err)console.log(err)
+              });
+              Itemtype.create({
+                name: 'Großmassage 30 Minuten',
+                category: 'Privat',
+                bill_code: configService.constants.bcKur,
+                guest: '',
+                room: 0,
+                per_room: false,
+                per_person: false,
+                no_delete: false,
+                no_display: false,
+                day_count: false,
+                one_per: false,
+                edit_name: false,
+                edit_count: true,
+                low_tax_rate: true,
+                display_string: '%count% %name% à %price%',
+                display_order: 1,
+                price: 19,
+                count: 1
+              }, function (err) {
+                if (err)console.log(err)
+              });
               /*
                Itemtype.create({
                name: '',
@@ -965,9 +1234,42 @@ define(['./module'], function (controllers) {
                 required_items: ['BusZimmer']
               },function(err){if (err)console.log(err)});
               RoomPlan.create({
-                name: 'Der Kur-Klassiker Std. Zimmer',
+                name: 'Kur und Unterkunft mit Frühstück im Einzelzimmer',
                 resTypeFilter: ['Kur'],
                 is_default: true,
+                is_plan: false,
+                is_group: false,
+                one_bill: false,
+                one_room: true,
+                single_only: true,
+                double_only: false,
+                second_guest: false,
+                needs_firm: false,
+                needs_insurance: true,
+                includes_breakfast: true,
+                display_string: '%nights% Tag|Tage %name% à %roomprice%',
+                required_items: ['Zimmer']
+              },function(err){if (err)console.log(err)});
+              RoomPlan.create({
+                name: 'Kur und Unterkunft mit Frühstück im Doppelzimmer',
+                resTypeFilter: ['Kur'],
+                is_plan: false,
+                is_group: false,
+                one_bill: false,
+                one_room: true,
+                single_only: false,
+                double_only: true,
+                second_guest: true,
+                needs_firm: false,
+                needs_insurance: true,
+                includes_breakfast: true,
+                display_string: '%nights% Tag|Tage %name% à %roomprice%',
+                required_items: ['Zimmer']
+              },function(err){if (err)console.log(err)});
+              RoomPlan.create({
+                name: 'Der Kur-Klassiker Std. Zimmer',
+                resTypeFilter: ['Kur'],
+                is_default: false,
                 is_plan: true,
                 is_group: false,
                 one_bill: false,
@@ -1002,6 +1304,46 @@ define(['./module'], function (controllers) {
                 duration: 14,
                 display_string: '%duration% Tage %name% %perPerson%',
                 required_items: ['ZimmerKurKKomf', 'HalbpensionInc', 'Fangopackungen', 'Medizinische Sprudelbäder', 'Klassische Massage', 'Stadtführung']
+              },function(err){if (err)console.log(err)});
+              RoomPlan.create({
+                name: '7 Tage mit Kneipp',
+                resTypeFilter: ['Kur'],
+                is_default: false,
+                is_plan: true,
+                is_group: false,
+                one_bill: false,
+                one_room: true,
+                single_only: false,
+                double_only: false,
+                second_guest: true,
+                needs_firm: false,
+                needs_insurance: true,
+                includes_breakfast: true,
+                pp_price: 535,
+                single_surcharge: 35,
+                duration: 7,
+                display_string: '%name% %perPerson%',
+                required_items: ['ZimmerKurKneipp', 'HalbpensionInc', 'Kneippgüsse', 'Kräuterbad-Kneipp', 'Blitzguss-Kneipp', 'Kopfmassage-Kneipp', 'Heublumensack-Kneipp', 'Stadtführung']
+              },function(err){if (err)console.log(err)});
+              RoomPlan.create({
+                name: '7 Tage Körner-Kur',
+                resTypeFilter: ['Kur'],
+                is_default: false,
+                is_plan: true,
+                is_group: false,
+                one_bill: false,
+                one_room: true,
+                single_only: false,
+                double_only: false,
+                second_guest: true,
+                needs_firm: false,
+                needs_insurance: true,
+                includes_breakfast: true,
+                pp_price: 532,
+                single_surcharge: 67,
+                duration: 7,
+                display_string: '%name% %perPerson%',
+                required_items: ['ZimmerKörnerKur', 'VollpensionInc', 'Stadtführung']
               },function(err){if (err)console.log(err)});
               RoomPlan.create({
                 name: 'Geschäftsgruppe',

@@ -8,23 +8,18 @@
   .navbar-header
     .navbar-brand: a(href="")  {{appBrand}}
   ul.nav.navbar-nav
-    li(ng-class="{active: (url == '/home')}")
-      a(href="#/home") Zimmer Plan
-    li(ng-class="{active: (url == '/charges/0')}")
+    li(ng-class="{active: (url.indexOf('/home') > -1)}")
+      a(href="#/home/0/0/0") Zimmer Plan
+    li(ng-class="{active: (url.indexOf('/charges') > -1)}")
       a(href="#/charges/0/0/0") Gebühren
-    li(ng-class="{active: (url == '/rechnung/0')}")
+    li(ng-class="{active: (url.indexOf('/rechnung') > -1)}")
       a(href="#/rechnung/0/0/0") Rechnung
-    li(ng-class="{active: (url == '/reservations')}")
+    li(ng-class="{active: (url.indexOf('/reservations') > -1)}")
       a(href="#/reservations") Reservierung
-    li(ng-class="{active: (url == '/addresse')}")
+    li(ng-class="{active: (url.indexOf('/addresse') > -1)}")
       a(href="#/addresse") Addresse
-    li(ng-class="{active: (url == '/liste')}")
+    li(ng-class="{active: (url.indexOf('/liste') > -1)}")
       a(href="#/liste") Liste
-  ul.nav.navbar-nav.pull-right(ng-show="authenticated")
-    li.dropdown
-      a.dropdown-toggle(href="#", data-toggle='dropdown')
-        | V0.1
-      //  | {{user.name}}
-      //  b.caret
-      //ul.dropdown-menu
-      //  li: a(href="#") Quit
+  ul.nav.navbar-nav.pull-right
+    li
+    a(href="") V0.1

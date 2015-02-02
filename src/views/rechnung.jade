@@ -18,7 +18,8 @@ include nav_common.jade
           div(ng-show="showCharges") {{pTitle}} für: {{rvm.res.reservation_number}} - {{guest}} - {{txt.roomAbrv}} {{room}}, Abfahrt {{rvm.res.end_date | date:'dd.MM.yyyy'}}, {{rvm.res.nights}} {{txt.nights}}
           div.btn-group
             a.btn.btn-default.btn-small(ng-if="showCharges && canCheckOut" href="#/charges/{{rvm.res.reservation_number}}/{{room}}/{{guest}}")
-              i.glyphicon.glyphicon-arrow-left &nbsp;{{txt.toCharges}}
+              i.glyphicon.glyphicon-arrow-left
+              span &nbsp;{{txt.toCharges}}
             a.btn.btn-info.btn-small(href="" ng-if="showCharges && canCheckOut" ng-click="checkout()") {{txt.checkout}}
             a.btn.btn-warning.btn-small(href="" ng-if="showCharges" ax-print print-element-id="printBill") {{txt.print}}
           div.input-group-lg(ng-show="busRes && showCharges")
@@ -32,5 +33,6 @@ include nav_common.jade
             div.bill-container(ng-show="showCharges")
               ax-standard-bill(ng-if="stdRes" reservation-vm="rvm" details="resDetails")
               ax-business-bill(ng-if="busRes" reservation-vm="rvm" room="{{room}}" guest="{{guest}}" pauschale="busPauschale")
+              ax-kur-bill(ng-if="kurRes" reservation-vm="rvm" room="{{room}}" guest="{{guest}}")
 
 

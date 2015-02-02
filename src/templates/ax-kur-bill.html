@@ -9,10 +9,10 @@
                 <td><b>{{sectionTotal.page_title}}</b></td>
                 <td></td>
             </tr>
-<!--            <tr>
-                <td>Nr. {{rvm.res.reservation_number}}</td>
-                <td>&nbsp;</td>
-            </tr>-->
+            <!--            <tr>
+                            <td>Nr. {{rvm.res.reservation_number}}</td>
+                            <td>&nbsp;</td>
+                        </tr>-->
             <tr>
                 <td>Herrn/Frau/Frl. {{guest}}</td>
                 <td>&nbsp;</td>
@@ -81,6 +81,42 @@
                 </td>
             </tr>
             <tr>
+                <td class="bill-section-heading">{{section4.section_title}}</td>
+                <td>&nbsp;</td>
+            </tr>
+            <tr>
+                <td colspan="2">
+                    <table class="table-bill-detail">
+                        <tbody>
+                        <tr ng-if="isPrivate && !section4.hiddenSum">
+                            <td class="text-right">{{section4.total_text}}</td>
+                            <td>{{section4.total | currency}}</td>
+                        </tr>
+                        <tr ng-if="isPrivate && section4.hiddenSum">
+                            <td>{{txt.includedInPlan}} {{section4.hiddenSum | currency}}</td>
+                            <td></td>
+                        </tr>
+                        <tr ng-if="isPrivate && section4.hiddenSum && section4.diff">
+                            <td>{{txt.extra}} {{section4.diff | currency}}</td>
+                            <td></td>
+                        </tr>
+                        <tr ng-show="prescription">
+                            <td>{{txt.prescription_charge}}</td>
+                            <td>{{prescription | currency}}</td>
+                        </tr>
+                        <tr ng-show="copay">
+                            <td>{{txt.copay}}</td>
+                            <td>{{copay | currency}}</td>
+                        </tr>
+                        <tr>
+                            <td>&nbsp;</td>
+                            <td>&nbsp;</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </td>
+            </tr>
+            <tr>
                 <td class="bill-section-heading">{{section3.section_title}}</td>
                 <td>&nbsp;</td>
             </tr>
@@ -121,7 +157,7 @@
             </tfoot>
         </table>
     </div>
-    <div class="bill-page-2" ng-if="details && hasDetails">
+    <div class="bill-page-2" ng-if="section4.total">
         <hr class="no-print" />
         <table class="table-bill-page">
             <thead class="bill-next-page-header">
@@ -162,6 +198,14 @@
                         <tr>
                             <td class="text-right">{{section4.total_text}}</td>
                             <td><span class="bill-total">{{section4.total | currency}}</span></td>
+                        </tr>
+                        <tr ng-show="!isPrivate && copay">
+                            <td class="text-right">{{copayMsg}}</td>
+                            <td>-{{copay | currency}}</td>
+                        </tr>
+                        <tr ng-show="!isPrivate">
+                            <td class="text-right">{{prescMsg}}</td>
+                            <td>-{{prescription | currency}}</td>
                         </tr>
                         </tbody>
                     </table>

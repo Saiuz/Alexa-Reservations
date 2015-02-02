@@ -34,10 +34,6 @@
  * Note the form works with the reservationVM viewModel class to implement some specific UI business logic. The
  * reservationVM also implements some specific domain level business logic when an entity is saved.
  *
- * todo- If plan selected has a specified # of nights then change the nights to match (VM?)
- * todo - FIX: if plan selected with fixed price, price not being passed on to room lookup directive.
- * done - FIX: plan field not being updated properly in reservation.
- * todo - FIX: when new reservation created with default date period, the available rooms is not updated.
  */
 define(['./module'], function (controllers) {
   'use strict';
@@ -74,31 +70,33 @@ define(['./module'], function (controllers) {
               resNumber = parseInt(modalParams.data),// ? {'_id': modalParams.data} : {'firm_name': modalParams.data};
               extraData = modalParams.extraData,
               executeWatch = false,
-              firstLoad = false;
+              firstLoad = false,
+              start = modalParams.extraData ? modalParams.extraData.start : undefined,
+              end = modalParams.extraData ? modalParams.extraData.end : undefined;
           
           switch (mode) {
             case 'c':
               $scope.title = configService.loctxt.reservation_titleCreate;
               $scope.edit = true;
               $scope.read = false;
-              ReservationVM.newReservationVM().then(function (resVM) {
+              ReservationVM.newReservationVM(start, end).then(function (resVM) {
                 $scope.rvm = resVM;
                 // if extra data is passed to the form, we expect a specific start an end date to use
-                if (extraData) { //TODO- may need some better handling, eg date strings
-                  resVM.res.start_date = extraData.start ? datetime.dateOnly(new Date(extraData.start)) : datetime.dateOnly(new Date());
-                  resVM.res.end_date = extraData.end ? datetime.dateOnly(new Date(extraData.end)) : datetime.dateOnly(resVM.res.start_date, 1);
-                  resVM.updateAvailableRoomsAndResources().then(function () {  // update room list based on provided dates
-                    resVM.nights = resVM.res.nights;
+                if (extraData) {
+                  //resVM.res.start_date = extraData.start ? datetime.dateOnly(new Date(extraData.start)) : datetime.dateOnly(new Date());
+                  //resVM.res.end_date = extraData.end ? datetime.dateOnly(new Date(extraData.end)) : datetime.dateOnly(resVM.res.start_date, 1);
+                  //resVM.updateAvailableRoomsAndResources().then(function () {  // update room list based on provided dates
+                    //resVM.nights = resVM.res.nights;
                     $scope.title = extraData.room ? $scope.title + ' (' + configService.loctxt.selectedRoom + ' ' + extraData.room + ')' : $scope.title; //todo-can we figure out how to pre select room?
                     $scope.start_date = new Date(resVM.res.start_date);
                     $scope.end_date = new Date(resVM.res.end_date);
                     executeWatch = true;
-                  },
-                  function (err) {
-                    console.log('Available room update error ' + err);
-                    $scope.err = err; // returns an error object
-                    $scope.errLoad = true;
-                  });
+                  //},
+                  //function (err) {
+                  //  console.log('Available room update error ' + err);
+                  //  $scope.err = err; // returns an error object
+                  //  $scope.errLoad = true;
+                  //});
                 }
                 else {
                   $scope.start_date = new Date(resVM.res.start_date);
@@ -166,7 +164,7 @@ define(['./module'], function (controllers) {
           // rooms and resources. Since this logic requires a watch it is handled here not in the VM.
           var ignoreIndex = -1;
           $scope.$watchCollection('[start_date, end_date, rvm.nights, rvm.res.occupants, rvm.res.type, rvm.res.firm, rvm.res.guest.id, rvm.res.guest2.id]', function (newvars, oldvars) {
-            console.log("Watch collection fired " + executeWatch);
+            console.log(">>>Watch collection fired " + executeWatch);
             if (executeWatch) {
               var varIndex = (oldvars[7] !== newvars[7]) ? 7 :
                              (oldvars[6] !== newvars[6]) ? 6 :
@@ -176,7 +174,7 @@ define(['./module'], function (controllers) {
                              (oldvars[2] !== newvars[2]) ? 2 :
                              (oldvars[1] !== newvars[1]) ? 1 :
                              (oldvars[0] !== newvars[0]) ? 0 : -1;
-              console.log("watch index: " + varIndex);
+              console.log("***watch index: " + varIndex + ' ignore: ' + ignoreIndex);
               if (varIndex === -1 || varIndex === ignoreIndex) {
                 ignoreIndex = -1;
                 return;

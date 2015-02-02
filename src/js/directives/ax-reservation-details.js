@@ -55,7 +55,7 @@ define(['./module'], function (directives) {
             rm = findRoom(newval.room);
             scope.canCheckIn = resVM.canCheckIn(scope.room);
             scope.canCheckOut = resVM.canCheckOut(scope.room);
-            title = resVM.res.firm + ' (' + rm.guest + (rm.guest2 ? '/' + rm.guest2 : '') + ')';
+            title = (resVM.res.firm ? resVM.res.firm : configService.loctxt.cure) + ' (' + rm.guest + (rm.guest2 ? ' / ' + rm.guest2 : '') + ')';
             scope.title = resVM.oneBill ? resVM.res.title : title
           }, function (err) {
             console.log('Read Error: ' + err);
@@ -85,7 +85,9 @@ define(['./module'], function (directives) {
       // Edit button click. Bring up modal form in edit mode;
       scope.edit = function () {
         var dataObj = {data: scope.reservation.number, extraData: undefined},
-            model = modals.getModelEnum().reservation;
+            model = modals.getModelEnum().reservation,
+            curGuest = scope.guest,
+            curRoom = scope.room;
 
         if (datetime.isDate(scope.rvm.res.checked_out)) {
           modals.yesNoShow(configService.loctxt.wantToEdit,function (result) {
@@ -98,9 +100,16 @@ define(['./module'], function (directives) {
                     scope.room = resVM.res.rooms[0].number;
                     scope.guest = resVM.res.rooms[0].guest;
                   }
-                  else {  // Todo- need logic to determine if room or guest name has changed.
-                    scope.room = 0; // currently we disable the link until we can work out the logic.
-                    scope.guest = '';
+                  else if (resVM.oneRoom && !resVM.oneBill) {
+                    scope.room = resVM.res.rooms[0].number;
+                    if (resVM.res.rooms[0].guest !== curGuest && resVM.res.rooms[0].guest2 !== curGuest ) {
+                      scope.guest = resVM.res.rooms[0].guest; //default to first guest
+                    }
+                  }
+                  else {  //if room hasn't changed and guest name hasn't changed then we are still good, else disable link
+                    scope.room = resVM.getRoomInReservation(curRoom) ? curRoom : 0;
+                    scope.guest = (resVM.res.rooms[0].guest !== curGuest && resVM.res.rooms[0].guest2 !== curGuest ) ?
+                                  curGuest : '';
                   }
                 }, function (err) {
                   console.log('Read Error: ' + err);
@@ -120,6 +129,12 @@ define(['./module'], function (directives) {
                 scope.room = resVM.res.rooms[0].number;
                 scope.guest = resVM.res.rooms[0].guest;
               }
+              else if (resVM.oneRoom && !resVM.oneBill) {
+                scope.room = resVM.res.rooms[0].number;
+                if (resVM.res.rooms[0].guest !== curGuest && resVM.res.rooms[0].guest2 !== curGuest ) {
+                  scope.guest = resVM.res.rooms[0].guest; //default to first guest
+                }
+              }
               else {  // Todo- need logic to determine if room or guest name has changed.
                 scope.room = 0; // currently we disable the link until we can work out the logic.
                 scope.guest = '';
@@ -135,7 +150,7 @@ define(['./module'], function (directives) {
 
       // Clear the selected reservation
       scope.clearSelected = function () {
-        scope.reservation = {number: 0, room: 0, guest: ''};
+        scope.reservation = undefined;
       };
 
     }; // end linker

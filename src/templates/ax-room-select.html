@@ -12,7 +12,7 @@
 <div ng-show="!displayOnly">
     <div class="panel panel-default panel-tight">
         <div class="panel-heading">
-            <span ng-click="isCollapsed = !isCollapsed">{{selectTitle}} <i>{{guestCountStr}}</i> <i class="glyphicon"
+            <span ng-click="isCollapsed = !isCollapsed">{{selectTitle}} <i>{{guestCountStr}}</i> <i>{{rprice | currency}}</i> <i class="glyphicon"
                                                                            ng-class="{'glyphicon-chevron-down': !isCollapsed, 'glyphicon-chevron-right': isCollapsed}"></i></span>
         </div>
         <div class="panel-body" collapse="isCollapsed">
@@ -54,7 +54,7 @@
                 </tr>
                 <tr ng-show="roomSelect.number">
                     <td>
-                        <input class="col-xs-4" type="number" ng-model="roomData.price"/>&nbsp;
+                        <input class="col-xs-4" type="text" ng-model="roomData.price" ax-de-number/>&nbsp;
                         <button ng-click="addRoom()">{{txt.add}}</button>
                     </td>
                 </tr>
