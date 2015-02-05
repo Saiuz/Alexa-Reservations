@@ -349,16 +349,16 @@ define(['./module'], function (model) {
       //                 reservation. Can be used by the UI.
       //    displayText - a formatted string containing the plan description with unit price.
       //
-      this.generatePlanRoomString = function (room, guest) {
-        var rmExp = that.getRoomExpenseInReservation(room, guest),
+      this.generatePlanRoomString = function (roomNum, guest) {
+        var rmExp = that.getRoomExpenseInReservation(roomNum, guest),
             plan = that.getPlanInReservation(),
             extras = {},
-            rmObj = that.getRoomInReservation(room),
+            rmObj = that.getRoomInReservation(roomNum),
             result = {roomGuest1: undefined, roomGuest2: undefined, groupRooms: [], displayText: '****'},
             instructions = {price: 'c', roomprice: 'c'};
 
         if (rmExp) {
-          rmObj = that.getRoomInReservation(room);
+          rmObj = that.getRoomInReservation(roomNum);
           result.roomGuest1 = rmObj.guest;
           result.roomGuest2 = rmObj.guest2;
           if (that.isGroup && !that.oneBill) { //group business reservation
@@ -753,6 +753,7 @@ define(['./module'], function (model) {
             hiddenKur = [], // for holding hidden Cure items
             roomItem = undefined, //for holding room item
             hiddenTotal = 0,
+            ignoreRmGuest = !room && !guest,
             exclude = false;
 
         // Expense detail object, for a bill
@@ -769,7 +770,7 @@ define(['./module'], function (model) {
 
         // process each expense item and create detail items for display as well as calculating totals and taxes
         angular.forEach(that.res.expenses, function (item) {
-          var includeIt = (that.oneBill || (item.guest === guest && item.room === Number(room))),
+          var includeIt = ((that.oneBill && !that.isGroup)  || ignoreRmGuest || (item.guest === guest && item.room === Number(room))),
               inCategory = ( !incItems || incItems.length === 0 ||  incItems.indexOf(item.bill_code) !== -1);
 
           if (inCategory && includeIt) {

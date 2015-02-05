@@ -9,6 +9,6 @@ of the plan?
 3. For business reservations, do you include kurtaxe in negotiated price or is it listed as a separate item as with other
 reservations?
 4. For a travel group, how do you write the bill. Do you charge the company later? Does the tour leader pay?, Do you check
-the individual guests in and out, and collect any drinks etc from them as individual bills?
+the individual guests in and out, and collect any drinks etc from them as individual bills? What about kurtaxe.
 
 

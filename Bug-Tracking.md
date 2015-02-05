@@ -31,5 +31,5 @@ routine to also update the guest list with the new name.
 15 **FIXED BUG** changes in room aggregation logic are preventing the extra day expense from showing up. May want to try changing is_room flag on expense. Make bill code bcPlan
 16 **FIXED BUG** creating reservation with just one click on a room plan day cell adds a reservation with one night. If you then change the type to a fixed duration plan and save,
 the nights revert back to 1!!. However, if you select more then one cell (e.g. two nights) it works correctly.
-17 **BUG** when room is changed to an existing reservation, the checkin status is not being updated.
+17 **FIXED BUG** when room is changed to an existing reservation, the checkin status is not being updated.
 18 **FIXED BUB** when a room is edited from the details directive, the To Charges/Rechnung link breaks for reservations that have separate bills in one room.

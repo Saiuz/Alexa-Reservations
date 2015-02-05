@@ -1,0 +1,166 @@
+<div id="printBill">
+    <div class="bill-page-1">
+        <table class="table-bill-page">
+            <thead>
+            <tr>
+                <td>{{rvm.res.firm}}</td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>{{rvm.res.address1}} {{rvm.res.address2}}</td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>{{rvm.res.post_code}} {{rvm.res.city}}</td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>{{rvm.res.country}}</td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>&nbsp;</td>
+                <td>&nbsp;</td>
+            </tr>
+            <tr>
+                <td colspan="2">Bad Mergentheim, {{today | date:'dd. MMMM yyyy'}}</td>
+            </tr>
+            <tr>
+                <td><b>{{section1.page_title}}</b></td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>Nr. {{rvm.res.reservation_number}}</td>
+                <td>&nbsp;</td>
+            </tr>
+            <tr>
+                <td>Kontakt: Herrn/Frau/Frl. {{rvm.res.guest}}</td>
+                <td>&nbsp;</td>
+            </tr>
+            <tr>
+                <td>Aufenthalt vom {{rvm.res.start_date | date:'dd. MMMM yyyy'}} bis {{rvm.res.end_date | date:'dd. MMMM yyyy'}}
+                </td>
+                <td>&nbsp;</td>
+            </tr>
+            </thead>
+            <tbody>
+            <tr>
+                <td  class="bill-section-heading">{{section1.section_title}}</td>
+                <td>&nbsp;</td>
+            </tr>
+            <tr>
+                <td colspan="2">
+                    <table class="table-bill-detail">
+                        <tbody>
+                        <tr ng-repeat="item in section1.items">
+                            <td>{{item.text}}</td>
+                            <td>{{item.total | currency : fmtC(item.total)}}</td>
+                        </tr>
+                        <tr ng-repeat="p in section1.padding">
+                            <td>&nbsp;</td>
+                            <td>&nbsp;</td>
+                        </tr>
+                        <tr>
+                            <td  class="text-right">{{section1.total_text}}</td>
+                            <td><span class="bill-total">{{section1.total | currency}}</span></td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </td>
+            </tr>
+            <tr>
+                <td>&nbsp;</td>
+                <td>&nbsp;</td>
+            </tr>
+            <tr>
+                <td colspan="2">
+                    <ax-bill-taxes taxes="section1.taxes" />
+                </td>
+            </tr>
+            </tbody>
+            <tfoot>
+            <tr>
+                <td colspan="2">Betrag danken erhalten:</td>
+            </tr>
+            </tfoot>
+        </table>
+    </div>
+    <div class="bill-page-2" ng-repeat="bill in roomBills">
+        <hr class="no-print" />
+        <table class="table-bill-page">
+            <thead>
+            <tr>
+                <td>{{rvm.res.firm}}</td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>{{rvm.res.address1}} {{rvm.res.address2}}</td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>{{rvm.res.post_code}} {{rvm.res.city}}</td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>{{rvm.res.country}}</td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>&nbsp;</td>
+                <td>&nbsp;</td>
+            </tr>
+            <tr>
+                <td colspan="2">Bad Mergentheim, {{today | date:'dd. MMMM yyyy'}}</td>
+            </tr>
+            <tr>
+                <td><b>{{bill.page_title}}</b></td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>Herrn/Frau/Frl. {{bill.guest}}</td>
+                <td>&nbsp;</td>
+            </tr>
+            <tr>
+                <td>Aufenthalt vom {{rvm.res.start_date | date:'dd. MMMM yyyy'}} bis {{rvm.res.end_date | date:'dd. MMMM yyyy'}}
+                </td>
+                <td>&nbsp;</td>
+            </tr>
+            </thead>
+            <tbody>
+            <tr>
+                <td class="bill-section-heading">{{bill.section_title}}</td>
+                <td>&nbsp;</td>
+            </tr>
+            <tr>
+                <td colspan="2">
+                    <table class="table-bill-detail">
+                        <tbody>
+                        <tr ng-repeat="item in bill.items">
+                            <td>{{item.text}}</td>
+                            <td>{{item.total | currency : fmtC(item.total)}}</td>
+                        </tr>
+                        <tr ng-repeat="p in bill.padding">
+                            <td>&nbsp;</td>
+                            <td>&nbsp;</td>
+                        </tr>
+                        <tr>
+                            <td  class="text-right">{{bill.total_text}}</td>
+                            <td><span class="bill-total">{{bill.total | currency}}</span></td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </td>
+            </tr>
+            <tr>
+                <td>&nbsp;</td>
+                <td>&nbsp;</td>
+            </tr>
+            <tr>
+                <td colspan="2">
+                    <ax-bill-taxes taxes="bill.taxes" />
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</div>

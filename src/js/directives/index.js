@@ -21,6 +21,7 @@ define([
   './ax-standard-bill',
   './ax-bill-taxes',
   './ax-kur-bill',
+  './ax-tour-bill',
   './ax-de-number',
   './ax-print',
   './dateFix'
