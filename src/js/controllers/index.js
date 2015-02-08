@@ -17,5 +17,7 @@ define([
     './firmFormModal',
     './reservationFormModal',
     './eventFormModal',
-    './yesNoFormModal'
+    './yesNoFormModal',
+    './export',
+    './import'
 ], function () {});

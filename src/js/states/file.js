@@ -1,6 +1,5 @@
 /**
- * Defines the main routes in the application.
- * The routes you see here will be anchors '#/' unless specifically configured otherwise.
+ * Defines the routes for the import and export pages. These are accessed by the menu.
  */
 
 define(['./module'], function (states) {
@@ -10,55 +9,46 @@ define(['./module'], function (states) {
 
     return states.config(['$stateProvider', '$urlRouterProvider', 'viewProvider', function ($stateProvider, $urlRouterProvider, viewProvider) {
 
-        $stateProvider.state('file_new', {
-            url: '/file/new',
-            // More details at : https://github.com/angular-ui/ui-router/wiki/Frequently-Asked-Questions#how-to-open-a-dialogmodal-at-a-certain-state
-            onEnter: function($stateParams, $state, $modal) {
-                $modal.open({
-                    template: viewProvider.renderView('file_new'),
-                    controller: 'FileNewCtrl'
-                }).result.then(function(result) {
-                    if (result) {
-                        console.log("File new dialog results is ", result);
-                        return $state.go("home");
-                    }
-                    else {
-                        return $state.go("home");
-                    }
-                });
-            }
+        $stateProvider.state('export_tax', {
+            url: '/export/tax',
+            template: viewProvider.renderView('export'),
+            controller: 'ExportCtrl'
         });
 
-        $stateProvider.state('file_open', {
-            url: '/file/open',
-            controller: 'FileOpenCtrl',
-            onEnter: function($stateParams, $state, nwService) {
-                nwService.openFileDialog({
-                    accept: '.js,.xml'
-                }).then(function(result) {
-                    if(result) {
-                        console.log("Resulting file is", result);
-                        $state.go('file_view', {path: result});
-                    }
-                    else
-                        $state.go('home');
-                }, function(err){
-                    console.log("An error occured", err);
-                    $state.go('home');
-                });
-            }
+        $stateProvider.state('export_guest', {
+            url: '/export/guest',
+            template: viewProvider.renderView('export'),
+            controller: 'ExportCtrl'
         });
 
-        $stateProvider.state('file_view', {
-            url:'/file/view/{path}',
-            controller: 'FileViewCtrl',
-            template: viewProvider.renderView('file_view'),
-            resolve: {
-                file: function($stateParams) {
-                    console.log("Resolving file", $stateParams.path);
-                    return fs.statSync($stateParams.path);
-                }
-            }
+        $stateProvider.state('export_firm', {
+            url: '/export/firm',
+            template: viewProvider.renderView('export'),
+            controller: 'ExportCtrl'
+        });
+
+        $stateProvider.state('export_all', {
+            url: '/export/all',
+            template: viewProvider.renderView('export'),
+            controller: 'ExportCtrl'
+        });
+
+        $stateProvider.state('import_guest', {
+            url: '/import/guest',
+            template: viewProvider.renderView('export'),
+            controller: 'ImportCtrl'
+        });
+
+        $stateProvider.state('import_firm', {
+            url: '/import/firm',
+            template: viewProvider.renderView('export'),
+            controller: 'ImportCtrl'
+        });
+
+        $stateProvider.state('import_all', {
+            url: '/import/all',
+            template: viewProvider.renderView('export'),
+            controller: 'ImportCtrl'
         });
 
     }]);

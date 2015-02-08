@@ -2032,13 +2032,37 @@ define(['./module'], function (controllers) {
 */
 
 
-          // Other stuff for menu Currently not used
-          $scope.$on('new-file', function (e, menu, item) {
-            $state.go('file_new');
+          // Listen for specific menu events and respond by navigating to a particular state.
+          $scope.$on('export-tax', function (e, menu, item) {
+            $state.go('export_tax');
           });
 
-          $scope.$on('open-file', function (e, menu, item) {
-            $state.go('file_open');
+          $scope.$on('export-guest', function (e, menu, item) {
+            $state.go('export_guest');
+          });
+
+          $scope.$on('export-firm', function (e, menu, item) {
+            $state.go('export_firm');
+          });
+
+          $scope.$on('export-all', function (e, menu, item) {
+            $state.go('export_all');
+          });
+
+          $scope.$on('import-guest', function (e, menu, item) {
+            $state.go('import_guest');
+          });
+
+          $scope.$on('import-firm', function (e, menu, item) {
+            $state.go('import_firm');
+          });
+
+          $scope.$on('import-all', function (e, menu, item) {
+            $state.go('import_all');
+          });
+
+          $scope.$on('close-app', function (e, menu, item) {
+            $state.go('close_app');
           });
 
           // Completed all start activity, broadcast the fact that we are ready

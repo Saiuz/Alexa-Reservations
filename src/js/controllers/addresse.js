@@ -17,7 +17,8 @@ define(['./module'], function (controllers) {
         '$modal',
         '$document',
         'modals',
-        function ($scope, $state, $rootScope, dashboard, datetime, Reservation, ExpenseItem, $modal, $document, modals) {
+        'nwService',
+        function ($scope, $state, $rootScope, dashboard, datetime, Reservation, ExpenseItem, $modal, $document, modals, nwService) {
           console.log("Addresse  controller fired")
           $scope.appTitle = $rootScope.appTitle;
           $scope.appBrand = $rootScope.appBrand;
@@ -118,6 +119,44 @@ define(['./module'], function (controllers) {
               $scope.roomTitle =  $scope.rooms.length ? $scope.rooms.length + ' rooms selected' : "Select room"
             }
           })
+
+          $scope.testFD = function() {
+            /*nwService.openFileDialog({
+              accept: '.js,.xml',
+              workingDir: "/Users/Bob/Desktop"
+            }).then(function(result) {
+              if(result) {
+                console.log("Resulting file is", result);
+                //$state.go('file_view', {path: result});
+              }
+              else
+              {
+                console.log("Dialog Canceled");
+              }
+                //$state.go('home');
+            }, function(err){
+              console.log("An error occured", err);
+              //$state.go('home');
+            });*/
+
+            nwService.saveAsFileDialog({
+              default: 'addresse.csv',
+              workingDir: "/Users/Bob/Desktop"
+            }).then(function(result) {
+              if(result) {
+                console.log("Resulting file is", result);
+                //$state.go('file_view', {path: result});
+              }
+              else
+              {
+                console.log("Dialog Canceled");
+              }
+              //$state.go('home');
+            }, function(err){
+              console.log("An error occured", err);
+              //$state.go('home');
+            });
+          };
 
           $scope.isCollapsed1 = true;
 
