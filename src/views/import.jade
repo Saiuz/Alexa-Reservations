@@ -1,9 +1,21 @@
 include nav_common.jade
 .container
-   .row
-      .col-md-12
-         div
-            h2 Hi There
-            div We came for {{mode}}  {{url}}
+  .row
+    .col-md-12
+      div
+        h2 {{txt.dataImport}}
+        div(ng-if="mode === 'all'")
+          p {{txt.dbImport}}
+      div
+        div(ng-show="working")
+          progressbar.progress-striped.active(value="100")
+        .alert.alert-success(ng-show="complete")
+          h3 {{success}}
+        .alert.alert-danger(ng-show="showErr")
+          h3 Error!
+          span {{errMsg}}
+        div(ng-show="showHome")
+          a.btn.btn-warning.btn-small(href=""  ng-click="home()") {{txt.close}}
+
 
 

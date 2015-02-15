@@ -208,6 +208,7 @@ define(['./module'], function (services) {
             });
         return deferred.promise;
       },
+      // retrieves firms based on a a full firm name.
       getFirmByName: function (name) {
         var deferred = $q.defer();
         Firm.findOne({'firm_name': name})
@@ -222,19 +223,40 @@ define(['./module'], function (services) {
             });
         return deferred.promise;
       },
+      // retrieves guest names based on a partial name. If firm is provided, then the firm name must match. There
+      // are two special search character sequences '^' and '^^' that can start the string. A single caret means
+      // search the first name, a double caret means search the last name.
       guestNameLookup: function (val, firm) {
-        var deferred = $q.defer();
-        var qry = firm ? {firm: firm, $or: [
-          {salutation: { $regex: val, $options: 'i'}},
-          {last_name: { $regex: val, $options: 'i' }},
-          {first_name: { $regex: val, $options: 'i' }}
-        ]} :
-        {$or: [
-          {salutation: { $regex: val, $options: 'i'}},
-          {last_name: { $regex: val, $options: 'i' }},
-          {first_name: { $regex: val, $options: 'i' }}
-        ]};
+        var deferred = $q.defer(),
+            clean = /[\\.\#\^\$\|\?\+\(\)\[\{\}\]*]/g, //contains all regex special characters
+            specialSearch = (val.match(/^\^+/) || []).length ? val.match(/^\^+/)[0].length : 0,//look for special search chars at start of string
+            qry = {},
+            sort = {};
+
+        val = val.replace(clean, ''); //remove any regex specific characters from input string, otherwise unpredictable results
+
+        switch (specialSearch) { //build the query
+          case 0:  // default match val anywhere in the unique_name field
+            sort = {unique_name: 1};
+            qry = firm ? {firm: firm, unique_name: { $regex: val, $options: 'i'}} : {unique_name: { $regex: val, $options: 'i' }};
+            break;
+
+          case 1:  // first_name field starts with val
+            sort = {first_name: 1};
+            val = '^' + val;
+            qry = firm ? {firm: firm, first_name: { $regex: val, $options: 'i'}} : {first_name: { $regex: val, $options: 'i' }};
+            break;
+
+          case 2: // last_name field starts with val
+            sort = {last_name: 1};
+            val = '^' + val;
+            qry = firm ? {firm: firm, last_name: { $regex: val, $options: 'i'}} : {last_name: { $regex: val, $options: 'i' }};
+            break;
+        }
+
         Guest.find(qry)
+            .sort(sort)
+            .select('_id name unique_name')
             .exec(function (err, guests) {
               if (err) {
                 deferred.reject(err);
@@ -246,9 +268,22 @@ define(['./module'], function (services) {
             });
         return deferred.promise;
       },
+      //retrieves firms based on a partial name string. The partial string can occur anywhere in the firm name. If
+      // the string is preceded with a caret '^' then the partial string will be located at the start of the firm name.
       firmNameLookup: function (val) {
-        var deferred = $q.defer();
+        var deferred = $q.defer(),
+            clean = /[\\.\#\^\$\|\?\+\(\)\[\{\}\]*]/g,  //contains all regex special characters
+            special = (val.match(/^\^+/) || []).length;
+
+
+        val = val.replace(clean, ''); //remove any regex specific characters from input string, otherwise unpredictable results
+
+        if (special){  // firm name starts with val
+          val = '^' + val;
+        }
+
         Firm.find({firm_name: { $regex: val, $options: 'i' }})
+            .sort({firm_name: 1})
             .exec(function (err, firms) {
               if (err) {
                 deferred.reject(err);

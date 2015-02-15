@@ -55,6 +55,7 @@ define(['./module'], function (controllers) {
           $scope.txt = configService.loctxt;
           $scope.deleteMode = false;
           $scope.confirmed = false;
+          $scope.roomPrice = undefined; //Since we must manipulate the number (convert from de to en numbers), we can't connect to the DB model directly
 
           // Determine CRUD mode of form.
           // For all but 'C' the query can be by id or by the firm_name property which is also unique.
@@ -82,6 +83,7 @@ define(['./module'], function (controllers) {
                 else {
                   if (firm) {
                     $scope.firm = firm;
+                    $scope.roomPrice = firm.room_price;
                     $scope.edit = false;
                     $scope.read = true;
                     $scope.cancelTxt = configService.loctxt.close;
@@ -105,6 +107,7 @@ define(['./module'], function (controllers) {
                   if (firm) {
                     lastFirm = firm.firm_name;
                     $scope.firm = firm;
+                    $scope.roomPrice = firm.room_price;
                     $scope.edit = true;
                     $scope.read = false;
                     $scope.saveTxt = configService.loctxt.update;
@@ -142,6 +145,13 @@ define(['./module'], function (controllers) {
               });
               break;
           }
+
+          // listen to changes in price
+          $scope.$watch('roomPrice', function(newval) {
+             if (newval) {
+               $scope.firm.room_price = Number(newval);
+             }
+          });
 
           // auto close after successful action methods
           var timer = null; // used for timer to auto close modal after a delay when a C, U or D operation occurs

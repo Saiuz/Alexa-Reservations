@@ -102,8 +102,7 @@ define(['./module'], function (services) {
       var bodyRef = angular.element( $document[0].body),
           modeParams = {message: message, yes: yesText, no: noText, level: level},
           mModel = this.getModelEnum().yesNo,
-          modalInstance,
-          result;
+          modalInstance;
 
       bodyRef.addClass('ovh'); //This is supposed to take care of a scrolling bug in modal, doesn't seem to work.
       modalInstance = $modal.open({

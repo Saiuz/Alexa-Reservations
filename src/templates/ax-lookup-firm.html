@@ -1,6 +1,6 @@
 <span class="input-group" ng-class="{'has-error': notFound}">
   <input class="form-control" type="text" ng-model="axfirm" typeahead="n.name for n in getFirms($viewValue)"
-         typeahead-on-select="firmChanged($item, $model, $label)"/>
+         typeahead-on-select="firmChanged($item, $model, $label)"  typeahead-wait-ms="300" typeahead-min-length="2" />
   <span class="input-group-btn">
       <button class="btn btn-default" type="button" ng-click="newFirm()" ng-show="!canClear">
           <i class="glyphicon glyphicon-open"></i>

@@ -3,7 +3,17 @@ include nav_common.jade
    .row
       .col-md-12
          div
-            h2 Hi There
-            div We came for {{mode}}  {{url}}
-
-
+            h2 {{txt.dataExport}}
+            div(ng-if="mode === 'all'")
+              p {{txt.dbExport}}
+         div
+div(ng-show="working")
+  progressbar.progress-striped.active(value="100")
+.alert.alert-success(ng-show="complete")
+  h3 {{txt.importEnded}}
+.alert.alert-danger(ng-show="showErr")
+  h3 Error!
+  span {{errMsg}}
+  br
+  div
+    a.btn.btn-warning.btn-small(href=""  ng-click="home()") {{txt.close}}

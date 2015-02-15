@@ -28,7 +28,9 @@
     "moment": "~2.4.0",
     "shortid": "~2.0.0",
     "tungus": "~0.0.2",
-    "mongoose": "~3.8.7"
+    "mongoose": "~3.8.7",
+    "csv": "~0.4.1",
+    "archiver": "~0.14.2"
   },
   "scripts":{
     "postinstall" : "node ../etc/scripts/postinstall.js"

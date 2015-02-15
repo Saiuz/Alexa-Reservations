@@ -13,4 +13,6 @@ define([
   './node-webkit',
   './datetime',
   './utility',
+  './file-dialogs',
+  './import-export',
   './modals'], function () {});

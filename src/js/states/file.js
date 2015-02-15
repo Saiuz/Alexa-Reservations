@@ -35,19 +35,19 @@ define(['./module'], function (states) {
 
         $stateProvider.state('import_guest', {
             url: '/import/guest',
-            template: viewProvider.renderView('export'),
+            template: viewProvider.renderView('import'),
             controller: 'ImportCtrl'
         });
 
         $stateProvider.state('import_firm', {
             url: '/import/firm',
-            template: viewProvider.renderView('export'),
+            template: viewProvider.renderView('import'),
             controller: 'ImportCtrl'
         });
 
         $stateProvider.state('import_all', {
             url: '/import/all',
-            template: viewProvider.renderView('export'),
+            template: viewProvider.renderView('import'),
             controller: 'ImportCtrl'
         });
 

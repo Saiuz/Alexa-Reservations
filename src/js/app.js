@@ -32,7 +32,7 @@ define("app", [
     'ui.router',
     'ngLocale',
     'xeditable'
-  ]).run(function ($state, nwService, $rootScope, editableOptions) {
+  ]).run(function ($state, nwService, appConstants, $rootScope, editableOptions) {
 
     // Create the menubar
     $rootScope.menubar = nwService.createMenu({
@@ -103,8 +103,8 @@ define("app", [
       }
     });
 
-    $rootScope.appTitle = "Hotel Alexa Reservierungssystem";   //may need language switching
-    $rootScope.appBrand = "Alexa Reservierung";
+    $rootScope.appTitle = appConstants.appTitle;   //may need language switching
+    $rootScope.appBrand = appConstants.appName;
     editableOptions.theme = 'bs3'; //for the radioButtonGroup directive (third party)
     $state.go('home');
   });

@@ -1,25 +1,49 @@
+/*
+ *  Simple service that returns the Mongoose database object with an open connection and provide disconnect and
+ *  reconnect methods.
+ */
 define(['./module'], function (services) {
   'use strict';
 
-  services.factory('db', [function() {
+  services.factory('db', ['appConstants', function (appConstants) {
 
     var tungus = require('tungus');
     var mongoose = require('mongoose');
+    var fs = require('fs');
+    var path = require('path');
 
-    var dbpath = process.env.PWD;
+    var files, newfile, oldfile;
 
-    if (!dbpath) {
-      dbpath = process.env.APPDATA + "/Alexa-Reservations"    //RHV changed from process.env.PWD which was not defined for windows
-    }
-
-    console.log("Creating/opening database in folder", dbpath);
+    console.log("Creating/opening database in folder", appConstants.dbPath);
+    // First check to see if we have peformed an import of all data files since the last time we ran.
+    // These files will have a _1 suffix on the file name.
+    var files = fs.readdirSync(appConstants.dbPath);
+    files.forEach(function (f) {
+      if (/_1$/.test(f)) {
+        newfile = path.join(appConstants.dbPath, f);
+        oldfile = path.join(appConstants.dbPath, f.replace('_1', ''));
+        fs.unlinkSync(oldfile);
+        fs.renameSync(newfile, oldfile);
+      }
+    });
 
     // Establish the database connection
-    mongoose.connect('tingodb://'+ dbpath +'/data', function (err) {
+    mongoose.connect(appConstants.dbConnStr, function (err) {
       // if we failed to connect, abort
       if (err) throw err;
     });
 
-    return mongoose;
+    return {
+      dbDisconnect: function (callback) {
+        mongoose.disconnect(callback);
+      },
+      dbReconnect: function () {
+        mongoose.connect(appConstants.dbConnStr, function (err) {
+          // if we failed to connect, abort
+          if (err) throw err;
+        })
+      },
+      db: mongoose
+    }
   }]);
 });

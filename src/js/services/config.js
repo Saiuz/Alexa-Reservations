@@ -5,8 +5,51 @@
 define(['./module'], function (services) {
   'use strict';
 
+  // returns object with aplication specific constants
+  services.service('appConstants', [function () {
+    var appName = 'Alexa Reservations',
+        appTitle = 'Hotel Alexa Reservierungssystem',
+        tmpPath, dbPath, dbConnStr, defExportPath, zipCmdfn, execPath;
+
+    // Determine the database path and the default export path based on the operating system (mac or windows).
+    if (/^win/.test(process.platform)) {
+      tmpPath = process.env.TEMP;
+      dbPath = process.env.APPDATA + '\\' + appName.replace(' ', '-') + '\\data';
+      dbConnStr = 'tingodb://'+ dbPath;
+      defExportPath = process.env.HOMEDRIVE + process.env.HOMEPATH + '\\Desktop';
+      execPath = process.execPath.replace('nw.exe','');
+      zipCmdfn = function (fpath) {
+        //execute 7-Zip command line version (in same folder as the nw.exe file. The zip options are as follows:
+        // e to expand archive, -aou to quietly add a copy of the expanded file if the old file exists. The
+        // copy has a _1 suffix. -o specifies the output path.
+        return execPath + '7za e ' + fpath + ' -aou -o' + dbPath;
+      }
+    }
+    else { //assume mac
+      tmpPath = process.env.TMPDIR;
+      dbPath = process.env.HOME + '/Library/Application Support/' + appName.replace(' ', '-') + '\\data';
+      defExportPath = process.env.HOME + '/Desktop';
+      execPath = process.env.PWD;
+      zipCmdfn = ''; //currently don't have an unzip option for the mac
+    }
+
+    return {
+      appName: appName,
+      appTitle: appTitle,
+      tmpPath: tmpPath,
+      dbPath: dbPath,
+      execPath: execPath,
+      dbConnStr: dbConnStr,
+      defExportPath: defExportPath,
+      zipCommand: zipCmdfn
+    };
+  }]);
+
   services.service('configService', ['$q', 'AppConstants', function ($q, AppConstants) {
     var _this = this;
+
+
+    // methods for accessing local storage
     this.get = function (key, defVal) {
       var _this = this;
       var val = localStorage.getItem(key);
@@ -100,9 +143,13 @@ define(['./module'], function (services) {
       'cureAndTreatment': 'Kur-und Heilmittel',
       'currentReservations': 'Aktuelle Reservierungen',
       'cure': 'Kur',
+      'dataExport': 'Daten exportieren',
+      'dataImport': 'Daten importieren',
       'day': 'Tag',
       'days': 'Tage',
       'daysTimes': 'Tage / Mal',
+      'dbImport': 'Import der kompletten Datenbank',
+      'dbExport': 'Export der kompletten Datenbank',
       'delete': 'Löschen',
       'DietAndAccommodation': 'Diätkost und Unterkunft',
       'double': 'Doppel',
@@ -111,6 +158,7 @@ define(['./module'], function (services) {
       'expenseItemErr1': 'Expense Artikel, Zimmer oder Gastnamen nicht vorgesehen.',
       'expenseItemErr2': 'Expense Artikel nicht gefunden',
       'exporting': 'Exportieren',
+      'exportEnded': 'Export erfolgreich beendet',
       'extra_days_item': 'Extra Tage',
       'error': 'Fehler',
       'errorBold': 'FEHLER!',
@@ -144,6 +192,8 @@ define(['./module'], function (services) {
       'halfPension': 'Halbpension',
       'halfPensionInc': 'HalbpensionInc',
       'importing':'Importieren',
+      'importEnded': 'Import erfolgreich beendet',
+      'importWarning': 'Warnung! Diese Aktion wird alle aktuellen Daten zu ersetzen. Wollen Sie weitermachen?',
       'includedInPlan': 'In Plan Preis inbegriffen',
       'insurance': 'Krankenkasse',
       'item': 'Artikel',
@@ -172,6 +222,7 @@ define(['./module'], function (services) {
       'price': 'Preis',
       'priceSymbol': '€',
       'print': 'Drucken',
+      'programRestart': 'Das Programm wird in 5 Sekunden neu starten',
       'recent': 'Kürzlich',
       'reduction': 'Ermässigung',
       'reinstate': 'Zurückgeben',
