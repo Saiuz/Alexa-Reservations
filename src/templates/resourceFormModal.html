@@ -1,0 +1,72 @@
+<div class="modal-header">
+    <h3 class="modal-title">{{title}}</h3>
+</div>
+<div class="modal-body">
+    <div class="form-horizontal" ng-show="!errLoad && !hide">
+        <div class="form-group">
+            <label class="control-label col-xs-4">{{resource.resource_type}} {{txt.name}}</label>
+            <div class="col-xs-8" ng-show="read">
+                <p class="form-control-static">{{resource.name}}</p>
+            </div>
+            <div class="col-xs-4" ng-show="edit">
+                <input class="form-control" type="text" ng-model="resource.name" />
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="control-label col-xs-4">{{txt.resourceType}}</label>
+            <div class="col-xs-8" ng-show="read || resourceTypes.length === 1">
+                <p class="form-control-static">{{resource.resource_type}}</p>
+            </div>
+            <div class="col-xs-4" ng-show="edit && resourceTypes.length > 1">
+                <select class="form-control" ng-model="resource.resource_type"
+                        ng-options="t for t in resourceTypes"></select>
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="control-label col-xs-4">{{txt.displayString}}</label>
+            <div class="col-xs-8" ng-show="read">
+                <p class="form-control-static">{{resource.display_name}}</p>
+            </div>
+            <div class="col-xs-2" ng-show="edit">
+                <input class="form-control" type="text" ng-model="resource.display_name" />
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="control-label col-xs-4">{{txt.displayOrder}}</label>
+            <div class="col-xs-8" ng-show="read">
+                <p class="form-control-static">{{resource.display_order}}</p>
+            </div>
+            <div class="col-xs-2" ng-show="edit">
+                <input class="form-control" type="number" min="1" ng-model="resource.display_order"/>
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="control-label col-xs-4">{{txt.price}}</label>
+            <div class="col-xs-8" ng-show="read">
+                <p class="form-control-static">{{resource.price | currency}}</p>
+            </div>
+            <div class="col-xs-2" ng-show="edit">
+                <input class="form-control" ng-model="decimals.price" type="text" ax-de-number/>
+            </div>
+        </div>
+    </div>
+    <div class="alert alert-danger" ng-show="errLoad || errSave">
+        <a class="close" ng-click="hideErr()" ng-show="!errLoad">&times;</a>
+
+        <h3>Error!</h3>
+        <ul>
+            <li ng-repeat="e in err.errors()">{{e}}</li>
+        </ul>
+    </div>
+    <div class="alert alert-success" ng-show="hide">
+        <strong>{{actionMsg}}</strong>
+    </div>
+</div>
+<div class="modal-footer">
+    <label class="btn  btn-primary" ng-show="deleteMode && !hide"><input type="checkbox" ng-model="confirmed"/>{{txt.confirmDelete}}</label>
+    <button class="btn btn-danger" ng-click="delete()" ng-show="!errLoad && deleteMode && confirmed && !hide">
+        {{saveTxt}}
+    </button>
+    <button class="btn btn-primary" ng-click="save()" ng-show="!errLoad && edit && !hide">{{saveTxt}}</button>
+    <button class="btn btn-warning" ng-click="cancel()">{{cancelTxt}}</button>
+</div>

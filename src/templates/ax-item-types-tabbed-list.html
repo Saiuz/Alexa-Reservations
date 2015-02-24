@@ -1,0 +1,31 @@
+<div class="alert alert-danger" ng-show="hasErr">
+    <h3>Error!</h3>
+    {{errMsg}}
+</div>
+<tabset  type="pills">
+    <tab ng-repeat="tab in tabs" heading="{{tab.title}}" select="selected(tab.index)">
+        <div class="row">
+            <div class="col-sm-8">
+                <table class="table  table-bordered table-hover table-condensed table-items">
+                    <thead>
+                    <tr>
+                        <th><button class="btn btn-info btn-sm" ng-click="new(tab.index)"><i class="glyphicon glyphicon-plus-sign"></i>
+                        </button></th>
+                        <th>{{txt.item}}</th>
+                        <th>{{txt.price}}</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr ng-repeat="i in tab.items">
+                        <td><i class="glyphicon glyphicon-remove" ng-click="delete(i._id.id, tab.index)"></i></td>
+                        <td><a href="#" editable-text="i.name"
+                               onaftersave="update(i._id.id, tab.index)">{{i.name}}</a></td>
+                        <td><a href="#" editable-text="tab.txtPrice['_'+i._id.id]"
+                               onaftersave="update(i._id.id, tab.index)">{{i.price | currency}}</a></td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </tab>
+</tabset>

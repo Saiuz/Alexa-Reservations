@@ -18,7 +18,8 @@ define(['./module'], function (controllers) {
         '$document',
         'modals',
         'nwService',
-        function ($scope, $state, $rootScope, dashboard, datetime, Reservation, ExpenseItem, $modal, $document, modals, nwService) {
+        'configService',
+        function ($scope, $state, $rootScope, dashboard, datetime, Reservation, ExpenseItem, $modal, $document, modals, nwService, configService) {
           console.log("Addresse  controller fired")
           $scope.appTitle = $rootScope.appTitle;
           $scope.appBrand = $rootScope.appBrand;
@@ -281,6 +282,123 @@ define(['./module'], function (controllers) {
                 break
             }
           };
+
+          $scope.testIid = 0;
+          var lastModei = '',
+              dataObjI = {data: undefined, extraData: undefined, shortDisplay: undefined};
+          $scope.testItem = function(mode) {
+            lastModei = mode;
+            var model = modals.getModelEnum().itemType;
+            switch (mode) {
+              case 'c':
+                dataObjI.data = undefined;
+                dataObjI.extraData = {
+                  category: 'Speisen',
+                  bill_code: configService.constants.bcFood,
+                  display_string: '%count% %name% à %price%',
+                  display_order: 1,
+                  edit_count: true
+                };
+                dataObjI.shortDisplay = true;
+                modals.create(model,dataObjI,function(result) {
+                  $scope.testIid = result._id.id;
+                  $scope.itmTestResult = result;
+                });
+                break;
+              case 'r':
+                dataObjI.data = $scope.testIid;
+                dataObjI.shortDisplay = false;
+                modals.read(model,dataObjI,function(result) {
+                  $scope.itmTestResult = result;
+                });
+                break;
+              case 'u':
+                dataObjI.data = $scope.testIid;
+                modals.update(model,dataObjI,function(result) {
+                  $scope.itmTestResult = result;
+                });
+                break;
+              case 'd':
+                dataObjI.data = $scope.testIid;
+                modals.delete(model,dataObjI,function(result) {
+                  $scope.itmTestResult = result;
+                });
+                break
+            }
+          };
+
+          $scope.testRmid = 0;
+          var lastModerm = '',
+              dataObjRm = {data: undefined, extraData: undefined};
+          $scope.testRoom = function(mode) {
+            lastModerm = mode;
+            var model = modals.getModelEnum().room;
+            switch (mode) {
+              case 'c':
+                dataObjRm.data = undefined;
+                dataObjRm.extraData = {};
+                modals.create(model,dataObjRm,function(result) {
+                  $scope.testRmid = result._id.id;
+                  $scope.rmTestResult = result;
+                });
+                break;
+              case 'r':
+                dataObjRm.data = $scope.testRmid;
+                modals.read(model,dataObjRm,function(result) {
+                  $scope.rmTestResult = result;
+                });
+                break;
+              case 'u':
+                dataObjRm.data = $scope.testRmid;
+                modals.update(model,dataObjRm,function(result) {
+                  $scope.rmTestResult = result;
+                });
+                break;
+              case 'd':
+                dataObjRm.data = $scope.testRmid;
+                modals.delete(model,dataObjRm,function(result) {
+                  $scope.rmTestResult = result;
+                });
+                break
+            }
+          };
+
+          $scope.testRsid = 0;
+          var lastModers = '',
+              dataObjRs = {data: undefined, extraData: undefined};
+          $scope.testResource = function(mode) {
+            lastModerm = mode;
+            var model = modals.getModelEnum().resource;
+            switch (mode) {
+              case 'c':
+                dataObjRs.data = undefined;
+                dataObjRs.extraData = {};
+                modals.create(model,dataObjRs,function(result) {
+                  $scope.testRsid = result._id.id;
+                  $scope.rsTestResult = result;
+                });
+                break;
+              case 'r':
+                dataObjRs.data = $scope.testRsid;
+                modals.read(model,dataObjRs,function(result) {
+                  $scope.rsTestResult = result;
+                });
+                break;
+              case 'u':
+                dataObjRs.data = $scope.testRsid;
+                modals.update(model,dataObjRs,function(result) {
+                  $scope.rsTestResult = result;
+                });
+                break;
+              case 'd':
+                dataObjRs.data = $scope.testRsid;
+                modals.delete(model,dataObjRs,function(result) {
+                  $scope.rsTestResult = result;
+                });
+                break
+            }
+          };
+
 
           $scope.testYes = function () {
             var dataObj = {message: 'Is it good yet?', yes: 'Damn Right!', no: 'No Way', level: 'warn'},

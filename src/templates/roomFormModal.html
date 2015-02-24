@@ -1,0 +1,67 @@
+<div class="modal-header">
+    <h3 class="modal-title">{{title}}</h3>
+</div>
+<div class="modal-body">
+    <div class="form-horizontal" ng-show="!errLoad && !hide">
+        <div class="form-group">
+            <label class="control-label col-xs-4">{{txt.roomNumber}}</label>
+
+            <div class="col-xs-8" ng-show="read">
+                <p class="form-control-static">{{room.number}}</p>
+            </div>
+            <div class="col-xs-2" ng-show="edit">
+                <input class="form-control" type="number" min="1"  ng-model="room.number" />
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="control-label col-xs-4">{{txt.roomType}}</label>
+
+            <div class="col-xs-8" ng-show="read">
+                <p class="form-control-static">{{room.room_type}}</p>
+            </div>
+            <div class="col-xs-8" ng-show="edit">
+                <select class="form-control" ng-model="room.room_type"
+                        ng-options="t for t in roomTypes"></select>
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="control-label col-xs-4">{{txt.roomClass}}</label>
+
+            <div class="col-xs-8" ng-show="read">
+                <p class="form-control-static">{{room.room_class}}</p>
+            </div>
+            <div class="col-xs-8" ng-show="edit">
+                <select class="form-control" ng-model="room.room_class"
+                        ng-options="c for c in roomClasses"></select>
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="control-label col-xs-4">{{txt.price}}</label>
+            <div class="col-xs-8" ng-show="read">
+                <p class="form-control-static">{{room.price | currency}}</p>
+            </div>
+            <div class="col-xs-8" ng-show="edit">
+                <input class="form-control" ng-model="decimals.price" type="text" ax-de-number/>
+            </div>
+        </div>
+    </div>
+    <div class="alert alert-danger" ng-show="errLoad || errSave">
+        <a class="close" ng-click="hideErr()" ng-show="!errLoad">&times;</a>
+
+        <h3>Error!</h3>
+        <ul>
+            <li ng-repeat="e in err.errors()">{{e}}</li>
+        </ul>
+    </div>
+    <div class="alert alert-success" ng-show="hide">
+        <strong>{{actionMsg}}</strong>
+    </div>
+</div>
+<div class="modal-footer">
+    <label class="btn  btn-primary" ng-show="deleteMode && !hide"><input type="checkbox" ng-model="confirmed"/>{{txt.confirmDelete}}</label>
+    <button class="btn btn-danger" ng-click="delete()" ng-show="!errLoad && deleteMode && confirmed && !hide">
+        {{saveTxt}}
+    </button>
+    <button class="btn btn-primary" ng-click="save()" ng-show="!errLoad && edit && !hide">{{saveTxt}}</button>
+    <button class="btn btn-warning" ng-click="cancel()">{{cancelTxt}}</button>
+</div>

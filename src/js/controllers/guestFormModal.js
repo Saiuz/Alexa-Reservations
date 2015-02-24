@@ -237,6 +237,10 @@ define(['./module'], function (controllers) {
           // save button handler
           $scope.save = function () {
             //perform any pre save form validation here
+            // if the salutation contains '' then set the salutation field to undefined
+            if ($scope.guest.salutation === '') {
+              $scope.guest.salutation = undefined;
+            }
             //save guest and return
             $scope.guest.save(function (err) {
               if (err) {

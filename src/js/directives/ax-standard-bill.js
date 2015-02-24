@@ -18,7 +18,7 @@ define(['./module'], function (directives) {
         var c = configService.constants,
             unterItems = [c.bcRoom, c.bcPackageItem, c.bcExtraRoom],
             kurtax = [c.bcKurTax],
-            other = [c.bcDrink, c.bcFood, c.bcMeals, c.bcPlanDiverses, c.bcKur, c.bcResources],
+            other = [c.bcDrink, c.bcFood, c.bcMeals, c.bcPlanDiverses, c.bcKur, c.bcResources, c.bcDienste],
             haveAttributes = false,
             calcResult,
             room,

@@ -59,11 +59,11 @@ define(['./module'], function (model) {
   // constants. A constant can have either a numeric value or string value.
   model.factory('AppConstants', function(db) {
     var schema = new db.db.Schema({
-      name: String,
+      name: {type: String, required: true, unique: true },
       display_name: String,
       nvalue: Number,
       svalue: String,
-      unit: String
+      units: String
     });
 
     return db.db.model('AppConstants', schema);
@@ -76,7 +76,7 @@ define(['./module'], function (model) {
     var expenseItem = new db.db.Schema({
       name: {type: String, required: true },  //Name of item type, often used to display on bill
       category: {type: String, enum: itemTypeEnum},  // the expense item type category
-      bill_code: Number, // groups expense items into categories for display on bill. Each category has 10 bill_code values,
+      bill_code: {type: Number, required: true }, // groups expense items into categories for display on bill. Each category has 10 bill_code values,
                          // assigned to it, e.g. Plan - 0 to 9, Getränke - 10 to 19 etc. See config.constants service for more info.
       guest: String, // The guest name the expense item is associated with.
       room: Number, // the room number the expense item is associated with.
@@ -97,7 +97,7 @@ define(['./module'], function (model) {
       bus_pauschale: Boolean, // If true this expense item  can be rolled up along with others like it into one expense item on the bill "Business Pauschale"
       low_tax_rate: Boolean, // If true then tax calculations will use the low (room tax rate) vs the normal sales tax rate.
       //type_id: Number, // the id of the ItemTypes document that created this ExpenseItem document.
-      display_string: String, //Formatting display string using custom format symbols (to be worked out)
+      display_string: String, //Formatting display string using custom format symbols
       display_order: Number, // used for display order of lists item names
       price_lookup: String, // If it contains a string value, the initial price will be looked up in the Constants
                             // object. The value in price_lookup is the name of the constant containing the price.
@@ -147,9 +147,12 @@ define(['./module'], function (model) {
       return this.item_tax_total - this.item_tax;
     });
 
-    // pre save method to update the last_update field
+    // pre save method to update the last_update field and the date_added field if it is not populated
     expenseItem.pre('save', function (next) {
       this.last_update = new Date();
+      if (!this.date_added) {
+        this.date_added = this.last_updated;
+      }
       next();
     });
 
@@ -187,6 +190,31 @@ define(['./module'], function (model) {
         docArray.push(newDoc);
       }
     });
+    // Builds a default properties object for the ExpenseItem schema that can be used by the UI
+    // to populate a new ExpenseType item that represents simple expense types. If the category is not
+    // one of the allowed categories then a null is returned.
+    expenseItem.statics.simpleExpenseItemDefaults = function (category) {
+      var configObj = null,
+          catCodeMap = { // Names from itemTypesEnum, not all Names allowed
+            'Speisen': 'bcFood',
+            'Getränke': 'bcDrink',
+            'Dienste': 'bcDienste',
+            'VDAK': 'bcKur',
+            'AOK & Andere': 'bcKur',
+            'Privat': 'bcKur'
+          };
+         if (catCodeMap.hasOwnProperty(category)) {
+           configObj = {
+             category: category,
+             bill_code: configService.constants.get(catCodeMap[category]),
+             displayString: '%count% %name% à %price%',
+             display_order: 1,
+             edit_count: true
+           };
+         }
+
+      return configObj;
+    };
 
     return expenseItem;  //return schema not the mongoose model
   });
@@ -241,6 +269,7 @@ define(['./module'], function (model) {
       net19: Number,
       tax19: Number,
       sum19: Number,
+      kurtax_total: Number,
       bill_total: Number
     });
   });
@@ -272,16 +301,43 @@ define(['./module'], function (model) {
         return this.first_name + " " + this.last_name;
       }
     });
-      // Note there is no equivalent function for update. Unique name does not get updated
+    // Note there is no equivalent function for update. Unique name does not get updated
     // when say the firm name is changed and the guests firm fields are updated with an update command.
-      schema.pre('save', function(next) {
-        var nam = this.salutation ? this.salutation : '';
-        nam = this.first_name ? nam.length > 0 ? nam + ' ' + this.first_name : this.first_name : nam;
-        nam = nam.length > 0 ? nam + ' ' + this.last_name : this.last_name; //last name always there
-        nam = this.city ? nam + ' ('  + this.city + ')' : this.firm ? nam + ' [' + this.firm + ']' : nam;
-        this.unique_name = nam;
-        next();
-      });
+    schema.pre('save', function(next) {
+      var nam = this.salutation ? this.salutation : '';
+      nam = this.first_name ? nam.length > 0 ? nam + ' ' + this.first_name : this.first_name : nam;
+      nam = nam.length > 0 ? nam + ' ' + this.last_name : this.last_name; //last name always there
+      nam = this.city ? nam + ' ('  + this.city + ')' : this.firm ? nam + ' [' + this.firm + ']' : nam;
+      this.unique_name = nam;
+      next();
+    });
+
+    // Model method to convert the model's schema properties to an object with German Property names suitable for
+    // displaying in the UI. This object uses the name field instead of first_name and last_name. If withFirm is true
+    // then it contains the firm name but not the address fields since they are contained in the firm collection.
+    schema.methods.toDisplayObj = function (withFirm) {
+      if (withFirm) {
+        return {
+          'Name': this.name, 'Firma': this.firm, 'Telefon': this.telephone, 'Email': this.email,
+          'Bemerkung': this.comments
+        };
+      }
+      else {
+        return {
+          'Name': this.name, 'Geburtstag': this.birthday, 'Addresse 1': this.address1, 'Addresse 2': this.address2,
+          'PLZ': this.post_code, 'Ort': this.city, 'Land': this.country, 'Telefon': this.telephone, 'Email': this.email,
+          'Bemerkung': this.comments
+        };
+      }
+    };
+    schema.statics.toDisplayObjHeader = function (withFirm) {
+      if (withFirm) {
+        return ['Name','Firma','Telefon','Email','Bemerkung'];
+      }
+      else {
+        return ['Name','Geburtstag','Addresse 1','Addresse 2','PLZ','Ort','Land','Telefon','Email','Bemerkung'];
+      }
+    };
 
     // Instantiating the guest model instance
     return db.db.model('guest', schema);
@@ -404,6 +460,23 @@ define(['./module'], function (model) {
       comments: String
     });
 
+    // Model method to convert the model's schema properties to an object with German Property names suitable for
+    // displaying in the UI. This object uses the name field instead of first_name and last_name. If withFirm is true
+    // then it contains the firm name but not the address fields since they are contained in the firm collection.
+    schema.methods.toDisplayObj = function () {
+        return {
+          'Firma': this.firm_name, 'Zimmer Preis': this.room_price, 'Addresse 1': this.address1,
+          'Addresse 2': this.address2, 'PLZ': this.post_code, 'Ort': this.city, 'Land': this.country,
+          'Kontakt Name': this.contact.name, 'Kontakt Tf': this.contact.telephone, 'Kontakt E-Mail': this.contact.email,
+          'Bemerkung': this.comments
+        };
+    };
+
+    schema.statics.toDisplayObjHeader = function () {
+      return ['Firma', 'Zimmer Preis', 'Addresse 1','Addresse 2','PLZ','Ort','Land', 'Kontakt Name',
+              'Kontakt Tf','Kontakt E-Mail','Bemerkung'];
+    };
+
     return db.db.model('firm', schema);
   });
 
@@ -412,10 +485,10 @@ define(['./module'], function (model) {
 
     var schema = new db.db.Schema({
       number: {type: Number, required: true, unique: true},
-      room_type: {type: String, enum: roomTypeEnum},
-      room_class: {type: String, enum: roomClassEnum},
+      room_type: {type: String, enum: roomTypeEnum, required: true},
+      room_class: {type: String, enum: roomClassEnum, required: true},
       display_order: Number, //to allow sorting by room_type
-      price: Number
+      price: { type: Number, required: true}
     });
 
     // virtual method that generates a display name which concatenates the type with the class. Used for UI
@@ -445,6 +518,12 @@ define(['./module'], function (model) {
       return roomTypeAbbrEnum[tix] + (roomClassAbbrEnum[cls] === '' ? "" : "-") + roomClassAbbrEnum[cls];
     });
 
+    // pre save method to set the display order. Business logic dictates that
+    // singles appear before doubles before suites
+    schema.pre('save', function (next) {
+      this.display_order = roomTypeEnum.indexOf(this.room_type) + 1;
+      next();
+    });
     return db.db.model('room', schema);
   });
 
@@ -452,10 +531,9 @@ define(['./module'], function (model) {
   model.factory('Resource', function(db) {
     var schema = new db.db.Schema({
       name: {type: String, required: true, unique: true},
-      resource_type: {type: String, enum: resourceTypeEnum},
+      resource_type: {type: String, enum: resourceTypeEnum, required: true},
       display_order: Number, // to allow specific sorting (e.g. by type)
-      display_name: String,
-      multiple_allowed: Boolean,  // if true then multiple entries of this type are allowed, else only one allowed per res.
+      display_name: {type: String, required: true}, // Abreviated name that displays on the Zimmer plan.
       price: Number
     });
 

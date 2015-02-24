@@ -595,7 +595,7 @@ define(['./module'], function (services) {
         var deferred = $q.defer();
         var qry = itemType ? {category: itemType} : null;
         Itemtype.find(qry)
-            .sort({display_order: 1})
+            .sort({display_order: 1, name: 1})
             .exec(function (err, itemtypes) {
               if (err) {
                 deferred.reject(err);

@@ -129,7 +129,7 @@ define(['./module'], function (directives) {
         scope.resources.push(resource);
         updateTitle();
         scope.resourceSelect = scope.resourceList[0];
-        scope.resourcePrice = 0;  //price for room
+        scope.resourcePrice = 0;  //price for resource
         scope.showfrm = false;
         scope.isCollapsed = !scope.showRooms;
         scope.showResources = (!scope.oneRoomB || (scope.oneRoomB && scope.resources.length < 1));

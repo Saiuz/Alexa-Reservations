@@ -1457,7 +1457,6 @@ define(['./module'], function (controllers) {
                 resource_type: 'Parkplatz',
                 display_order: 1,
                 display_name: 'Res. Pl.',
-                multiple_allowed: false,
                 price: 3
               }, function (err) {
                 if (err)console.log(err)
@@ -1467,7 +1466,6 @@ define(['./module'], function (controllers) {
                 resource_type: 'Parkplatz',
                 display_order: 2,
                 display_name: 'Pl. 2',
-                multiple_allowed: false,
                 price: 3
               }, function (err) {
                 if (err)console.log(err)
@@ -1477,7 +1475,6 @@ define(['./module'], function (controllers) {
                 resource_type: 'Parkplatz',
                 display_order: 3,
                 display_name: 'Pl. 3',
-                multiple_allowed: false,
                 price: 3
               }, function (err) {
                 if (err)console.log(err)
@@ -1487,7 +1484,6 @@ define(['./module'], function (controllers) {
                 resource_type: 'Parkplatz',
                 display_order: 4,
                 display_name: 'Pl. 4',
-                multiple_allowed: false,
                 price: 3
               }, function (err) {
                 if (err)console.log(err)
@@ -1497,7 +1493,6 @@ define(['./module'], function (controllers) {
                 resource_type: 'Parkplatz',
                 display_order: 5,
                 display_name: 'Pl. 5',
-                multiple_allowed: false,
                 price: 3
               }, function (err) {
                 if (err)console.log(err)
@@ -1507,7 +1502,6 @@ define(['./module'], function (controllers) {
                 resource_type: 'Parkplatz',
                 display_order: 6,
                 display_name: 'Pl. 6',
-                multiple_allowed: false,
                 price: 3
               }, function (err) {
                 if (err)console.log(err)
@@ -1517,7 +1511,6 @@ define(['./module'], function (controllers) {
                 resource_type: 'Parkplatz',
                 display_order: 7,
                 display_name: 'Pl. 7',
-                multiple_allowed: false,
                 price: 3
               }, function (err) {
                 if (err)console.log(err)
@@ -1535,7 +1528,6 @@ define(['./module'], function (controllers) {
                 number: 2,
                 room_type: 'Einzelzimmer',
                 room_class: 'Economy',
-                display_order: 1,
                 price: 57
               }, function (err) {
                 if (err)console.log(err)
@@ -1544,7 +1536,6 @@ define(['./module'], function (controllers) {
                 number: 3,
                 room_type: 'Einzelzimmer',
                 room_class: 'Komfort',
-                display_order: 1,
                 price: 66
               }, function (err) {
                 if (err)console.log(err)
@@ -1553,7 +1544,6 @@ define(['./module'], function (controllers) {
                 number: 4,
                 room_type: 'Einzelzimmer',
                 room_class: 'Standart',
-                display_order: 1,
                 price: 61
               }, function (err) {
                 if (err)console.log(err)
@@ -1562,7 +1552,6 @@ define(['./module'], function (controllers) {
                 number: 5,
                 room_type: 'Einzelzimmer',
                 room_class: 'Economy',
-                display_order: 1,
                 price: 57
               }, function (err) {
                 if (err)console.log(err)
@@ -1571,7 +1560,6 @@ define(['./module'], function (controllers) {
                 number: 6,
                 room_type: 'Einzelzimmer',
                 room_class: 'Komfort',
-                display_order: 1,
                 price: 66
               }, function (err) {
                 if (err)console.log(err)
@@ -1580,7 +1568,6 @@ define(['./module'], function (controllers) {
                 number: 7,
                 room_type: 'Einzelzimmer',
                 room_class: 'Komfort',
-                display_order: 1,
                 price: 66
               }, function (err) {
                 if (err)console.log(err)
@@ -1589,7 +1576,6 @@ define(['./module'], function (controllers) {
                 number: 9,
                 room_type: 'Doppelzimmer',
                 room_class: 'Economy',
-                display_order: 2,
                 price: 94
               }, function (err) {
                 if (err)console.log(err)
@@ -1598,7 +1584,6 @@ define(['./module'], function (controllers) {
                 number: 10,
                 room_type: 'Einzelzimmer',
                 room_class: 'Economy',
-                display_order: 1,
                 price: 57
               }, function (err) {
                 if (err)console.log(err)
@@ -1607,7 +1592,6 @@ define(['./module'], function (controllers) {
                 number: 12,
                 room_type: 'Einzelzimmer',
                 room_class: 'Komfort',
-                display_order: 1,
                 price: 66
               }, function (err) {
                 if (err)console.log(err)
@@ -1616,7 +1600,6 @@ define(['./module'], function (controllers) {
                 number: 15,
                 room_type: 'Einzelzimmer',
                 room_class: 'Komfort',
-                display_order: 1,
                 price: 66
               }, function (err) {
                 if (err)console.log(err)
@@ -1625,7 +1608,6 @@ define(['./module'], function (controllers) {
                 number: 18,
                 room_type: 'Doppelzimmer',
                 room_class: 'Komfort',
-                display_order: 2,
                 price: 109
               }, function (err) {
                 if (err)console.log(err)
@@ -1634,7 +1616,6 @@ define(['./module'], function (controllers) {
                 number: 19,
                 room_type: 'Doppelzimmer',
                 room_class: 'Komfort',
-                display_order: 2,
                 price: 109
               }, function (err) {
                 if (err)console.log(err)
@@ -1643,7 +1624,6 @@ define(['./module'], function (controllers) {
                 number: 20,
                 room_type: 'Einzelzimmer',
                 room_class: 'Economy',
-                display_order: 1,
                 price: 57
               }, function (err) {
                 if (err)console.log(err)
@@ -1652,7 +1632,6 @@ define(['./module'], function (controllers) {
                 number: 21,
                 room_type: 'Suite',
                 room_class: '',
-                display_order: 3,
                 price: 125
               }, function (err) {
                 if (err)console.log(err)
@@ -1661,7 +1640,6 @@ define(['./module'], function (controllers) {
                 number: 26,
                 room_type: 'Suite',
                 room_class: '',
-                display_order: 3,
                 price: 125
               }, function (err) {
                 if (err)console.log(err)
@@ -1670,7 +1648,6 @@ define(['./module'], function (controllers) {
                 number: 27,
                 room_type: 'Suite',
                 room_class: 'Balkon',
-                display_order: 3,
                 price: 130
               }, function (err) {
                 if (err)console.log(err)
@@ -1679,7 +1656,6 @@ define(['./module'], function (controllers) {
                 number: 31,
                 room_type: 'Einzelzimmer',
                 room_class: 'Standart',
-                display_order: 1,
                 price: 61
               }, function (err) {
                 if (err)console.log(err)
@@ -1688,7 +1664,6 @@ define(['./module'], function (controllers) {
                 number: 32,
                 room_type: 'Einzelzimmer',
                 room_class: 'Standart',
-                display_order: 1,
                 price: 61
               }, function (err) {
                 if (err)console.log(err)
@@ -1697,7 +1672,6 @@ define(['./module'], function (controllers) {
                 number: 33,
                 room_type: 'Einzelzimmer',
                 room_class: 'Standart',
-                display_order: 1,
                 price: 61
               }, function (err) {
                 if (err)console.log(err)
@@ -1706,7 +1680,6 @@ define(['./module'], function (controllers) {
                 number: 34,
                 room_type: 'Einzelzimmer',
                 room_class: 'Standart',
-                display_order: 1,
                 price: 61
               }, function (err) {
                 if (err)console.log(err)
@@ -1715,7 +1688,6 @@ define(['./module'], function (controllers) {
                 number: 35,
                 room_type: 'Doppelzimmer',
                 room_class: 'Komfort',
-                display_order: 2,
                 price: 109
               }, function (err) {
                 if (err)console.log(err)
@@ -1724,7 +1696,6 @@ define(['./module'], function (controllers) {
                 number: 41,
                 room_type: 'Einzelzimmer',
                 room_class: 'Standart',
-                display_order: 1,
                 price: 61
               }, function (err) {
                 if (err)console.log(err)
@@ -1733,7 +1704,6 @@ define(['./module'], function (controllers) {
                 number: 42,
                 room_type: 'Einzelzimmer',
                 room_class: 'Standart',
-                display_order: 1,
                 price: 61
               }, function (err) {
                 if (err)console.log(err)
@@ -1742,7 +1712,6 @@ define(['./module'], function (controllers) {
                 number: 43,
                 room_type: 'Einzelzimmer',
                 room_class: 'Standart',
-                display_order: 1,
                 price: 61
               }, function (err) {
                 if (err)console.log(err)
@@ -1760,7 +1729,6 @@ define(['./module'], function (controllers) {
                 number: 45,
                 room_type: 'Doppelzimmer',
                 room_class: 'Komfort',
-                display_order: 2,
                 price: 109
               }, function (err) {
                 if (err)console.log(err)
@@ -1769,7 +1737,6 @@ define(['./module'], function (controllers) {
                 number: 46,
                 room_type: 'Doppelzimmer',
                 room_class: 'Komfort',
-                display_order: 2,
                 price: 109
               }, function (err) {
                 if (err)console.log(err)
@@ -1778,7 +1745,6 @@ define(['./module'], function (controllers) {
                 number: 47,
                 room_type: 'Doppelzimmer',
                 room_class: 'Komfort',
-                display_order: 2,
                 price: 109
               }, function (err) {
                 if (err)console.log(err)
@@ -1787,7 +1753,6 @@ define(['./module'], function (controllers) {
                 number: 48,
                 room_type: 'Doppelzimmer',
                 room_class: 'Komfort',
-                display_order: 2,
                 price: 109
               }, function (err) {
                 if (err)console.log(err)
@@ -1796,7 +1761,6 @@ define(['./module'], function (controllers) {
                 number: 51,
                 room_type: 'Einzelzimmer',
                 room_class: 'Standart',
-                display_order: 1,
                 price: 61
               }, function (err) {
                 if (err)console.log(err)
@@ -1805,7 +1769,6 @@ define(['./module'], function (controllers) {
                 number: 52,
                 room_type: 'Einzelzimmer',
                 room_class: 'Standart',
-                display_order: 1,
                 price: 61
               }, function (err) {
                 if (err)console.log(err)
@@ -1814,7 +1777,6 @@ define(['./module'], function (controllers) {
                 number: 53,
                 room_type: 'Doppelzimmer',
                 room_class: 'Komfort',
-                display_order: 2,
                 price: 109
               }, function (err) {
                 if (err)console.log(err)
@@ -1823,7 +1785,6 @@ define(['./module'], function (controllers) {
                 number: 54,
                 room_type: 'Einzelzimmer',
                 room_class: 'Standart',
-                display_order: 1,
                 price: 61
               }, function (err) {
                 if (err)console.log(err)
@@ -1832,7 +1793,6 @@ define(['./module'], function (controllers) {
                 number: 55,
                 room_type: 'Einzelzimmer',
                 room_class: 'Standart',
-                display_order: 1,
                 price: 61
               }, function (err) {
                 if (err)console.log(err)
@@ -1841,7 +1801,6 @@ define(['./module'], function (controllers) {
                 number: 56,
                 room_type: 'Einzelzimmer',
                 room_class: 'Standart',
-                display_order: 1,
                 price: 61
               }, function (err) {
                 if (err)console.log(err)
@@ -1850,7 +1809,6 @@ define(['./module'], function (controllers) {
                 number: 57,
                 room_type: 'Einzelzimmer',
                 room_class: 'Standart',
-                display_order: 1,
                 price: 61
               }, function (err) {
                 if (err)console.log(err)
@@ -1859,12 +1817,10 @@ define(['./module'], function (controllers) {
                 number: 58,
                 room_type: 'Doppelzimmer',
                 room_class: 'Komfort',
-                display_order: 2,
                 price: 109
               }, function (err) {
                 if (err)console.log(err)
               });
-
             }
             else {
               console.log("Room collection contains %d records", count);
@@ -1920,117 +1876,6 @@ define(['./module'], function (controllers) {
               console.log("Firm collection contains %d records", count);
             }
           });
-/*
-          Reservation.count(function (err, count) {
-            if (count === 0) {
-              console.log("Creating Reservation collection");
-              //Create some dummy reservations and
-              // link them to Guests. We create the records in the callbacks
-              // that retrieve the names and ids to associated with the res.
-              // the .findOne method returns a promise.
-              var guest1, guest2, guest3, id1, id2, id3;
-              Guest.findOne({'last_name': 'Longstay'}, function (err, guest) {
-                if (err || !guest.name) {
-                  guest1 = 'unknown1';
-                  id1 = -1;
-                  console.log('Guest query failed. Err: ' + err);
-                }
-                else {
-                  guest1 = guest.name;
-                  id1 = guest._id;
-                }
-                Reservation.create({
-                  reservation_number: 1400101,
-                  type: 'Bus.',
-                  title: 'The Grand Central (LongStay)',
-                  guest: {name: guest1, id: id1},
-                  firm: 'The Grand Central',
-                  start_date: datetime.dateOnly(new Date()),
-                  end_date: datetime.dateOnly(new Date(), 10),
-                  occupants: 1,
-                  rooms: [{number: 2, room_type: 'Economy-Einzelzimmer', guest: 'Dr. Susie Longstay', price: 54}],
-                  resources: [{name: 'Parkplatz 1', resource_type: 'Parkplatz', price: 3}],
-                  status: 'Sicher',
-                  plan: 'Übernachtung im Einzelzimmer',
-                  plan_code: 20,
-                  source: 'Phone',
-                  comments: 'Group stay training'
-                }, function (err, reservation) {
-                  if (err)  console.log(err);
-                });
-              });
-              Guest.findOne({'last_name': 'Guest'}, function (err, guest) {
-                if (err || !guest.name) {
-                  guest2 = 'unknown1';
-                  id2 = -1;
-                  console.log('Guest query failed. Err: ' + err);
-                }
-                else {
-                  guest2 = guest.name;
-                  id2 = guest._id;
-                  console.log('Guest: ' + guest2 + ' ' + id2);
-                }
-                Reservation.create({
-                  reservation_number: 1400102,
-                  type: 'Std.',
-                  title: guest2,
-                  guest: {name: guest2, id: id2},
-                  firm: '',
-                  start_date: datetime.dateOnly(new Date(), -10),
-                  end_date: datetime.dateOnly(new Date()),
-                  checked_in: datetime.dateOnly(new Date(), -10),
-                  occupants: 2,
-                  rooms: [{number: 3, room_type: 'Komfort-Einzelzimmer', guest: 'Johnny Guest', price: 66},
-                    {number: 4, room_type: 'Komfort-Einzelzimmer', guest: 'Jane Smith', price: 66}],
-                  resources: [{name: 'Parkplatz 2', resource_type: 'Parkplatz', price: 3}],
-                  status: 'Sicher',
-                  plan: 'Unterkunft mit Frühstück im Doppelzimmerr',
-                  plan_code: 6,
-                  source: 'Booking.Com',
-                  comments: ''
-                }, function (err, reservation) {
-                  if (err) console.log(err);
-                });
-              });
-              Guest.findOne({'last_name': 'Adams'}, function (err, guest) {
-                if (err || !guest.name) {
-                  guest3 = 'unknown1';
-                  id3 = -1;
-                  console.log('Guest query failed. Err: ' + err);
-                }
-                else {
-                  guest3 = guest.name;
-                  id3 = guest._id;
-                  console.log('Guest: ' + guest2 + ' ' + id3);
-                }
-                Reservation.create({
-                  reservation_number: 1400103,
-                  type: 'Kur',
-                  title: guest3,
-                  guest: {name: guest2, id: id2},
-                  firm: '',
-                  start_date: datetime.dateOnly(new Date(), -1),
-                  end_date: datetime.dateOnly(new Date(), 15),
-                  checked_in: datetime.dateOnly(new Date(), -1),
-                  occupants: 1,
-                  rooms: [{number: 12, room_type: 'Economy-Einzelzimmer', guest: 'Monika Adams', price: 57}],
-                  resources: [{name: 'Parkplatz 2', resource_type: 'Parkplatz', price: 3}],
-                  status: 'Sicher',
-                  plan: 'Der Kur-Klassiker',
-                  plan_code: 24,
-                  insurance: 'VDAK',
-                  source: 'Booking.Com',
-                  comments: ''
-                }, function (err, reservation) {
-                  if (err) console.log(err);
-                });
-              });
-            }
-            else
-              console.log("Reservation collection contains %d records", count);
-          });
-*/
-
 
           // Listen for specific menu events and respond by navigating to a particular state.
           $scope.$on('export-tax', function (e, menu, item) {

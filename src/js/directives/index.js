@@ -24,5 +24,11 @@ define([
   './ax-tour-bill',
   './ax-de-number',
   './ax-print',
-  './dateFix'
+  './dateFix',
+  './ax-delayed-input',
+  './ax-app-constants-list',
+  './ax-guest-firm-list',
+  './ax-item-types-tabbed-list',
+  './ax-rooms-list',
+  './ax-resources-list'
 ], function () {});

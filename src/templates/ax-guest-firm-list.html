@@ -1,0 +1,80 @@
+<div class="panel panel-default" ng-show="show">
+    <div class="panel-heading">
+        <div class="row">
+            <div class="col-md-9">
+                <div class="btn-group">
+                    <button class="btn btn-default btn-sm" ng-click="query('^[a|ä]')">A</button>
+                    <button class="btn btn-default btn-sm" ng-click="query('^b')">B</button>
+                    <button class="btn btn-default btn-sm" ng-click="query('^c')">C</button>
+                    <button class="btn btn-default btn-sm" ng-click="query('^d')">D</button>
+                    <button class="btn btn-default btn-sm" ng-click="query('^e')">E</button>
+                    <button class="btn btn-default btn-sm" ng-click="query('^f')">F</button>
+                    <button class="btn btn-default btn-sm" ng-click="query('^g')">G</button>
+                    <button class="btn btn-default btn-sm" ng-click="query('^h')">H</button>
+                    <button class="btn btn-default btn-sm" ng-click="query('^i')">I</button>
+                    <button class="btn btn-default btn-sm" ng-click="query('^j')">J</button>
+                    <button class="btn btn-default btn-sm" ng-click="query('^k')">K</button>
+                    <button class="btn btn-default btn-sm" ng-click="query('^l')">L</button>
+                    <button class="btn btn-default btn-sm" ng-click="query('^m')">M</button>
+                    <button class="btn btn-default btn-sm" ng-click="query('^n')">N</button>
+                    <button class="btn btn-default btn-sm" ng-click="query('^[o|ö]')">O</button>
+                    <button class="btn btn-default btn-sm" ng-click="query('^p')">P</button>
+                    <button class="btn btn-default btn-sm" ng-click="query('^q')">Q</button>
+                    <button class="btn btn-default btn-sm" ng-click="query('^r')">R</button>
+                    <button class="btn btn-default btn-sm" ng-click="query('^s')">S</button>
+                    <button class="btn btn-default btn-sm" ng-click="query('^t')">T</button>
+                    <button class="btn btn-default btn-sm" ng-click="query('^[u|ü]')">U</button>
+                    <button class="btn btn-default btn-sm" ng-click="query('^v')">V</button>
+                    <button class="btn btn-default btn-sm" ng-click="query('^w')">W</button>
+                    <button class="btn btn-default btn-sm" ng-click="query('^x')">X</button>
+                    <button class="btn btn-default btn-sm" ng-click="query('^y')">Y</button>
+                    <button class="btn btn-default btn-sm" ng-click="query('^z')">Z</button>
+                    <button class="btn btn-default btn-sm" ng-click="query('^[0-9]')">0-9</button>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <ax-delayed-input timeout="500" value="searchTxt" clear-callback="clear" placeholder="{{placeholder}}" min-chars="2" />
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-5">
+                <div class="btn-group">
+                    <span class="btn btn-warning btn-sm" ng-if="loading"><i
+                            class="glyphicon glyphicon-refresh"></i></span>
+                    <label class="btn btn-success  btn-sm" ng-if="isGuest" ng-model="withFirm" btn-radio="false"
+                           ng-click="fChange(false)">{{txt.withoutFirm}}</label>
+                    <label class="btn btn-success  btn-sm" ng-if="isGuest" ng-model="withFirm" btn-radio="true"
+                           ng-click="fChange(true)">{{txt.withFirm}}</label>
+                    <ax-delayed-input ng-show="withFirm" timeout="500" value="searchTxt2" clear-callback="clear2" placeholder="{{placeholder2}}" min-chars="2" />
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="panel-body">
+        <div class="alert alert-danger" ng-show="hasErr">
+            <h3>Error!</h3>
+            {{errMsg}}
+        </div>
+
+        <table class="table  table-bordered table-hover table-condensed">
+            <thead>
+            <tr>
+                <th colspan="2"><button class="btn btn-info btn-sm" ng-click="new()"><i class="glyphicon glyphicon-plus-sign"></i>
+                </button></th>
+                <th ng-repeat="h in headers">{{h}}</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr ng-repeat="i in items">
+                <td><i class="glyphicon glyphicon-edit" ng-click="edit(i.id)"></i></td>
+                <td><i class="glyphicon glyphicon-remove" ng-click="delete(i.id)"></i></td>
+                <td ng-repeat="key in headers">{{i.cols[key]}}</td>
+            </tr>
+            <tr ng-show="items.length">
+                <td><button class="btn btn-info btn-sm" ng-click="new()"><i class="glyphicon glyphicon-plus-sign"></i>
+                </button></td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</div>

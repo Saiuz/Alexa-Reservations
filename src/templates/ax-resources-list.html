@@ -1,0 +1,39 @@
+<div ng-show="show">
+    <!--<div class="row">-->
+        <!--<div class="col-md-6">-->
+            <table class="table  table-bordered table-hover table-condensed table-items">
+                <thead>
+                <tr>
+                    <th>
+                        <button class="btn btn-info btn-sm" ng-click="new(tab.index)"><i
+                                class="glyphicon glyphicon-plus-sign"></i>
+                        </button>
+                    </th>
+                    <th>{{resourceType}} {{txt.name}}</th>
+                    <!--<th>{{txt.resourceType}}</th>-->
+                    <th>{{txt.displayString}}</th>
+                    <th>{{txt.displayOrder}}</th>
+                    <th>{{txt.roomPrice}}</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr ng-repeat="r in items">
+                    <td><i class="glyphicon glyphicon-remove" ng-click="delete(r._id.id)"></i></td>
+                    <td><a href="#" editable-text="r.name"
+                           onaftersave="update(r._id.id)">{{r.name}}</a></td></td>
+                    <td><a href="#" editable-text="r.display_name"
+                           onaftersave="update(r._id.id)">{{r.display_name}}</a></td></td>
+                    <td><a href="#" editable-number="r.display_order"
+                           onaftersave="update(r._id.id)">{{r.display_order}}</a></td>
+                    <td><a href="#" editable-text="txtPrice['_'+r._id.id]"
+                           onaftersave="update(r._id.id)">{{r.price | currency}}</a></td>
+                </tr>
+                </tbody>
+            </table>
+        <!--</div>-->
+        <div class="alert alert-danger" ng-show="hasErr">
+            <h3>Error!</h3>
+            {{errMsg}}
+        </div>
+    <!--</div>-->
+</div>

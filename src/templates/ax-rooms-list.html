@@ -1,0 +1,37 @@
+<div ng-show="show">
+    <div class="row">
+        <div class="col-md-6">
+            <table class="table  table-bordered table-hover table-condensed table-items">
+                <thead>
+                <tr>
+                    <th>
+                        <button class="btn btn-info btn-sm" ng-click="new(tab.index)"><i
+                                class="glyphicon glyphicon-plus-sign"></i>
+                        </button>
+                    </th>
+                    <th>{{txt.room}}</th>
+                    <th>{{txt.roomType}}</th>
+                    <th>{{txt.roomClass}}</th>
+                    <th>{{txt.roomPrice}}</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr ng-repeat="r in items">
+                    <td><i class="glyphicon glyphicon-remove" ng-click="delete(r._id.id)"></i></td>
+                    <td>{{r.number}}</td>
+                    <td><a href="#" editable-select="r.room_type" e-ng-options="s for s in roomTypes"
+                           onaftersave="update(r._id.id)">{{r.room_type}}</a></td>
+                    <td><a href="#" editable-select="r.room_class" e-ng-options="s for s in roomClasses"
+                           onaftersave="update(r._id.id)">{{r.room_class}}</a></td>
+                    <td><a href="#" editable-text="txtPrice['_'+r._id.id]"
+                           onaftersave="update(r._id.id)">{{r.price | currency}}</a></td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="alert alert-danger" ng-show="hasErr">
+            <h3>Error!</h3>
+            {{errMsg}}
+        </div>
+    </div>
+</div>

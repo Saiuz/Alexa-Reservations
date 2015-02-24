@@ -19,7 +19,7 @@ define(['./module'], function (directives) {
         //define which items appear in which section of the bill_dec32
         var c = configService.constants,
             unterItems = [c.bcRoom, c.bcPackageItem, c.bcMeals, c.bcKurTax, c.bcPlanDiverses ],
-            personal = [c.bcDrink, c.bcFood, c.bcKur],
+            personal = [c.bcDrink, c.bcFood, c.bcKur, c.bcDienste],
             haveAttributes = false,
             calcResult,
             room,

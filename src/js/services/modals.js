@@ -7,57 +7,26 @@ define(['./module'], function (services) {
   services.service('modals', ['$q', '$modal', '$document', function ($q, $modal, $document) {
     // define the Mongoose Models the service knows about and the modal form - also other utility modals
     // templates and controllers.
-    var models = ['Reservation', 'Guest', 'Firm', 'Event','YesNo'],
+    var models = ['Reservation', 'Guest', 'Firm', 'Event', 'ItemType', 'Room', 'Resource', 'YesNo'],
         templates = ['./templates/reservationFormModal.html',
                      './templates/guestFormModal.html',
                      './templates/firmFormModal.html',
                      './templates/eventFormModal.html',
+                     './templates/itemTypeFormModal.html',
+                     './templates/roomFormModal.html',
+                     './templates/resourceFormModal.html',
                      './templates/yesNoFormModal.html'],
         controllers = ['ReservationFormModalCtrl',
                        'GuestFormModalCtrl',
                        'FirmFormModalCtrl',
                        'EventFormModalCtrl',
+                       'ItemTypeFormModalCtrl',
+                       'RoomFormModalCtrl',
+                       'ResourceFormModalCtrl',
                        'YesNoFormModalCtrl'],
-        formSize = ['lg', 'lg', 'lg', 'lg', 'sm'], // size of modal
+        formSize = ['lg', 'lg', 'lg', 'lg', 'lg', 'lg', 'lg', 'sm'], // size of modal
         mode = {c: 0, r: 1, u: 2, d: 3}, // CRUD mode object
         modeStr = ['c', 'r', 'u', 'd'];
-
-     function _showModel(mModel, dataObj, callback) {
-     }
-
-     function _executeModal(mModel, mode, dataObj, callback) {
-       var bodyRef = angular.element( $document[0].body),
-           modeParams,
-           modalInstance,
-           data,
-           extraData;
-
-       if (dataObj) {
-         data = dataObj['data'];
-         extraData = dataObj['extraData']
-       }
-
-       modeParams = {data: data, mode: modeStr[mode], extraData: extraData};
-
-       bodyRef.addClass('ovh'); //This is supposed to take care of a scrolling bug in modal, doesn't seem to work.
-       modalInstance = $modal.open({
-         templateUrl: templates[mModel],
-         controller: controllers[mModel],
-         size: formSize[mModel],
-         resolve: {
-           modalParams: function () {
-             return modeParams;
-           }
-         }
-       });
-
-       modalInstance.result.then(function(result) {
-         bodyRef.removeClass('ovh');
-         if (callback) {
-           callback(result); // call the user provided callback on successful completion.
-         }
-       });
-     }
 
     // Method returns a simple "Enum" object with properties representing the various db models that have modal forms.
     this.getModelEnum = function () {
@@ -66,7 +35,10 @@ define(['./module'], function (services) {
         guest: 1,
         firm: 2,
         event: 3,
-        yesNo: 4
+        itemType: 4,
+        room: 5,
+        resource: 6,
+        yesNo: 7
       }
     };
 
@@ -123,5 +95,43 @@ define(['./module'], function (services) {
         }
       });
     }
+
+    // launches the modal form
+    function _executeModal(mModel, mode, dataObj, callback) {
+      var bodyRef = angular.element( $document[0].body),
+          modeParams,
+          modalInstance,
+          data,
+          extraData,
+          displayMode;
+
+      if (dataObj) { //add mode property and pass to form
+        modeParams = dataObj;
+        modeParams.mode = modeStr[mode]
+      }
+      else {
+        modeParams = {data: undefined, mode: modeStr[mode]}; //minimum properties
+      }
+
+      bodyRef.addClass('ovh'); //This is supposed to take care of a scrolling bug in modal, doesn't seem to work.
+      modalInstance = $modal.open({
+        templateUrl: templates[mModel],
+        controller: controllers[mModel],
+        size: formSize[mModel],
+        resolve: {
+          modalParams: function () {
+            return modeParams;
+          }
+        }
+      });
+
+      modalInstance.result.then(function(result) {
+        bodyRef.removeClass('ovh');
+        if (callback) {
+          callback(result); // call the user provided callback on successful completion.
+        }
+      });
+    }
+
   }]);
 });

@@ -8,7 +8,7 @@ include nav_common.jade
             span.input-group  Testing
             button(ng-click="newRes()") New Res
             button(ng-click="testFD()") Test File Dialog
-        .panel-body
+        .panel-body.tab-content-box
           div.form-horizontal
             .form-group
               label.control-label.col-xs-4 Test Firm
@@ -51,6 +51,48 @@ include nav_common.jade
               label.control-label.col-xs-4 Results:
               .col-xs-8
                 div {{evtTestResult | json}}
+            hr
+            .form-group
+              label.control-label.col-xs-4 Test ItemType
+              .col-xs-8
+                button(ng-click="testItem('c')") New
+                button(ng-click="testItem('r')") Read
+                button(ng-click="testItem('u')") Update Id.
+                button(ng-click="testItem('d')") Delete
+                span ItemType ID:
+                  input(type="number" ng-model="testIid")
+            .form-group
+              label.control-label.col-xs-4 Results:
+              .col-xs-8
+                div {{itmTestResult | json}}
+            hr
+            .form-group
+              label.control-label.col-xs-4 Test Room
+              .col-xs-8
+                button(ng-click="testRoom('c')") New
+                button(ng-click="testRoom('r')") Read
+                button(ng-click="testRoom('u')") Update Id.
+                button(ng-click="testRoom('d')") Delete
+                span Room ID:
+                  input(type="number" ng-model="testRmid")
+            .form-group
+              label.control-label.col-xs-4 Results:
+              .col-xs-8
+                div {{rmTestResult | json}}
+            hr
+            .form-group
+              label.control-label.col-xs-4 Test Resource
+              .col-xs-8
+                button(ng-click="testResource('c')") New
+                button(ng-click="testResource('r')") Read
+                button(ng-click="testResource('u')") Update Id.
+                button(ng-click="testResource('d')") Delete
+                span Resource ID:
+                  input(type="number" ng-model="testRsid")
+            .form-group
+              label.control-label.col-xs-4 Results:
+              .col-xs-8
+                div {{rmTestResult | json}}
             hr
             .form-group
               label.control-label.col-xs-4 Test Reservation

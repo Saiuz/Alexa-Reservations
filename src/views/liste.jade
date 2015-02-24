@@ -2,6 +2,35 @@ include nav_common.jade
 .container
   .row
     .col-md-12
-      div
-        h2 Other lists maintenance page.
+      tabset(justified="true")
+        tab(heading="Addresse" select="selected('Addresse')")
+          .tab-content-box
+            ax-guest-firm-list(is-active="tabsActive.Addresse" mode="Addresse")
 
+        tab(heading="Firma" select="selected('Firma')")
+          .tab-content-box
+            ax-guest-firm-list(is-active="tabsActive.Firma" mode="Firma")
+
+        tab(heading="Diverses" select="selected('Diverses')")
+          .tab-content-box
+            ax-item-types-tabbed-list(is-active="tabsActive.Diverses" item-types="tabsDiverses" )
+
+        tab(heading="Kur" select="selected('Kur')")
+          .tab-content-box
+            ax-item-types-tabbed-list(is-active="tabsActive.Kur" item-types="tabsKur" )
+        tab(heading="Zimmer" select="selected('Zimmer')")
+          .tab-content-box
+            ax-rooms-list(is-active="tabsActive.Zimmer")
+        tab(heading="Andere" select="selected('Andere')")
+          .tab-content-box
+            .row
+              .col-md-6
+                .panel.panel-default
+                  .panel-heading Andere Preis Liste
+                  .panel-body
+                    ax-app-contants-list(is-active="tabsActive.Andere")
+              .col-md-6
+                .panel.panel-default
+                  .panel-heading Ressourcen - Parkplatz
+                  .panel-body
+                    ax-resources-list(is-active="tabsActive.Andere")

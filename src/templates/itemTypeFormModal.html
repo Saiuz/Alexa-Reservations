@@ -1,0 +1,180 @@
+<div class="modal-header">
+    <h3 class="modal-title">{{title}}</h3>
+</div>
+<div class="modal-body">
+    <div class="form-horizontal" ng-show="!errLoad && !hide">
+        <div class="form-group">
+            <label class="control-label col-xs-4">{{txt.description}}</label>
+
+            <div class="col-xs-8" ng-show="read">
+                <p class="form-control-static">{{itemType.name}}</p>
+            </div>
+            <div class="col-xs-8" ng-show="edit">
+                <input class="form-control" ng-model="itemType.name" type="text"/>
+            </div>
+        </div>
+        <div class="form-group" ng-show="full">
+            <label class="control-label col-xs-4">{{txt.category}}</label>
+
+            <div class="col-xs-8" ng-show="read">
+                <p class="form-control-static">{{itemType.category}}</p>
+            </div>
+            <div class="col-xs-8" ng-show="edit">
+                <select class="form-control" ng-model="itemType.category"
+                        ng-options="c for c in categories"></select>
+            </div>
+        </div>
+        <div class="form-group" ng-show="full">
+            <label class="control-label col-xs-4">{{txt.billCode}}</label>
+
+            <div class="col-xs-8" ng-show="read">
+                <p class="form-control-static">{{itemType.bill_code}} ({{bcText}})</p>
+            </div>
+            <div class="col-xs-8" ng-show="edit">
+                <select class="form-control" ng-model="selectedBC" ng-change="bcChanged()"
+                        ng-options="c.text for c in billCodes"></select>
+            </div>
+        </div>
+        <div class="form-group"  ng-show="full">
+            <label class="control-label col-xs-4">{{txt.displayString}}</label>
+            <div class="col-xs-8" ng-show="read">
+                <p class="form-control-static">{{itemType.display_string}}</p>
+            </div>
+            <div class="col-xs-8" ng-show="edit">
+                <input class="form-control" ng-model="itemType.display_string" type="text"/>
+            </div>
+        </div>
+        <div class="form-group" ng-show="full">
+            <label class="control-label col-xs-4">{{txt.displayOrder}}</label>
+            <div class="col-xs-8" ng-show="read">
+                <p class="form-control-static">{{itemType.display_order}}</p>
+            </div>
+            <div class="col-xs-2" ng-show="edit">
+                <input class="form-control" type="number" min="1" ng-model="itemType.display_order"/>
+            </div>
+        </div>
+        <div class="form-group" ng-show="full">
+            <label class="control-label col-xs-4">{{txt.priceLookup}}</label>
+            <div class="col-xs-8" ng-show="read">
+                <p class="form-control-static">{{itemType.price_lookup}}</p>
+            </div>
+            <div class="col-xs-8" ng-show="edit">
+                <input class="form-control" ng-model="itemType.price_lookup" type="text"/>
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="control-label col-xs-4">{{txt.price}}</label>
+            <div class="col-xs-8" ng-show="read">
+                <p class="form-control-static">{{itemType.price | currency}}</p>
+            </div>
+            <div class="col-xs-8" ng-show="edit">
+                <input class="form-control" ng-model="decimals.price" type="text" ax-de-number/>
+            </div>
+        </div>
+        <div class="form-group" ng-show="full">
+            <label class="control-label col-xs-4">{{txt.singlePrice}}</label>
+
+            <div class="col-xs-8" ng-show="read">
+                <p class="form-control-static">{{itemType.single_price | currency}}</p>
+            </div>
+            <div class="col-xs-8" ng-show="edit">
+                <input class="form-control" ng-model="decimals.single_price" type="text" ax-de-number/>
+            </div>
+        </div>
+        <div class="form-group" ng-show="full">
+            <label class="control-label col-xs-4">{{txt.doublePrice}}</label>
+
+            <div class="col-xs-8" ng-show="read">
+                <p class="form-control-static">{{itemType.double_price | currency}}</p>
+            </div>
+            <div class="col-xs-8" ng-show="edit">
+                <input class="form-control" ng-model="decimals.double_price" type="text" ax-de-number/>
+            </div>
+        </div>
+        <div class="form-group" ng-show="full">
+            <label class="control-label col-xs-4">{{txt.count}}</label>
+            <div class="col-xs-8" ng-show="read">
+                <p class="form-control-static">{{itemType.count}}</p>
+            </div>
+            <div class="col-xs-3" ng-show="edit">
+                <input class="form-control" type="number" min="1" ng-model="itemType.count"/>
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="control-label col-xs-4">{{txt.ustRate}}</label>
+            <div class="col-xs-3">
+                <input type="checkbox" ng-disabled="read" ng-model="itemType.low_tax_rate"/>
+            </div>
+        </div>
+        <hr/ ng-show="full">
+        <div class="form-group" ng-show="full">
+            <label class="control-label col-xs-4">{{txt.advancedSettings}}</label>
+            <div class="col-xs-8">
+                <table class="table-flags">
+                    <tbody>
+                    <tr>
+                        <th>Is Room</th>
+                        <th>Inluded In Room</th>
+                        <th>Per Room</th>
+                    </tr>
+                    <tr>
+                        <th><input type="checkbox" ng-disabled="read" ng-model="itemType.is_room"/></th>
+                        <th><input type="checkbox" ng-disabled="read" ng-model="itemType.included_in_room"/></th>
+                        <th><input type="checkbox" ng-disabled="read" ng-model="itemType.per_room"/></th>
+                    </tr>
+                    <tr>
+                        <th>Per Person</th>
+                        <th>No Delete</th>
+                        <th>No Display</th>
+                    </tr>
+                    <tr>
+                        <th><input type="checkbox" ng-disabled="read" ng-model="itemType.per_person"/></th>
+                        <th><input type="checkbox" ng-disabled="read" ng-model="itemType.no_delete"/></th>
+                        <th><input type="checkbox" ng-disabled="read" ng-model="itemType.no_display"/></th>
+                    </tr>
+                    <tr>
+                        <th>Day Count</th>
+                        <th>One Per</th>
+                        <th>Edit Name</th>
+                    </tr>
+                    <tr>
+                        <th><input type="checkbox" ng-disabled="read" ng-model="itemType.day_count"/></th>
+                        <th><input type="checkbox" ng-disabled="read" ng-model="itemType.one_per"/></th>
+                        <th><input type="checkbox" ng-disabled="read" ng-model="itemType.edit_name"/></th>
+                    </tr>
+                    <tr>
+                        <th>Edit Count</th>
+                        <th>Fix Price</th>
+                        <th>Bus. Paushcale</th>
+                    </tr>
+                    <tr>
+                        <th><input type="checkbox" ng-disabled="read" ng-model="itemType.edit_count"/></th>
+                        <th><input type="checkbox" ng-disabled="read" ng-model="itemType.fix_price"/></th>
+                        <th><input type="checkbox" ng-disabled="read" ng-model="itemType.bus_pauschale"/></th>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+    <div class="alert alert-danger" ng-show="errLoad || errSave">
+        <a class="close" ng-click="hideErr()" ng-show="!errLoad">&times;</a>
+
+        <h3>Error!</h3>
+        <ul>
+            <li ng-repeat="e in err.errors()">{{e}}</li>
+        </ul>
+    </div>
+    <div class="alert alert-success" ng-show="hide">
+        <strong>{{actionMsg}}</strong>
+    </div>
+</div>
+<div class="modal-footer">
+    <label class="btn  btn-primary" ng-show="deleteMode && !hide"><input type="checkbox" ng-model="confirmed"/>{{txt.confirmDelete}}</label>
+    <button class="btn btn-danger" ng-click="delete()" ng-show="!errLoad && deleteMode && confirmed && !hide">
+        {{saveTxt}}
+    </button>
+    <button class="btn btn-primary" ng-click="save()" ng-show="!errLoad && edit && !hide">{{saveTxt}}</button>
+    <button class="btn btn-warning" ng-click="cancel()">{{cancelTxt}}</button>
+</div>

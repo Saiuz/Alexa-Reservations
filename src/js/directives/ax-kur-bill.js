@@ -26,7 +26,7 @@ define(['./module'], function (directives) {
             unterItems = [c.bcRoom, c.bcPackageItem, c.bcKurPackageItem, c.bcExtraRoom],
             kurtax = [c.bcKurTax],
             kur = [c.bcKur,c.bcKurPackageItem],
-            other = [c.bcDrink, c.bcFood, c.bcMeals, c.bcPlanDiverses, c.bcResources],
+            other = [c.bcDrink, c.bcFood, c.bcMeals, c.bcPlanDiverses, c.bcResources, c.bcDienste],
             haveAttributes = false,
             calcResult,
             rmObj,
