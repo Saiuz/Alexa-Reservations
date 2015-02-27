@@ -256,7 +256,7 @@ define(['./module'], function (services) {
 
         Guest.find(qry)
             .sort(sort)
-            .select('_id name unique_name')
+            //.select('_id name unique_name') -can't select just virtual fields!! if they are calculated from fields that aren't returned in model
             .exec(function (err, guests) {
               if (err) {
                 deferred.reject(err);

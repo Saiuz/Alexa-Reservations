@@ -46,7 +46,7 @@ define(['./module'], function (controllers) {
         '$timeout',
         'utility',
         function ($scope, $modalInstance, modalParams, Guest, dbEnums, configService, $timeout, utility) {
-          console.log("guestFormModal controller fired")
+          console.log("guestFormModal controller fired");
           $scope.err = {};
           $scope.errSave= false;
           $scope.errLoad = false;
@@ -58,27 +58,8 @@ define(['./module'], function (controllers) {
           $scope.deleteMode = false;
           $scope.confirmed = false;
 
-          // needed for select for salutation field
-          var sal = [
-            {value: 0, name: '***'}
-          ];
-          var s = dbEnums.getSalutationEnum();
-          var ix = 1;
-          angular.forEach(s, function (item) {
-            sal.push({value: ix, name: item});
-            ix++;
-          });
           $scope.firmPrice = 0; // required by firm lookup but not used in this form.
-          $scope.salutations = sal;
-          $scope.selSalutation = sal[0];
-          $scope.salutationChanged = function () {
-            if ($scope.selSalutation.value === 0) {
-              $scope.guest.salutation = '';
-            }
-            else {
-              $scope.guest.salutation = $scope.selSalutation.name;
-            }
-          };
+          $scope.salutations =  dbEnums.getSalutationEnum();
 
           // Determine CRUD mode of form.
           // For all but 'C' the query can be by id or by the unique_name property.
@@ -100,12 +81,12 @@ define(['./module'], function (controllers) {
                   break;
                 case 3:
                   //try to match salutation
-                  for (var i = 0; i < sal.length; i++) {
-                    if (sal[i].name === modalParams.data[0]) {
+                  for (var i = 0; i < $scope.salutations.length; i++) {
+                    if ($scope.salutations[i] === modalParams.data[0]) {
+                      $scope.guest.salutation = $scope.salutations[i];
                       break;
                     }
                   }
-                  $scope.selSalutation = sal[i];
                   $scope.guest.first_name = modalParams.data[1];
                   $scope.guest.last_name = modalParams.data[2];
                   break;
@@ -157,7 +138,7 @@ define(['./module'], function (controllers) {
                   $scope.$apply();
                 }
               });
-              break
+              break;
 
             case 'd':
               $scope.title = configService.loctxt.guest_titleDelete;
@@ -207,12 +188,7 @@ define(['./module'], function (controllers) {
             $scope.openedBday1 = true;
             //$scope.openEnd = false;
           };
-          $scope.openBday2 = function ($event) {
-            $event.preventDefault();
-            $event.stopPropagation();
-            scope.openedBday2 = true;
-            //$scope.openStart=false;
-          };
+
           $scope.dateOptions = {
             formatYear: 'yy',
             startingDay: 1,
@@ -258,7 +234,7 @@ define(['./module'], function (controllers) {
           };
 
           // Delete btn handler
-          $scope.delete = function (err) {
+          $scope.delete = function () {
             var id = $scope.guest._id.id;
             $scope.guest.remove(function(err) {
               if (err){
@@ -268,7 +244,7 @@ define(['./module'], function (controllers) {
                 $scope.$apply();
               }
               else {
-                var msg = configService.loctxt.guest  +  configService.loctxt.success_deleted
+                var msg = configService.loctxt.guest  +  configService.loctxt.success_deleted;
                 autoClose(msg,id);
               }
             });

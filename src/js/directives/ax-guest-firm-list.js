@@ -150,7 +150,7 @@ define(['./module'], function (directives) {
 
       // Method to retrieve and transform the Guest data. If firm search is true then the guests returned are
       // those that are associated with the firms that match the qryRegex
-      var _getGuests = function (qryRegex, firmSearch, altRegex) {
+      function _getGuests (qryRegex, firmSearch, altRegex) {
         scope.lastQry = qryRegex;
         scope.lastQry2 = altRegex;
         var qry = firmSearch ?
@@ -182,10 +182,10 @@ define(['./module'], function (directives) {
                 scope.$apply();
               }
             });
-      };
+      }
 
       // Method to retrieve and transform the Firm data
-      var _getFirms = function (qryRegex) {
+      function _getFirms (qryRegex) {
         scope.lastQry = qryRegex;
         var qry = {firm_name: {$regex: qryRegex, $options: 'i'}},
             priceCol = scope.headers[1];
@@ -213,8 +213,7 @@ define(['./module'], function (directives) {
                 scope.$apply();
               }
             });
-      };
-
+      }
     };  //end linker
 
     return {

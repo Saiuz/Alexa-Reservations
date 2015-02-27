@@ -48,10 +48,7 @@ define(['./module'], function (controllers) {
                       $scope.showErr = true;
                       $scope.errMsg = err;
                     });
-                  },
-                  function () {
-                      $state.go('home');
-                  }, importExport.getDefaultExportFilePath(), ['zip']);
+                  },importExport.getDefaultExportFilePath(), ['zip']);
               break;
           }
 

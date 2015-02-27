@@ -1,6 +1,7 @@
 /**
  * Directive to provide a delayed input. The value parameter will be updated after a fixed delay. Added the ability
- * to have a minimum characters typed before it triggers.
+ * to have a minimum characters typed before it triggers. It will also filter out any regex special characters
+ * except starting caret '^' characters.
  * This is based on the answer found here:
  * http://stackoverflow.com/questions/18050099/angularjs-how-to-make-inputtext-ngmodel-delay-valued-while-typing
  * Note this directive will not be needed for angular 1.3
@@ -18,6 +19,7 @@ define(['./module'], function (directives) {
           scope.currentInputValue = newval;
         });
         scope.update = function () {
+          scope.currentInputValue = _cleanInput(scope.currentInputValue);
           if (scope.minChars && scope.currentInputValue.length < scope.minChars) return;
           if (scope.pendingPromise) {
             $timeout.cancel(scope.pendingPromise);
@@ -35,6 +37,20 @@ define(['./module'], function (directives) {
             scope.clearCallback();
           }
         };
+
+        function _cleanInput(val) {
+          var clean = /[\\.\#\^\$\|\?\+\(\)\[\{\}\]*]/g, //contains all regex special characters
+              startCaret = (val.match(/^\^+/) || []).length ? val.match(/^\^+/)[0].length : 0,
+              addCaret = '^^^^^^^^^^^^^^';
+          val = val.replace(clean,'');
+          if (val || startCaret) {
+            return addCaret.substr(0, startCaret) + val;
+          }
+          else {
+            return '';
+          }
+        }
+
       }; //end link function
 
       return {

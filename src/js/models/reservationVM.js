@@ -454,6 +454,8 @@ define(['./module'], function (model) {
         return deferred.promise;
       };
 
+
+
       // method that implements the check-out logic. The reservation is checked out by room for most reservations.
       // The current exception is for travel group reservations, for this type, all rooms are checked out at once.
       // The method excepts a room number parameter. This parameter is only used for multi-room, individual bill
@@ -587,7 +589,8 @@ define(['./module'], function (model) {
             this.res.title = this.res.firm + ' (' + this.res.guest.name + ')';
           }
           else {
-            this.res.title = this.res.guest.name + (this.res.guest2 ? ' / ' + this.res.guest2.name : '');
+            this.res.title = this.res.guest.name
+                             + (this.res.guest2 && this.res.guest2.name ? ' / ' + this.res.guest2.name : '');
           }
 
           // If we have insurance, check if the plan requires a perscription fee. If so then set the
@@ -747,6 +750,7 @@ define(['./module'], function (model) {
             sum7 = 0,
             tax19 = 0,
             tax7 = 0,
+            kurtax = 0,
             calcResult = {sum: 0, detail: [], totalsTaxes: {}, hiddenSum: 0, prescription: 0, copay: 0},
             instructions = {price: 'c', credit: 'c'}, //formatting instructions for price/credit in bill item
             hidden = [], //for holding all hidden items.
@@ -820,6 +824,11 @@ define(['./module'], function (model) {
                 sum19 += item.item_tax_total;
               }
             }
+
+            //sum Kurtax items
+            if (item.bill_code === configService.constants.bcKurTax){
+              kurtax += item.item_total;
+            }
           }
         });
 
@@ -862,7 +871,8 @@ define(['./module'], function (model) {
           sum7: sum7,
           tax19: tax19,
           net19: net19,
-          sum19: sum19
+          sum19: sum19,
+          kurtax: kurtax // used only for final bill checkout
         };
         if (busPauschale) {
           calcResult.detail = _aggregatePauschaleItems(calcResult.detail, configService.loctxt.busPauschale);
@@ -1724,7 +1734,8 @@ define(['./module'], function (model) {
       // Adds a TaxItem sub document to the Reservation.taxes property. Calculates total for specified bill
       function _addTaxItem(room, guest) {
         var ti = {}, // object that will have the same properties as the TaxItem schema
-            cr = that.calculateTotals([], room, guest);
+            cr = that.calculateTotals([], room, guest),
+            titem = null;
         ti.room_number = room;
         ti.guest = guest;
         ti.net7 = convert.roundp(cr.taxes.net7,2);
@@ -1734,8 +1745,26 @@ define(['./module'], function (model) {
         ti.tax19 = convert.roundp(cr.taxes.tax19,2);
         ti.sum19 = convert.roundp(cr.taxes.sum19,2);
         ti.bill_total = convert.roundp(cr.sum,2);
-
-        that.res.taxes.push(ti);
+        ti.kurtax_total = convert.roundp(cr.taxes.kurtax,2);
+        // see if an item for the room/guest combo exists.
+        that.res.taxes.forEach(function (tit) {
+          if (tit.room_number === room && tit.guest === guest) {
+            titem = tit;
+          }
+        });
+        if (titem) { //update
+          titem.net7 = ti.net7;
+          titem.tax7 = ti.tax7;
+          titem.sum7 = ti.sum7;
+          titem.net19 = ti.net19;
+          titem.tax19 = ti.tax19;
+          titem.sum19 = ti.sum19;
+          titem.bill_total = ti.bill_total;
+          titem.kurtax_total = ti.kurtax_total;
+        }
+        else { //add new
+          that.res.taxes.push(ti);
+        }
       }
 
 

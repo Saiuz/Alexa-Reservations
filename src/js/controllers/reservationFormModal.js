@@ -73,30 +73,19 @@ define(['./module'], function (controllers) {
               firstLoad = false,
               start = modalParams.extraData ? modalParams.extraData.start : undefined,
               end = modalParams.extraData ? modalParams.extraData.end : undefined;
-          
+
           switch (mode) {
             case 'c':
               $scope.title = configService.loctxt.reservation_titleCreate;
               $scope.edit = true;
               $scope.read = false;
-              ReservationVM.newReservationVM(start, end).then(function (resVM) {
+              ReservationVM.newReservationVM(start, end).then(function (resVM) { // start and end dates passed into VM factory constructor
                 $scope.rvm = resVM;
-                // if extra data is passed to the form, we expect a specific start an end date to use
                 if (extraData) {
-                  //resVM.res.start_date = extraData.start ? datetime.dateOnly(new Date(extraData.start)) : datetime.dateOnly(new Date());
-                  //resVM.res.end_date = extraData.end ? datetime.dateOnly(new Date(extraData.end)) : datetime.dateOnly(resVM.res.start_date, 1);
-                  //resVM.updateAvailableRoomsAndResources().then(function () {  // update room list based on provided dates
-                    //resVM.nights = resVM.res.nights;
-                    $scope.title = extraData.room ? $scope.title + ' (' + configService.loctxt.selectedRoom + ' ' + extraData.room + ')' : $scope.title; //todo-can we figure out how to pre select room?
-                    $scope.start_date = new Date(resVM.res.start_date);
-                    $scope.end_date = new Date(resVM.res.end_date);
-                    executeWatch = true;
-                  //},
-                  //function (err) {
-                  //  console.log('Available room update error ' + err);
-                  //  $scope.err = err; // returns an error object
-                  //  $scope.errLoad = true;
-                  //});
+                  $scope.title = extraData.room ? $scope.title + ' (' + configService.loctxt.selectedRoom + ' ' + extraData.room + ')' : $scope.title; //todo-can we figure out how to pre select room?
+                  $scope.start_date = new Date(resVM.res.start_date); // update scope properites for date pickers
+                  $scope.end_date = new Date(resVM.res.end_date);
+                  executeWatch = true;
                 }
                 else {
                   $scope.start_date = new Date(resVM.res.start_date);
@@ -125,7 +114,7 @@ define(['./module'], function (controllers) {
 
             case 'u':
               firstLoad = true;
-              $scope.title = configService.loctxt.reservation_titleEdit;
+              $scope.title = configService.loctxt.reservation_titleUpdate;
               ReservationVM.getReservationVM(resNumber).then(function (resVM) {
                 $scope.rvm = resVM;
                 $scope.start_date = new Date(resVM.res.start_date);
@@ -167,13 +156,13 @@ define(['./module'], function (controllers) {
             console.log(">>>Watch collection fired " + executeWatch);
             if (executeWatch) {
               var varIndex = (oldvars[7] !== newvars[7]) ? 7 :
-                             (oldvars[6] !== newvars[6]) ? 6 :
-                             (oldvars[5] !== newvars[5]) ? 5 :
-                             (oldvars[4] !== newvars[4]) ? 4 :
-                             (oldvars[3] !== newvars[3]) ? 3 :
-                             (oldvars[2] !== newvars[2]) ? 2 :
-                             (oldvars[1] !== newvars[1]) ? 1 :
-                             (oldvars[0] !== newvars[0]) ? 0 : -1;
+                  (oldvars[6] !== newvars[6]) ? 6 :
+                      (oldvars[5] !== newvars[5]) ? 5 :
+                          (oldvars[4] !== newvars[4]) ? 4 :
+                              (oldvars[3] !== newvars[3]) ? 3 :
+                                  (oldvars[2] !== newvars[2]) ? 2 :
+                                      (oldvars[1] !== newvars[1]) ? 1 :
+                                          (oldvars[0] !== newvars[0]) ? 0 : -1;
               console.log("***watch index: " + varIndex + ' ignore: ' + ignoreIndex);
               if (varIndex === -1 || varIndex === ignoreIndex) {
                 ignoreIndex = -1;
@@ -245,9 +234,9 @@ define(['./module'], function (controllers) {
                   }
                   console.log("Firm changed");
                   if ($scope.rvm.showFirm && $scope.rvm.res.firm && $scope.rvm.res.guest.name) {
-                    $scope.rvm.res.guest = { name: '', id: 0 };
+                    $scope.rvm.res.guest = {name: '', id: 0};
                     if ($scope.rvm.res.guest2) {
-                      $scope.rvm.res.guest2 = { name: '', id: 0 };
+                      $scope.rvm.res.guest2 = {name: '', id: 0};
                     }
                   }
                   break;
@@ -300,7 +289,7 @@ define(['./module'], function (controllers) {
           // modal button click methods
           // save button handler
           $scope.save = function () {
-            $scope.err =  null;
+            $scope.err = null;
             $scope.errSave = false;
 
             //perform any pre save logic and form validation
@@ -315,7 +304,10 @@ define(['./module'], function (controllers) {
                 else {
                   var msg = (mode === 'c' ? configService.loctxt.reservation + configService.loctxt.success_saved :
                       configService.loctxt.success_changes_saved);
-                  $rootScope.$broadcast(configService.constants.reservationChangedEvent, {data: $scope.rvm.res.reservation_number, sDate: $scope.rvm.res.start_date});
+                  $rootScope.$broadcast(configService.constants.reservationChangedEvent, {
+                    data: $scope.rvm.res.reservation_number,
+                    sDate: $scope.rvm.res.start_date
+                  });
                   autoClose(msg, $scope.rvm.res);
                 }
               });
@@ -329,7 +321,7 @@ define(['./module'], function (controllers) {
           };
 
           // Delete btn handler
-          $scope.delete = function (err) {
+          $scope.delete = function () {
             var id = $scope.rvm.res.reservation_number;
             $scope.rvm.res.remove(function (err) {
               if (err) {
@@ -349,7 +341,7 @@ define(['./module'], function (controllers) {
           // Cancel btn handler
           $scope.cancel = function () {
             $modalInstance.dismiss('cancel');
-          }
+          };
 
           // Error msg close handler for save/delete error only
           $scope.hideErr = function () {

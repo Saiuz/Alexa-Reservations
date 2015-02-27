@@ -58,7 +58,13 @@ define(['./module'], function (controllers) {
                 $scope.stdRes = resVM.isStandard;
                 $scope.kurRes = resVM.isKur;
                 $scope.tourRes = resVM.isTour;
+                $scope.err="";
+                $scope.hasErr = false;
               }
+            },
+            function (err) {
+              $scope.err= err;
+              $scope.hasErr = true;
             });
           });
 
@@ -107,7 +113,7 @@ define(['./module'], function (controllers) {
                     $scope.clearSelected();
                   }, function (err) {
                     $scope.err = err;
-                    $scope.errSave = true;
+                    $scope.hasErr = true;
                   });
                 }
               });
@@ -119,7 +125,7 @@ define(['./module'], function (controllers) {
                 $scope.clearSelected();
               }, function (err) {
                 $scope.err = err;
-                $scope.errSave = true;
+                $scope.hasErr = true;
               });
             }
           };

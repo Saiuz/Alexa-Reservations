@@ -9,8 +9,7 @@
                 <p class="form-control-static">{{guest.salutation}}</p>
             </div>
             <div class="col-xs-8" ng-show="edit">
-                <select class="form-control" ng-model="selSalutation" ng-options="z as z.name for z in salutations"
-                        ng-change="salutationChanged()"></select>
+                <select class="form-control" ng-model="guest.salutation" ng-options="z for z in salutations"></select>
             </div>
         </div>
         <div class="form-group">
