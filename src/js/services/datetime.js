@@ -61,6 +61,16 @@ define(['./module'], function (services) {
         return dateval;
     };
 
+    var _daysSinceEpoch = function (dateval) {
+      if (_isDate(dateval)) {
+        var ms = new Date(dateval.getFullYear(), dateval.getMonth(), dateval.getDate(), 0, 0, 0).getTime();
+        return Math.floor(dateval / millisecondsPerDay) + 1;
+      }
+      else {
+        return 0;
+      }
+    };
+
     return {
       // Strip time value off a Date object and optionally changes the date
       // by the specified number of days (+ or -). Function returns a new
@@ -69,6 +79,18 @@ define(['./module'], function (services) {
       // NOTE: this function will not work correctly with the TingoDB / Mongoose Date objects. To get around the
       // issue, you can wrap the Mongoose date object in a new JS date object, e.g. new Date(schema.date_field)
       dateOnly: _dateOnly,
+
+      // Given a date (which defaults to current date), find the start and end of the month the date falls in. Returns
+      // an object with the start of month date (monthStart) and the end of the month date (monthEnd).
+      findMonthDates: function (date) {
+        if (!_isDate(date)) {
+          date = new Date();
+        }
+        return  {
+          monthStart:  new Date(date.getFullYear(), date.getMonth(), 1),
+          monthEnd:  new Date(date.getFullYear(), date.getMonth() + 1, 0)
+        };
+      },
 
       // Given a date, find the start and end of the week that the date is in. Weeks can start on Sunday or Monday
       // The default is monday. If no date is provided then the current date is chosen.
@@ -129,16 +151,13 @@ define(['./module'], function (services) {
           return 0;
         }
       },
-      // returns the number of days since Jan. 1, 1970
-      daysSinceEpoch: function (dateval) {
-        if (_isDate(dateval)) {
-          var ms = new Date(dateval.getFullYear(), dateval.getMonth(), dateval.getDate(), 0, 0, 0).getTime();
-          return Math.floor(dateval / millisecondsPerDay) + 1;
-        }
-        else {
-          return 0;
-        }
+      // compare two dates (dates only, no times)
+      // returns a negative value if A is less than B, 0 if they are equal, positive value if A is greater than B
+      dateCompare: function (dateA, dateB) {
+         return _daysSinceEpoch(dateA) - _daysSinceEpoch(dateB);
       },
+      // returns the number of days since Jan. 1, 1970
+      daysSinceEpoch: _daysSinceEpoch,
       // converts a days since Jan. 1 1970 value to a date
       dseToDate: function (dseval) {
         return _dateOnly(new Date(dseval * millisecondsPerDay));

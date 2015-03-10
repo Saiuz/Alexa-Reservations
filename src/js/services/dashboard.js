@@ -11,7 +11,8 @@ define(['./module'], function (services) {
 
   services.factory(
       'dashboard',
-      function (Reservation, Guest, Room, RoomPlan, Resource, Itemtype, Firm, Event, dbEnums, datetime, $q, configService) {
+      function (Reservation, Guest, Room, RoomPlan, Resource, Itemtype, Firm, Event,
+                dbEnums, datetime, $q, configService, $filter) {
     return {
       getNextDaysDate: function (dateval) {
         return datetime.dateOnly(dateval, 1);
@@ -293,6 +294,101 @@ define(['./module'], function (services) {
                 deferred.resolve(firms);
               }
             });
+        return deferred.promise;
+      },
+      //finds all of the reservations that start within the specified month and year. We will split the reservations
+      // out for multiple room-individual bill reservations and single room-individual bill reservations where there are
+      // two occupants.
+      getReservationsInMonth: function (month, year) {
+        var deferred = $q.defer(),
+            startmonth = new Date(year, month, 1),
+            endmonth = new Date(year, month + 1, 0),
+            results = [],
+            findPlan = function (id, plan) {
+              var ix = -1;
+              for (var i = 0; i < plan.length; i++) {
+                if (plan[0]._id.id === id) {
+                  ix = i;
+                  break;
+                }
+              }
+              return ix !== -1 ? plan[ix] : plan[0]; //if can't find then default to standard
+            },
+            buildRec = function (rec, guest, room) {
+              var guestName;
+
+              if (guest && typeof guest.hasOwnProperty('name')) {
+                guestName = guest.name;
+              }
+              else {
+                guestName = rec.guest.name;
+              }
+
+              room = room || rec.rooms[0];
+
+              return {
+                resNum: rec.reservation_number,
+                start: $filter('date')(rec.start_date,'shortDate'),
+                end: $filter('date')(rec.end_date,'shortDate'),
+                nights: datetime.getNightsStayed(rec.start_date, rec.end_date),
+                room: room.number,
+                guest: guestName,
+                type: rec.type,
+                canEdit: !room.isCheckedOut,
+                canCheckIn: !room.isCheckedIn && datetime.dateCompare(rec.start_date, new Date()) === 0,
+                lateCheckIn: !room.isCheckedIn && datetime.dateCompare(rec.start_date, new Date()) < 0,
+                lateCheckOut: !room.isCheckedOut && datetime.dateCompare(new Date(), rec.end_date) > 0,
+                canCancel: !rec.checked_in
+              };
+            };
+
+        // need to get some information from the room plans first
+        RoomPlan.find().lean().select('_id is_group one_bill, one_room').exec(function(err, plans) {
+          if (err) {
+            deferred.reject(err);
+          }
+          else {
+            Reservation.find({$and: [{start_date: {$gte: startmonth}}, {start_date: {$lte: endmonth}}]})
+                .lean()
+                .sort({start_date: 1})
+                .exec(function (err, resResults) {
+                  if (err) {
+                    deferred.reject(err);
+                    console.log("getReservationsInMonth query 1 failed: " + err);
+                  }
+                  else {
+                    // break out reservations based on type:
+                    // standard - just one line
+                    // business-one room - line for each guest in room
+                    // kur - line for each guest in room
+                    // group-bus. - one line for each room and guest in room
+                    // group-travel - one line, list room # as comma separated string
+                    resResults.forEach(function (res) {
+                      var plan = findPlan(res.plan_code, plans);
+                      if (plan.one_room) {
+                        results.push(buildRec(res));
+                        if (!plan.one_bill && res.occupants ===2){
+                          results.push(buildRec(res, res.guest2));
+                        }
+                      }
+                      else if (!plan.one_room && plan.one_bill) {
+                        results.push(buildRec(res));
+                      }
+                      else {
+                        res.rooms.forEach(function (rm) {
+                          results.push(buildRec(res, rm.guest, rm));
+                          if(rm.guest_count === 2) {
+                            results.push(buildRec(res, rm.guest2, rm));
+                          }
+                        });
+                      }
+                    });
+                    deferred.resolve(results);
+                  }
+                });
+          }
+        });
+
         return deferred.promise;
       },
       // find reservations during a specified date interval. Returns an array of objects containing the

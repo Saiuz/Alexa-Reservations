@@ -1,0 +1,20 @@
+<div class="modal-header">
+    <h5>{{pTitle}} für: {{rvm.res.reservation_number}} - {{guest}} - {{txt.roomAbrv}} {{room}}, Abfahrt {{rvm.res.end_date | date:'dd.MM.yyyy'}}, {{rvm.res.nights}} {{txt.nights}}</h3>
+</div>
+<div class="modal-body">
+    <div class="bill-container" ng-show="!hasErr">
+        <ax-standard-bill ng-if="stdRes" reservation-vm="rvm" details="resDetails"></ax-standard-bill>
+        <ax-business-bill ng-if="busRes" reservation-vm="rvm" room="{{room}}" guest="{{guest}}" pauschale="busPauschale"></ax-business-bill>
+        <ax-kur-bill ng-if="kurRes" reservation-vm="rvm" room="{{room}}" guest="{{guest}}"></ax-kur-bill>
+        <ax-tour-bill ng-if="tourRes" reservation-vm="rvm"></ax-tour-bill>
+    </div>
+    <div class="alert alert-danger" ng-show="hasErr">
+     <h3>ERROR!</h3>
+       <span>{{err}}</span>
+    </div>
+</div>
+<div class="modal-footer">
+    <button class="btn btn-info"  ax-print print-element-id="printBill">{{txt.print}}</button>
+    <button class="btn btn-warning" ng-click="print2()">{{txt.print}}</button>
+    <button class="btn btn-primary" ng-click="close()">{{txt.close}}</button>
+</div>

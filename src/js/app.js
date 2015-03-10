@@ -54,14 +54,9 @@ define("app", [
                     click: 'export-tax'
                   },
                   {
-                    label: 'Addresse',
-                    tooltip: 'Gäste Addresse Liste',
-                    click: 'export-guest'
-                  },
-                  {
-                    label: 'Firma',
-                    tooltip: 'Firma Liste',
-                    click: 'export-firm'
+                    label: 'Einzeldaten',
+                    tooltip: 'Gäste Addresse Liste, Firma, usw.',
+                    click: 'export-one'
                   },
                   {
                     label: 'Alle Daten',
@@ -76,14 +71,9 @@ define("app", [
                 click: 'open-file',
                 items: [
                   {
-                    label: 'Addresse',
-                    tooltip: 'Gäste Addresse Liste',
-                    click: 'import-guest'
-                  },
-                  {
-                    label: 'Firma',
-                    tooltip: 'Firma Liste',
-                    click: 'import-firm'
+                    label: 'Einzeldaten',
+                    tooltip: 'Gäste Addresse Liste, Firma, usw.',
+                    click: 'import-one'
                   },
                   {
                     label: 'Alle Daten',

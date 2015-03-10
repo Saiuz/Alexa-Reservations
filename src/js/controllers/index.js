@@ -21,6 +21,7 @@ define([
     './resourceFormModal',
     './eventFormModal',
     './yesNoFormModal',
+    './billDisplayModal',
     './export',
     './import'
 ], function () {});

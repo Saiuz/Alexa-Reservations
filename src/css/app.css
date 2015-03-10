@@ -6477,6 +6477,14 @@ body {
   height: 715px;
   overflow-y: auto;
 }
+.table-content-box {
+  margin-top: 3px;
+  border: 1px solid #dddddd;
+  border-radius: 4px;
+  padding: 5px;
+  height: 660px;
+  overflow-y: auto;
+}
 .m-box {
   border: 1px solid #dddddd;
   border-radius: 4px;
@@ -6584,6 +6592,12 @@ body {
   text-align: right;
   padding-right: 3px;
 }
+.table-first-last-center > tbody > tr > td:first-child {
+  text-align: center;
+}
+.table-first-last-center > tbody > tr > td:last-child {
+  text-align: center;
+}
 .table-app-constants {
   padding-left: 20px;
   padding-top: 10px;
@@ -6641,6 +6655,16 @@ body {
   }
 }
 @media print {
+  @page {
+    size: A4;
+    margin: 25mm;
+    margin-top: 45mm;
+  }
+  html,
+  body {
+    width: 185mm;
+    height: 252mm;
+  }
   .no-print {
     display: none;
   }
@@ -6661,9 +6685,8 @@ body {
   iframe#printf {
     visibility: visible;
   }
-  @page {
-    size: 210mm 297mm;
-    margin: 25mm;
-    margin-top: 45mm;
-  }
+}
+.tight {
+  margin-top: 3px;
+  margin-bottom: 3px;
 }

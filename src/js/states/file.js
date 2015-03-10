@@ -15,14 +15,8 @@ define(['./module'], function (states) {
             controller: 'ExportCtrl'
         });
 
-        $stateProvider.state('export_guest', {
-            url: '/export/guest',
-            template: viewProvider.renderView('export'),
-            controller: 'ExportCtrl'
-        });
-
-        $stateProvider.state('export_firm', {
-            url: '/export/firm',
+        $stateProvider.state('export_one', {
+            url: '/export/one',
             template: viewProvider.renderView('export'),
             controller: 'ExportCtrl'
         });
@@ -33,14 +27,8 @@ define(['./module'], function (states) {
             controller: 'ExportCtrl'
         });
 
-        $stateProvider.state('import_guest', {
-            url: '/import/guest',
-            template: viewProvider.renderView('import'),
-            controller: 'ImportCtrl'
-        });
-
-        $stateProvider.state('import_firm', {
-            url: '/import/firm',
+        $stateProvider.state('import_one', {
+            url: '/import/one',
             template: viewProvider.renderView('import'),
             controller: 'ImportCtrl'
         });

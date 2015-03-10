@@ -2,18 +2,52 @@ include nav_common.jade
 .container
    .row
       .col-md-12
-         div
-            h2 {{txt.dataExport}}
-            div(ng-if="mode === 'all'")
-              p {{txt.dbExport}}
-         div
-div(ng-show="working")
-  progressbar.progress-striped.active(value="100")
-.alert.alert-success(ng-show="complete")
-  h3 {{txt.importEnded}}
-.alert.alert-danger(ng-show="showErr")
-  h3 Error!
-  span {{errMsg}}
-  br
-  div
-    a.btn.btn-warning.btn-small(href=""  ng-click="home()") {{txt.close}}
+        h2 {{txt.dataExport}}
+        .form-horizontal
+          .form-group(ng-if="showAll")
+            label.control-label.col-xs-3 {{txt.dbExport}}
+            .col-xs-3
+          .form-group(ng-show="showTax")
+            label.control-label.col-xs-3 {{txt.selectDatesTax}}
+          .form-group(ng-show="showTax")
+            label.control-label.col-xs-3 {{txt.from}}
+            .col-xs-3
+              span.input-group
+                input.form-control(type="text" datepicker-popup="dd.MM.yy" is-open="openedStart"
+                        ng-model="startDate" datepicker-options="dateOptions" close-text="OK"
+                        current-text="Heute" clear-text="Löschen")
+                span.input-group-btn
+                  button.btn.btn-default(type="button" ng-click="openStart($event)")
+                    i.glyphicon.glyphicon-calendar
+          .form-group(ng-show="showTax")
+            label.control-label.col-xs-3 {{txt.until}}
+            .col-xs-3
+              span.input-group
+                input.form-control(type="text" datepicker-popup="dd.MM.yy" is-open="openedEnd"
+                ng-model="endDate" datepicker-options="dateOptions" close-text="OK"
+                current-text="Heute" clear-text="Löschen")
+                span.input-group-btn
+                  button.btn.btn-default(type="button" ng-click="openEnd($event)")
+                    i.glyphicon.glyphicon-calendar
+          .form-group(ng-show="showTax")
+            label.control-label.col-xs-3
+              button(ng-click="taxReport()") {{txt.start}}
+          .form-group(ng-if="showOne")
+             label.control-label.col-xs-3 {{txt.selectList}}
+             .col-xs-3
+              select.form-control(ng-model="selectedModel" ng-options="m.text for m in models" ng-change="exportModel(selectedModel)")
+          .btn-group
+            a.btn.btn-default.btn-small(ng-if="showHome" href="" ng-click="home()")
+              i.glyphicon.glyphicon-arrow-left
+              span &nbsp;{{txt.toRoomPlan}}
+   .row
+     .col-md-12
+        div(ng-show="working")
+          progressbar.progress-striped.active(value="100")
+        .alert.alert-success(ng-show="complete")
+          h3 {{txt.exportEnded}}
+          p(ng-show="records > 0") {{records}} {{txt.dataItemsWritten}}
+        .alert.alert-danger(ng-show="showErr")
+          h3 Error!
+          span {{errMsg}}
+          br

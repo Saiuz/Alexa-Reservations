@@ -406,7 +406,7 @@ define(['./module'], function (model) {
       address1: String,  //address fields to be printed on the bill, come from guest or firm collections
       address2: String,
       city: String,
-      post_code: Number,
+      post_code: String,
       country: String,
       individualBill: Boolean, // true if is a multi-room reservation but requires an individual bill for each room
       expenses: [ExpenseItem],
@@ -452,11 +452,13 @@ define(['./module'], function (model) {
       firm_name: {type: String, required: true, unique: true},
       address1: String,
       address2: String,
+      post_code: String,
       city: String,
-      post_code: Number,
       country: String,
-      contact: {name: String, phone: String, email: String},
       room_price: Number,
+      contact_name: String,
+      contact_phone: String,
+      contact_email: String,
       comments: String
     });
 
@@ -467,7 +469,7 @@ define(['./module'], function (model) {
         return {
           'Firma': this.firm_name, 'Zimmer Preis': this.room_price, 'Addresse 1': this.address1,
           'Addresse 2': this.address2, 'PLZ': this.post_code, 'Ort': this.city, 'Land': this.country,
-          'Kontakt Name': this.contact.name, 'Kontakt Tf': this.contact.telephone, 'Kontakt E-Mail': this.contact.email,
+          'Kontakt Name': this.contact_name, 'Kontakt Tf': this.contact_telephone, 'Kontakt E-Mail': this.contact_email,
           'Bemerkung': this.comments
         };
     };

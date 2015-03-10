@@ -24,8 +24,11 @@ define(['./module'], function (controllers) {
 
           $scope.working = false;
           $scope.complete = false;
+          $scope.records = 0;
+          $scope.showAll = false;
+          $scope.showOne = false;
           $scope.showErr = false;
-          $scope.showHome = false;
+          $scope.showHome = true;
           $scope.errMsg = '';
           $scope.success = configService.loctxt.importEnded;
 
@@ -35,17 +38,17 @@ define(['./module'], function (controllers) {
           $scope.txt = configService.loctxt;
           switch (mode) {
             case 'all':
+              $scope.showAll = true;
               modals.yesNoShow(configService.loctxt.importWarning, function (result) {
                 if (result) {
                   var win = gui.Window.get();
-                  $scope.showHome = true;
                   fileDialogs.openFile(function (fpath) {
                         $scope.path = fpath;
                         $scope.working = true;
                         $scope.$apply();
                         importExport.importAll(fpath).then(function () {
                           $scope.working = false;
-                          $scope.success = configService.loctxt.importEnded + ' - ' + 'Application will restart in 5 seconds';
+                          $scope.success = configService.loctxt.importEnded + ' - ' + configService.loctxt.appRestart;
                           $scope.complete = true;
                           $scope.showHome = false;
                           $scope.$apply();
@@ -64,7 +67,47 @@ define(['./module'], function (controllers) {
                 }
               });
               break;
+
+            case 'one':
+              $scope.showOne = true;
+              $scope.models = importExport.getAvailableModels();
+              $scope.selectedModel = $scope.models[0];
+              break;
           }
+
+          $scope.importModel = function (model) {
+            var warningText = configService.loctxt.importWarning2a + model.model_name + configService.loctxt.importWarning2b;
+
+            modals.yesNoShow(warningText, function (result) {
+              if (result) {
+                var win = gui.Window.get();
+                fileDialogs.openFile(function (fpath) {
+                  $scope.path = fpath;
+                  $scope.working = true;
+                  $scope.$apply();
+                  importExport.importFromCSV(fpath, model.value).then(function (cnt) {
+                    $scope.working = false;
+                    $scope.success = configService.loctxt.importEnded + ' - ' + cnt + ' ' + configService.loctxt.dataItemsWritten;
+                    $scope.records = cnt;
+                    $scope.complete = true;
+                    $scope.showHome = false;
+                    $scope.$apply();
+                    setTimeout(function () {
+                      $state.go('home');
+                      //win.reloadDev(); // reload application
+                    }, 5000);
+                  }, function (err) {
+                    $scope.working = false;
+                    $scope.showErr = true;
+                    $scope.errMsg = err;
+                  });
+                }, importExport.getDefaultImportDirectory(), ['csv']);
+              }
+              else {
+                $state.go('home');
+              }
+            });
+          };
 
           $scope.home = function () {
             $state.go('home');

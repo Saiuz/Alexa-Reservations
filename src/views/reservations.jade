@@ -1,18 +1,53 @@
-
 include nav_common.jade
-
 .container
   .row
-    .col-md-5
-      .panel.panel-default
-        .panel-heading
-          .form-horizontal
-            span.input-group  Neue Reservierung
-        .panel-body
-
-    .col-md-7
-      .panel.panel-default
-        .panel-heading Zimmer Plan
-        .panel-body
-          div
-            img(src="./images/resplan.png" alt="room calendar widget" width="600 px")
+    .col-md-12
+      h3 Reservations in Year/Month
+      tabset(type="pills")
+        tab(ng-repeat="y in years" heading="{{y.year}}" active="y.active" select="yearSelected(y.year)")
+      hr.tight
+      tabset(type="pills")
+        tab(ng-repeat="m in months" heading="{{m.month}}" active="m.active" disabled="m.disabled" select="monthSelected(m.mm)")
+      .table-content-box
+        div(ng-show="!working") {{reservations.length}} Reserverungen in {{months[selectedMonth].month}} {{selectedYear}}
+        div(ng-show="working")
+          span.btn.btn-warning.btn-sm
+          i.glyphicon.glyphicon-refresh
+        div(ng-show="reservations.length")
+          table.table.table-bordered.table-hover.table-condensed.table-first-last-center
+            thead
+              tr
+                th
+                th Res Num
+                th Start
+                th End
+                th Nights
+                th Room
+                th Guest
+                th Type
+                th
+            tbody
+              tr(ng-repeat="r in reservations", ng-class="{'late-chkout': r.lateCheckOut && !r.lateCheckIn, 'late-chkin': r.lateCheckIn}")
+                td
+                  span(ng-if="!r.canEdit")
+                    i.glyphicon.glyphicon-eye-open(ng-click="view(r.resNum)") &nbsp;
+                    i.glyphicon.glyphicon-euro(ng-click="viewBill(r.resNum, r.room, r.guest)")
+                  a(ng-if="r.canEdit && r.canCheckIn" href="#/home/{{r.resNum}}/{{r.room}}/{{r.guest}}")
+                    i.glyphicon.glyphicon-resize-small
+                  a(ng-if="r.canEdit && r.lateCheckIn" href="#/home/{{r.resNum}}/{{r.room}}/{{r.guest}}")
+                    i.glyphicon.glyphicon-resize-small &nbsp;
+                  a(ng-if="r.canEdit && r.lateCheckOut && !r.lateCheckIn" href="#/rechnung/{{r.resNum}}/{{r.room}}/{{r.guest}}")
+                    i.glyphicon.glyphicon-resize-full
+                  i.glyphicon.glyphicon-edit(ng-if="r.canEdit && !r.lateCheckOut && !r.canCheckIn" ng-click="edit(r.resNum)")
+                td {{r.resNum}}
+                td {{r.start}}
+                td {{r.end}}
+                td {{r.nights}}
+                td {{r.room}}
+                td {{r.guest}}
+                td {{r.type}}
+                td
+                  i.glyphicon.glyphicon-remove(ng-if="r.canCancel" ng-click="cancel(r.resNum)")
+        .alert.alert-danger(ng-show="errShow")
+          h3 Error!
+          span {{errMsg}}

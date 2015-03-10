@@ -15,6 +15,11 @@ define(['./module'], function (controllers) {
         function ($scope, $state, $rootScope, dbEnums, configService) {
           console.log("Addresse  controller fired") ;
 
+          $scope.appTitle = $rootScope.appTitle;
+          $scope.appBrand = $rootScope.appBrand;
+          $scope.url = $state.current.url;
+          $scope.pageHeading = 'Liste';
+
           $scope.tabsActive = {
             Addresse: true,
             Firma: false,
@@ -57,9 +62,6 @@ define(['./module'], function (controllers) {
               lowTax: true
             }
           ];
-          $scope.appTitle = $rootScope.appTitle;
-          $scope.appBrand = $rootScope.appBrand;
-          $scope.url = $state.current.url;
 
           $scope.constActive = true;
 

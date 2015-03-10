@@ -2,20 +2,28 @@ include nav_common.jade
 .container
   .row
     .col-md-12
-      div
         h2 {{txt.dataImport}}
-        div(ng-if="mode === 'all'")
-          p {{txt.dbImport}}
-      div
-        div(ng-show="working")
-          progressbar.progress-striped.active(value="100")
-        .alert.alert-success(ng-show="complete")
-          h3 {{success}}
-        .alert.alert-danger(ng-show="showErr")
-          h3 Error!
-          span {{errMsg}}
-        div(ng-show="showHome")
-          a.btn.btn-warning.btn-small(href=""  ng-click="home()") {{txt.close}}
+        .form-horizontal
+          .form-group(ng-if="showAll")
+            label.control-label.col-xs-3 {{txt.dbImport}}
+            .col-xs-3
+          .form-group(ng-if="showOne")
+            label.control-label.col-xs-3 {{txt.selectList}}
+            .col-xs-3
+              select.form-control(ng-model="selectedModel" ng-options="m.text for m in models" ng-change="importModel(selectedModel)")
+          .btn-group
+            a.btn.btn-default.btn-small(ng-if="showHome" href="" ng-click="home()")
+              i.glyphicon.glyphicon-arrow-left
+              span &nbsp;{{txt.toRoomPlan}}
+  .row
+    .col-md-12
+      div(ng-show="working")
+        progressbar.progress-striped.active(value="100")
+      .alert.alert-success(ng-show="complete")
+        h3 {{success}}
+      .alert.alert-danger(ng-show="showErr")
+        h3 Error!
+        span {{errMsg}}
 
 
 

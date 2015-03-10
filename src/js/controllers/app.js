@@ -1882,27 +1882,19 @@ define(['./module'], function (controllers) {
             $state.go('export_tax');
           });
 
-          $scope.$on('export-guest', function (e, menu, item) {
-            $state.go('export_guest');
-          });
-
-          $scope.$on('export-firm', function (e, menu, item) {
-            $state.go('export_firm');
+          $scope.$on('export-one', function (e, menu, item) {
+            $state.go('export_one');
           });
 
           $scope.$on('export-all', function (e, menu, item) {
             $state.go('export_all');
           });
 
-          $scope.$on('import-guest', function (e, menu, item) {
-            $state.go('import_guest');
+          $scope.$on('import-one', function (e, menu, item) {
+            $state.go('import_one');
           });
 
-          $scope.$on('import-firm', function (e, menu, item) {
-            $state.go('import_firm');
-          });
-
-          $scope.$on('import-all', function (e, menu, item) {
+           $scope.$on('import-all', function (e, menu, item) {
             $state.go('import_all');
           });
 

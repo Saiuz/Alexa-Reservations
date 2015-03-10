@@ -24,7 +24,9 @@ define(['./module'], function (controllers) {
           $scope.appTitle = $rootScope.appTitle;
           $scope.appBrand = $rootScope.appBrand;
           $scope.url = $state.current.url;
-          $scope.showRes = true;
+          $scope.pageHeading = "Dev. Testing"
+
+              $scope.showRes = true;
 
           $scope.weekStart;
           $scope.weekEnd;
