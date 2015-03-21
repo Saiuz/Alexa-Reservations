@@ -1,5 +1,11 @@
 <div class="modal-header">
-    <h5>{{pTitle}} für: {{rvm.res.reservation_number}} - {{guest}} - {{txt.roomAbrv}} {{room}}, Abfahrt {{rvm.res.end_date | date:'dd.MM.yyyy'}}, {{rvm.res.nights}} {{txt.nights}}</h3>
+    <h4>{{pTitle}} für: {{rvm.res.reservation_number}} - {{guest}} - {{txt.roomAbrv}} {{room}}, Abfahrt {{rvm.res.end_date | date:'dd.MM.yyyy'}}, {{rvm.res.nights}} {{txt.nights}}</h4>
+    <div class="input-group" ng-show="busRes">
+        <input type="checkbox" ng-model="busPauschale" /><span>&nbsp;{{txt.busPauschale}}</span>
+    </div>
+    <div class="input-group" ng-show="stdRes">
+        <input type="checkbox" ng-model="resDetails" /><span>&nbsp;{{txt.miscellaneousDetails}}</span>
+    </div>
 </div>
 <div class="modal-body">
     <div class="bill-container" ng-show="!hasErr">
@@ -14,7 +20,7 @@
     </div>
 </div>
 <div class="modal-footer">
-    <button class="btn btn-info"  ax-print print-element-id="printBill">{{txt.print}}</button>
-    <button class="btn btn-warning" ng-click="print2()">{{txt.print}}</button>
+    <!--<button class="btn btn-info"  ax-print print-element-id="printBill">{{txt.print}}dir</button>-->
+    <button class="btn btn-warning" ax-print print-element-id="printBill">{{txt.print}}</button>
     <button class="btn btn-primary" ng-click="close()">{{txt.close}}</button>
 </div>

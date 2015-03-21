@@ -1,5 +1,7 @@
-var isWin32 = /^win/.test(process.platform);
-var isWin64 = false;// /^win/.test(process.platform) && /^x64/.test(process.arch);;
+var nwVer = '0.12.0'; //'0.10.5';  //NOTE: tried 0.11.6 & 0.12.0 but it broke the print functionality
+
+var isWin32 = /^win/.test(process.platform) || nwVer === '0.10.5';
+var isWin64 = (/^win/.test(process.platform) && nwVer !== '0.10.5') && /^x64/.test(process.arch);
 var isMac32 = /^darwin/.test(process.platform) && /^ia32/.test(process.arch);
 var isMac64 = /^darwin/.test(process.platform) && /^x64/.test(process.arch);
 var isLinux32 = /^linux/.test(process.platform);
@@ -9,8 +11,8 @@ var os = "unknown";
 
 if (isWin32)
   os = "win32";
-//if (isWin64)
-//  os = "win64";
+if (isWin64)
+  os = "win64";
 if (isMac32)
     os = "osx32";
 if (isMac64)
@@ -20,7 +22,6 @@ if (isLinux32)
 if (isLinux64)
     os = "linux64";
 
-var nwVer = '0.10.5';  //NOTE: tried 0.11.6 but it broke the print functionality
 var appDir = "~//Alexa-Reservations";  //hard wired todo - figure out how to get this programmatically for mac
 
 var nwExec = "";

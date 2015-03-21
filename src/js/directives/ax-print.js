@@ -2,15 +2,15 @@
  * Directive to print a specified section of a page. Used for printing bills
  * Based on the directive code found here: http://dotnet.dzone.com/articles/building-simple-angularjs
  * and http://stackoverflow.com/questions/19637312/is-there-an-angular-way-of-printing-a-div-from-a-html-page
- * Note: just appending the div to the body always printed two pages. Moved to Iframe approach.
- */
-/**
- * Created by bob on 1/14/15.
+ * Note: just appending the div to the body always printed two pages. Moved to Iframe approach, but this approach
+ * did not work properly on Windows. Lines of text were missing from the printout. Also the approach completely
+ * broke with v 0.11.x of NW. Resorted to a pop-up window kluge after much testing.
  */
 define(['./module'], function (directives) {
   'use strict';
-  directives.directive('axPrint', ['convert',
-    function (convert) {
+  directives.directive('axPrint', [function () {
+      var gui = require('nw.gui');
+
       var linker = function (scope, element, attrs) {
 
         element.bind('click', function(evt) {
@@ -19,11 +19,31 @@ define(['./module'], function (directives) {
         });
 
         function _printElement(elem) {
-          _printWithIframe($("#" + elem).html());
+          //_printWithIframe($("#" + elem).html());
+          _printWithPopupWindow($("#" + elem).html());
         }
 
-        // app.less has special media print instructions
-        function _printWithIframe(data) {
+        // Kludge worked out by experiment. Requires a4print.html.
+        function _printWithPopupWindow(data) {
+          var pwin = gui.Window.open('templates/a4print.html', {
+            "width": 450,
+            "height": 600,
+            "position": 'center',
+            "new-instance": false,
+            "focus": true,
+            "toolbar": false,
+            "menu": false
+          });
+          // Once the blank document is loaded, write the contents to print.
+          pwin.on('loaded',function(){
+            console.log("Print window loaded", Date.now());
+            var parea = pwin.window.document.getElementById("pContent");
+            parea.innerHTML = data;
+          });
+        }
+
+        // app.less has special media print instructions  -- BROKE in later version of nw.js
+        /* function _printWithIframe(data) {
 
           if ($('iframe#printf').size() === 0) {
             $('body').append('<iframe id="printf" name="printf"></iframe>');  // an iFrame is added to the html content, then your div's contents are added to it and the iFrame's content is printed
@@ -42,10 +62,11 @@ define(['./module'], function (directives) {
               setTimeout(function () {
                     $('iframe#printf').remove();
                   },
-                  2000);  // The iFrame is removed 2 seconds after print() is executed, which is enough for me, but you can play around with the value
+                  10000);  // The iFrame is removed 10 seconds after print() is executed, which is enough for me, but you can play around with the value
             });
           }
-        }
+        } */
+
       }; //end link function
 
       return {

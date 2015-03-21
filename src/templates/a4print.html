@@ -1,10 +1,21 @@
-<!DOCTYPE html>
+<!DOCTYPE html><!-- required by ax-print directive  -->
 <html>
-<head lang="de">
-    <meta charset="UTF-8">
-    <title></title>
+<head>
+    <link rel="stylesheet" type="text/css" href="../css/app.css">
 </head>
-<body>
-   Boo
+<body onload="delayedPrint()">
+<div id="pContent">BOO</div>
+<script>
+    window.onmousemove = function () {// cause window to close after print dialog closes but not too soon
+        setTimeout(function () {
+            window.close();
+        }, 1500);
+    };
+    function delayedPrint() { //Wait for real contents to be written to pContent div.
+        setTimeout(function () {
+            window.print();
+        }, 50);
+    }
+</script>
 </body>
 </html>

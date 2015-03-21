@@ -37,6 +37,8 @@ define(['./module'], function (controllers) {
           var gui = require('nw.gui');
 
           $scope.txt = configService.loctxt;
+          $scope.busPauschale = false;
+          $scope.resDetails = false;
 
           // Get reservation and prepare the room plan text and handle the special case
           // where we have a group reservation with one bill- need to show the rooms
@@ -62,39 +64,6 @@ define(['./module'], function (controllers) {
                 $scope.err= err;
                 $scope.hasErr = true;
               });
-
-          //print bill
-          $scope.print = function() {
-            var printContents = $('#printBill').html(); //$('#billPage').innerHTML();
-            var popupWin = window.open('', '_blank', 'width=210mm,height=297mm,scrollbars=no,menubar=no,toolbar=no,location=no,status=no,titlebar=no');
-            popupWin.window.focus();
-            popupWin.document.write('<!DOCTYPE html><html><head>' +
-            '<link rel="stylesheet" type="text/css" href="css/app.css" />' +
-            '</head><body onload="window.print()"><div class="bill-print">' + printContents + '</div></html>');
-            popupWin.window.print();
-            popupWin.onbeforeunload = function (event) {
-              popupWin.close();
-              return '.\n';
-            };
-            popupWin.onabort = function (event) {
-              popupWin.document.close();
-              popupWin.close();
-            }
-          };
-
-          $scope.print2 = function () {
-            var printContents = $('#printBill').html();
-            var pwin = gui.Window.open('./directives/a4print.html', {
-             width: 450,
-              height: 600,
-              position: 'center',
-              toolbar: false,
-              menu: false
-            });
-            pwin.document.write('<!DOCTYPE html><html><head>' +
-            '<link rel="stylesheet" type="text/css" href="css/app.css" />' +
-            '</head><body onload="window.print()"><div class="bill-print">' + printContents + '</div></html>');
-          };
 
           $scope.close = function () {
             $modalInstance.close();

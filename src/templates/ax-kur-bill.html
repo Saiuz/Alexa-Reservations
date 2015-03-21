@@ -100,11 +100,11 @@
                             <td>{{txt.extra}} {{section4.diff | currency}}</td>
                             <td></td>
                         </tr>
-                        <tr ng-show="prescription">
+                        <tr ng-if="prescription">
                             <td>{{txt.prescription_charge}}</td>
                             <td>{{prescription | currency}}</td>
                         </tr>
-                        <tr ng-show="copay">
+                        <tr ng-if="copay">
                             <td>{{txt.copay}}</td>
                             <td>{{copay | currency}}</td>
                         </tr>
