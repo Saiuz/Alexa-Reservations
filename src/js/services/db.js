@@ -15,7 +15,15 @@ define(['./module'], function (services) {
     var files, newfile, oldfile;
 
     console.log("Creating/opening database in folder", appConstants.dbPath);
-    // First check to see if we have peformed an import of all data files since the last time we ran.
+    // First see if the database path exists, if not create it.
+    if (!fs.existsSync(appConstants.basePath)) {
+      fs.mkdirSync(appConstants.basePath);
+    }
+    if (!fs.existsSync(appConstants.dbPath)) {
+      fs.mkdirSync(appConstants.dbPath);
+    }
+
+    // Now check to see if we have peformed an import of all data files since the last time we ran.
     // These files will have a _1 suffix on the file name.
     var files = fs.readdirSync(appConstants.dbPath);
     files.forEach(function (f) {

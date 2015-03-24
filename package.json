@@ -1,6 +1,6 @@
 {
-  "name": "angular-desktop-app-build",
-  "description": "Angular-Desktop-App Build System",
+  "name": "AlexaBuild",
+  "description": "Alexa App Build System",
   "version": "1.3.0",
   "author": {
     "name": "Tom Lawton",

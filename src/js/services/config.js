@@ -7,14 +7,15 @@ define(['./module'], function (services) {
 
   // returns object with aplication specific constants
   services.service('appConstants', [function () {
-    var appName = 'Alexa Reservations',
+    var appName = 'Alexa Reservierungen',
         appTitle = 'Hotel Alexa Reservierungssystem',
-        tmpPath, dbPath, dbConnStr, defExportPath, zipCmdfn, execPath;
+        tmpPath, dbPath, dbConnStr, defExportPath, zipCmdfn, execPath, basePath;
 
     // Determine the database path and the default export path based on the operating system (mac or windows).
     if (/^win/.test(process.platform)) {
       tmpPath = process.env.TEMP;
-      dbPath = process.env.APPDATA + '\\' + appName.replace(' ', '-') + '\\data';
+      basePath = process.env.APPDATA + '\\' + appName.replace(' ', '-');
+      dbPath = basePath + '\\data';
       dbConnStr = 'tingodb://'+ dbPath;
       defExportPath = process.env.HOMEDRIVE + process.env.HOMEPATH + '\\Desktop';
       execPath = process.execPath.replace('nw.exe','');
@@ -27,7 +28,8 @@ define(['./module'], function (services) {
     }
     else { //assume mac
       tmpPath = process.env.TMPDIR;
-      dbPath = process.env.HOME + '/Library/Application Support/' + appName.replace(' ', '-') + '\\data';
+      basePath = process.env.HOME + '/Library/Application Support/' + appName.replace(' ', '-');
+      dbPath = basePath + '\\data';
       defExportPath = process.env.HOME + '/Desktop';
       execPath = process.env.PWD;
       zipCmdfn = ''; //currently don't have an unzip option for the mac
@@ -37,6 +39,7 @@ define(['./module'], function (services) {
       appName: appName,
       appTitle: appTitle,
       tmpPath: tmpPath,
+      basePath: basePath,
       dbPath: dbPath,
       execPath: execPath,
       dbConnStr: dbConnStr,
