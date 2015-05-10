@@ -372,7 +372,7 @@ define(['./module'], function (services) {
               {value: 0, text: configService.loctxt.addressGuest, model_name: 'Guest'},
               {value: 1, text: configService.loctxt.firm, model_name: 'Firm'},
               {value: 2, text: configService.loctxt.room, model_name: 'Room'},
-              {value: 3, text: configService.loctxt.roomPlan, model_name: 'RoomPlan'},
+              {value: 3, text: configService.loctxt.accommodationPlan, model_name: 'RoomPlan'},
               {value: 4, text: configService.loctxt.resource, model_name: 'Resource'},
               {value: 5, text: configService.loctxt.event, model_name: 'Event'},
               {value: 6, text: configService.loctxt.expenseItem, model_name: 'ItemType'}

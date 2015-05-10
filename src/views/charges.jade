@@ -4,11 +4,11 @@ include nav_common.jade
     .col-md-4
       .panel.panel-default
         .panel-heading {{txt.currentReservations}}
-          span.input-group
-            input.form-control(type=text ng-model="searchTxt")
-            span.input-group-btn
-              button.btn.btn-small.pull-right(type="button" ng-click="findRes()")
-                i.glyphicon.glyphicon-search
+          //span.input-group
+          //  input.form-control(type=text ng-model="searchTxt")
+          //  span.input-group-btn
+          //    button.btn.btn-small.pull-right(type="button" ng-click="findRes()")
+          //      i.glyphicon.glyphicon-search
         .panel-body
           ax-reservation-list(list-mode="c" selected-reservation="selected.reservation" res-count="selected.acCnt")
     .col-md-8

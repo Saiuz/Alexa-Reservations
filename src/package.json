@@ -17,10 +17,10 @@
       "url": "https://github.com/jgrenon"
     }],
   "window": {
-    "toolbar": true,
+    "toolbar": false,
     "width": 1200,
     "height": 960,
-    "icon":"images/favicon.ico"
+    "icon":"./images/logo.png"
   },
   "dependencies": {
     "jade": "~0.35.0",

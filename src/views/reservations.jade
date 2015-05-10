@@ -2,7 +2,7 @@ include nav_common.jade
 .container
   .row
     .col-md-12
-      h3 Reservations in Year/Month
+      h3 {{txt.reservationYearMonth}}
       tabset(type="pills")
         tab(ng-repeat="y in years" heading="{{y.year}}" active="y.active" select="yearSelected(y.year)")
       hr.tight
@@ -18,13 +18,13 @@ include nav_common.jade
             thead
               tr
                 th
-                th Res Num
-                th Start
-                th End
-                th Nights
-                th Room
-                th Guest
-                th Type
+                th {{txt.res_num}}
+                th {{txt.from}}
+                th {{txt.until}}
+                th {{txt.nights}}
+                th {{txt.roomNumberAbrv}}
+                th {{txt.guest}}
+                th {{txt.type}}
                 th
             tbody
               tr(ng-repeat="r in reservations", ng-class="{'late-chkout': r.lateCheckOut && !r.lateCheckIn, 'late-chkin': r.lateCheckIn}")

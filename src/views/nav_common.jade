@@ -6,7 +6,7 @@
   //.app-logo.pull-left {{appTitle}}
 .navbar.navbar-fixed-bottom.navbar-inverse(role="navigation")
   .navbar-header
-    .navbar-brand: a(href="")  {{appBrand}}
+    .navbar-brand: a(href="http://www.haus-alexa.de" target="_blank")  {{appBrand}}
   ul.nav.navbar-nav
     li(ng-class="{active: (url.indexOf('/home') > -1)}")
       a(href="#/home/0/0/0") Zimmer Plan
@@ -18,8 +18,8 @@
       a(href="#/reservations") Reservierungen
     li(ng-class="{active: (url.indexOf('/liste') > -1)}")
       a(href="#/liste") Liste
-    li(ng-class="{active: (url.indexOf('/addresse') > -1)}")
-      a(href="#/addresse") DevTest
+    //li(ng-class="{active: (url.indexOf('/addresse') > -1)}")
+    //  a(href="#/addresse") DevTest
   ul.nav.navbar-nav.pull-right
     li
     a(href="") V0.1

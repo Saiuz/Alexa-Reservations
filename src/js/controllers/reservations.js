@@ -68,6 +68,16 @@ define(['./module'], function (controllers) {
             });
           };
 
+          // Edit active reservations, if a reservation is late checkin, redirect to home page, if late checkout,
+          // redirect to rechnung
+          $scope.cancel= function (resNum) {
+            var model = modals.getModelEnum().reservation,
+                dataObj = {data: resNum};
+            modals.delete(model,dataObj,function(result) {
+              _getData();
+            });
+          };
+
           $scope.viewBill = function (resNum, room, guest) {
             modals.billShow(resNum, room, guest);
           };
