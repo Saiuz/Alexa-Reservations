@@ -3,22 +3,15 @@
         <table class="table-bill-page">
             <thead>
             <tr>
-                <td colspan="2">Bad Mergentheim, {{today | date:'dd. MMMM yyyy'}}</td>
-            </tr>
-            <tr>
-                <td><b>{{sectionTotal.page_title}}</b></td>
+                <td>{{guest}}</td>
                 <td></td>
             </tr>
-            <!--            <tr>
-                            <td>Nr. {{rvm.res.reservation_number}}</td>
-                            <td>&nbsp;</td>
-                        </tr>-->
             <tr>
-                <td>Herrn/Frau/Frl. {{guest}}</td>
-                <td>&nbsp;</td>
+                <td>{{rvm.res.address1}}</td>
+                <td></td>
             </tr>
-            <tr>
-                <td>{{rvm.res.address1}} {{rvm.res.address2}}</td>
+            <tr ng-if="rvm.res.address2">
+                <td>{{rvm.res.address2}}</td>
                 <td></td>
             </tr>
             <tr>
@@ -28,6 +21,25 @@
             <tr>
                 <td>{{rvm.res.country}}</td>
                 <td></td>
+            </tr>
+            <tr>
+                <td>&nbsp;</td>
+                <td>&nbsp;</td>
+            </tr>
+            <tr>
+                <td colspan="2">Bad Mergentheim, {{today | date:'dd. MMMM yyyy'}}</td>
+            </tr>
+            <tr>
+                <td><b>{{sectionTotal.page_title}}</b></td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>Nr. {{billNumber}}</td>
+                <td>&nbsp;</td>
+            </tr>
+            <tr>
+                <td>{{guest}}</td>
+                <td>&nbsp;</td>
             </tr>
             <tr>
                 <td>Aufenthalt vom {{rvm.res.start_date | date:'dd. MMMM yyyy'}} bis {{rvm.res.end_date | date:'dd. MMMM yyyy'}}
@@ -206,6 +218,79 @@
                         <tr ng-show="!isPrivate">
                             <td class="text-right">{{prescMsg}}</td>
                             <td>-{{prescription | currency}}</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </td>
+            </tr>
+            <tr>
+                <td>&nbsp;</td>
+                <td>&nbsp;</td>
+            </tr>
+            <tr>
+                <td colspan="2">
+                    <ax-bill-taxes taxes="section4.taxes" />
+                </td>
+            </tr>
+            </tbody>
+        </table>
+
+    </div>
+    <div class="bill-page-2" ng-if="section4.total && !isPrivate">
+        <hr class="no-print" />
+        <table class="table-bill-page">
+            <thead class="bill-next-page-header">
+            <tr>
+                <td colspan="2">Bad Mergentheim, {{today | date:'dd. MMMM yyyy'}}</td>
+            </tr>
+            <tr>
+                <td><b>{{section4.page_title}}</b></td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>Nr. {{billNumber}}</td>
+                <td>&nbsp;</td>
+            </tr>
+
+            <tr>
+                <td>{{guest}}</td>
+                <td>&nbsp;</td>
+            </tr>
+            <tr>
+                <td>Aufenthalt vom {{rvm.res.start_date | date:'dd. MMMM yyyy'}} bis {{rvm.res.end_date | date:'dd. MMMM yyyy'}}
+                </td>
+                <td>&nbsp;</td>
+            </tr>
+            <tr>
+                <td>Über Zuzahlung für Heilmittel
+                </td>
+                <td>&nbsp;</td>
+            </tr>
+            </thead>
+            <tbody>
+            <tr>
+                <td class="bill-section-heading">{{section4.section_title}}</td>
+                <td>&nbsp;</td>
+            </tr>
+            <tr>
+                <td colspan="2">
+                    <table class="table-bill-detail">
+                        <tbody>
+                        <tr ng-repeat="p in section4.padding">
+                            <td>&nbsp;</td>
+                            <td>&nbsp;</td>
+                        </tr>
+                        <tr ng-show="!isPrivate && copay">
+                            <td class="text-right">{{copayMsg}}</td>
+                            <td>{{copay | currency}}</td>
+                        </tr>
+                        <tr ng-show="!isPrivate">
+                            <td class="text-right">{{prescMsg}}</td>
+                            <td>{{prescription | currency}}</td>
+                        </tr>
+                        <tr>
+                            <td class="text-right">{{sectionTotal.total_text}}</td>
+                            <td><span class="bill-total">{{copTotal | currency}}</span></td>
                         </tr>
                         </tbody>
                     </table>

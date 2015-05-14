@@ -11,7 +11,7 @@ define(['./module'], function (services) {
 
   services.factory(
       'dashboard',
-      function (Reservation, Guest, Room, RoomPlan, Resource, Itemtype, Firm, Event,
+      function (Reservation, Guest, Room, RoomPlan, Resource, Itemtype, Firm, Event, Counters,
                 dbEnums, datetime, $q, configService, $filter) {
     return {
       getNextDaysDate: function (dateval) {
@@ -35,11 +35,11 @@ define(['./module'], function (services) {
             });
         return deferred.promise;
       },
+      // Return reservations with start dates on date specified
       getArrivals: function (dateval) {
         var deferred = $q.defer();
-        Reservation.find()
-            .where('start_date')
-            .equals(datetime.dateOnly(dateval))
+        var qry = {$and: [{start_date: {$gte: datetime.dateOnly(dateval)}}, {start_date: {$lte: datetime.dateOnly(dateval, 1)}}]};
+        Reservation.find(qry)
             .sort('room')
             .exec(function (err, reservations) {
               if (err) {
@@ -52,11 +52,11 @@ define(['./module'], function (services) {
             });
         return deferred.promise;
       },
+      // Return reservations with end dates on date specified
       getDepartures: function (dateval) {
         var deferred = $q.defer();
-        Reservation.find()
-            .where('end_date')
-            .equals(datetime.dateOnly(dateval))
+        var qry = {$and: [{end_date: {$gte: datetime.dateOnly(dateval)}}, {end_date: {$lte: datetime.dateOnly(dateval, 1)}}]};
+        Reservation.find(qry)
             .sort('room')
             .exec(function (err, reservations) {
               if (err) {
@@ -155,6 +155,38 @@ define(['./module'], function (services) {
                 else {
                   deferred.resolve(res[0].reservation_number + 1);
                 }
+              }
+            });
+        return deferred.promise;
+      },
+      // retrieves the bill number sequence and returns the value. Then it increments the number and saves it back
+      getNewBillNumber: function() {
+        var deferred = $q.defer();
+        var num = -1;
+        Counters.findOne({counter: configService.constants.billNumberID})
+            .exec(function (err, cntr) {
+              if (err) {
+                deferred.reject(err);
+                console.log("getNewBillNumber query failed: " + err);
+              }
+              else {
+                if (cntr) {
+                  num = cntr.seq;
+                  cntr.seq = cntr.seq + 1;
+                }
+                else {
+                  num = configService.constants.billNoSeed;
+                  cntr = new Counters({counter: configService.constants.billNumberID, seq: num + 1});
+                }
+                cntr.save(function(err) {
+                  if (err) {
+                    deferred.reject(err);
+                    console.log("getNewBillNumber save failed: " + err);
+                  }
+                  else {
+                    deferred.resolve(num);
+                  }
+                });
               }
             });
         return deferred.promise;

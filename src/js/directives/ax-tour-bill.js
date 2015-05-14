@@ -61,6 +61,11 @@ define(['./module'], function (directives) {
 
           if (haveAttributes) {
             // Get the main bill expenses rooms and tax. Ignore room/guest specific expenses at this point.
+            scope.rvm.getBillNumber(scope.rvm.res.rooms[0].number, scope.guest).then( function (bnum) {
+                  scope.billNumber = bnum;
+                }
+            );
+
             calcResult = scope.rvm.calculateTotals(unterItems, null, null, extras, true, ktext);
             scope.section1 = {
               page_title: "Rechnung",

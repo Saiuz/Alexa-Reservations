@@ -48,7 +48,7 @@ define(['./module'], function (controllers) {
         function ($scope, $modalInstance, modalParams, Guest, dbEnums, configService, $timeout, utility) {
           console.log("guestFormModal controller fired");
           $scope.err = {};
-          $scope.errSave= false;
+          $scope.errSave = false;
           $scope.errLoad = false;
           $scope.hide = false;
           $scope.actionMsg = '';
@@ -57,9 +57,11 @@ define(['./module'], function (controllers) {
           $scope.txt = configService.loctxt;
           $scope.deleteMode = false;
           $scope.confirmed = false;
+          $scope.bdate1 = undefined;
+          $scope.bdate2 = undefined;
 
           $scope.firmPrice = 0; // required by firm lookup but not used in this form.
-          $scope.salutations =  dbEnums.getSalutationEnum();
+          $scope.salutations = dbEnums.getSalutationEnum();
 
           // Determine CRUD mode of form.
           // For all but 'C' the query can be by id or by the unique_name property.
@@ -96,16 +98,17 @@ define(['./module'], function (controllers) {
               $scope.title = configService.loctxt.guest_titleRead;
               Guest.findOne(qry, function (err, guest) {
                 if (err) {
-                  $scope.err =  new utility.errObj(err);
+                  $scope.err = new utility.errObj(err);
                   $scope.errLoad = true;
                 }
                 else {
-                  if (guest){
-                  $scope.guest = guest;
-                  $scope.bdate1 = guest.birthday;
-                  $scope.edit = false;
-                  $scope.read = true;
-                  $scope.cancelTxt = configService.loctxt.close;
+                  if (guest) {
+                    $scope.guest = guest;
+                    $scope.bdate1 = guest.birthday;
+                    $scope.bdate2 = guest.birthday_partner;
+                    $scope.edit = false;
+                    $scope.read = true;
+                    $scope.cancelTxt = configService.loctxt.close;
                   }
                   else {
                     $scope.err = new utility.errObj(notFound);
@@ -120,13 +123,14 @@ define(['./module'], function (controllers) {
               $scope.title = configService.loctxt.guest_titleUpdate;
               Guest.findOne(qry, function (err, guest) {
                 if (err) {
-                  $scope.err =  new utility.errObj(err);
+                  $scope.err = new utility.errObj(err);
                   $scope.errLoad = true;
                 }
                 else {
                   if (guest) {
                     $scope.guest = guest;
                     $scope.bdate1 = guest.birthday;
+                    $scope.bdate2 = guest.birthday_partner;
                     $scope.edit = true;
                     $scope.read = false;
                     $scope.saveTxt = configService.loctxt.update;
@@ -144,13 +148,14 @@ define(['./module'], function (controllers) {
               $scope.title = configService.loctxt.guest_titleDelete;
               Guest.findOne(qry, function (err, guest) {
                 if (err) {
-                  $scope.err =  new utility.errObj(err);
+                  $scope.err = new utility.errObj(err);
                   $scope.errLoad = true;
                 }
                 else {
-                  if (guest){
+                  if (guest) {
                     $scope.guest = guest;
                     $scope.bdate1 = guest.birthday;
+                    $scope.bdate2 = guest.birthday_partner;
                     $scope.edit = false;
                     $scope.read = true;
                     $scope.deleteMode = true;
@@ -172,13 +177,14 @@ define(['./module'], function (controllers) {
           // model date fields, the German date format entry created strange behavior, even with the datepicker fix.
           // we now watch for a change in the birthday date field and when we have a valid date, we update
           // the Mongoose model.
-          $scope.bdate1 = undefined;
-          $scope.$watch('bdate1', function(newVal){
-            console.log("bdate1 watch fired " + newVal);
-             if (newVal !== undefined) {
-                 $scope.guest.birthday = newVal;
-               //}
-             }
+          $scope.$watchCollection('[bdate1, bdate2]', function (newVals) {
+            console.log("bdate watch fired " + newVals);
+            if (newVals[0] !== undefined) {
+              $scope.guest.birthday = newVals[0];
+            }
+            if (newVals[1] !== undefined) {
+              $scope.guest.birthday_partner = newVals[1];
+            }
           });
 
           // for date pickers
@@ -186,6 +192,13 @@ define(['./module'], function (controllers) {
             $event.preventDefault();
             $event.stopPropagation();
             $scope.openedBday1 = true;
+            //$scope.openEnd = false;
+          };
+          // for date pickers
+          $scope.openBday2 = function ($event) {
+            $event.preventDefault();
+            $event.stopPropagation();
+            $scope.openedBday2 = true;
             //$scope.openEnd = false;
           };
 
@@ -200,11 +213,11 @@ define(['./module'], function (controllers) {
 
           // auto close after successful action methods
           var timer = null; // used for timer to auto close modal after a delay when a C, U or D operation occurs
-          var autoClose = function(msg, val){
+          var autoClose = function (msg, val) {
             $scope.hide = true;
             $scope.actionMsg = msg;
             $scope.$apply();
-            timer = $timeout(function (){
+            timer = $timeout(function () {
               $modalInstance.close(val);
             }, configService.constants.autoCloseTime)
           };
@@ -226,9 +239,9 @@ define(['./module'], function (controllers) {
                 $scope.$apply();
               }
               else {
-                var msg = (mode === 'c' ? configService.loctxt.guest  +  configService.loctxt.success_saved :
+                var msg = (mode === 'c' ? configService.loctxt.guest + configService.loctxt.success_saved :
                     configService.loctxt.success_changes_saved);
-                autoClose(msg,$scope.guest);
+                autoClose(msg, $scope.guest);
               }
             });
           };
@@ -236,16 +249,16 @@ define(['./module'], function (controllers) {
           // Delete btn handler
           $scope.delete = function () {
             var id = $scope.guest._id.id;
-            $scope.guest.remove(function(err) {
-              if (err){
+            $scope.guest.remove(function (err) {
+              if (err) {
                 console.log('Guest delete error: ' + err);
-                $scope.err =  new utility.errObj(err);
+                $scope.err = new utility.errObj(err);
                 $scope.errSave = true;
                 $scope.$apply();
               }
               else {
-                var msg = configService.loctxt.guest  +  configService.loctxt.success_deleted;
-                autoClose(msg,id);
+                var msg = configService.loctxt.guest + configService.loctxt.success_deleted;
+                autoClose(msg, id);
               }
             });
           };
@@ -256,7 +269,7 @@ define(['./module'], function (controllers) {
           };
 
           // Error msg close handler
-          $scope.hideErr = function() {
+          $scope.hideErr = function () {
             $scope.errSave = false;
           };
 

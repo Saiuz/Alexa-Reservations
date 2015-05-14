@@ -74,6 +74,8 @@ define(['./module'], function (services) {
     // bill section.
     this.constants = {
       autoCloseTime: 2000,
+      billNumberID: 'billNo', //used by Counters collection to identify the bill number counter
+      billNoSeed: 1000, // value used to seed the counter if the entry doesn;t exist
       expensesChangedEvent: 'EXP_EVENT1',  // event names
       reservationChangedEvent: 'RES_EVENT1',
       roomPlanClickEvent: 'ZPLAN_EVENT1',
@@ -246,6 +248,8 @@ define(['./module'], function (services) {
       'ok': 'Ok',
       'onlyOneInRoom': 'Nur ein im Doppelzimmer',
       'open': 'Öffnen',
+      'partner': 'Partner',
+      'partner_birthday': 'Partner Geburtstag',
       'parkPlace': 'Parkplatz',
       'parkCharge': 'Parkgebür',
       'perPersonAbrv': 'p.P.',

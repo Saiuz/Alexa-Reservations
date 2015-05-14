@@ -78,6 +78,8 @@ define(['./module'], function (controllers) {
           $scope.importModel = function (model) {
             var warningText = configService.loctxt.importWarning2a + model.model_name + configService.loctxt.importWarning2b;
 
+            if (!model) return;
+
             modals.yesNoShow(warningText, function (result) {
               if (result) {
                 var win = gui.Window.get();

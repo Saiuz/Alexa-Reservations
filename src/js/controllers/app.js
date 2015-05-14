@@ -19,9 +19,56 @@ define(['./module'], function (controllers) {
         '$timeout',
         function ($scope, $rootScope, db, Firm, Guest, Reservation, Resource,
                   Room, Itemtype, RoomPlan, AppConstants, configService, datetime, $state, $timeout) {
+          var gui = require('nw.gui');
+          var zoomPercent = 100,
+              win = gui.Window.get();
+
           console.log("App controller fired");
           // Set the saved date for the home page room plan to the current date
           configService.set('planDate', datetime.dateOnly(new Date()));
+
+          // add global keyboard shortcuts
+/*          var refreshShortcut = new gui.Shortcut({
+            key : "Ctrl+Shift+R",
+            active : function() {
+              console.log("Global desktop keyboard shortcut: " + this.key + " active.");
+              win.reloadDev();
+
+            },
+            failed : function(msg) {
+              // :(, fail to register the |key| or couldn't parse the |key|.
+              console.log(msg);
+            }
+          });
+          var zoomOutShortcut = new gui.Shortcut({
+            key : "Ctrl+Shift+O",
+            active : function() {
+              console.log("Global desktop keyboard shortcut: " + this.key + " active.");
+              zoomPercent += 10;
+              win.zoomLevel = Math.log(zoomPercent/100) / Math.log(1.2);
+
+            },
+            failed : function(msg) {
+              // :(, fail to register the |key| or couldn't parse the |key|.
+              console.log(msg);
+            }
+          });
+          var zoomInShortcut = new gui.Shortcut({
+            key : "Ctrl+Shift+I",
+            active : function() {
+              console.log("Global desktop keyboard shortcut: " + this.key + " active.");
+              zoomPercent -= 10;
+              win.zoomLevel = Math.log(zoomPercent/100) / Math.log(1.2);
+
+            },
+            failed : function(msg) {
+              // :(, fail to register the |key| or couldn't parse the |key|.
+              console.log(msg);
+            }
+          });
+          gui.App.registerGlobalHotKey(refreshShortcut);
+          gui.App.registerGlobalHotKey(zoomOutShortcut);
+          gui.App.registerGlobalHotKey(zoomInShortcut);*/
 
           // Add base db collections if needed.
 
@@ -1383,72 +1430,6 @@ define(['./module'], function (controllers) {
             }
           });
 
-          Guest.count(function (err, count) {
-            if (count === 0) {
-              console.log("Creating guest collection");
-              Guest.create({
-                first_name: 'Johnny',
-                last_name: 'Guest',
-                salutation: 'Familie',
-                first_name2: 'Sally',
-                last_name2: 'Guest',
-                birthday: new Date(1965, 1, 23),
-                birthday2: new Date(1964, 9, 23),
-                email: 'guest@nomail.org',
-                //firm: '',
-                address1: '123 Nowhere Ave',
-                address2: 'Apt 234',
-                city: 'Anywhere',
-                post_code: 321456,
-                telephone: '123456789',
-                comments: 'Hi there'
-              }, function (err) {
-                if (err)
-                  console.log(err);
-              });
-              Guest.create({
-                first_name: 'Susie',
-                last_name: 'Longstay',
-                salutation: 'Dr.',
-                //first_name2: 'Sally',
-                //last_name2: 'Shortstay',
-                birthday: new Date(1963, 1, 23),
-                //birthday2: new Date(1965, 9, 23),
-                email: 'longstay@nomail.org',
-                firm: 'The Grand Central',
-                //address1: '',
-                //address2: '',
-                //city: '',
-                //post_code: ,
-                //telephone: '',
-                comments: 'Testing'
-              }, function (err) {
-                if (err) console.log(err);
-              });
-              Guest.create({
-                first_name: 'Monika',
-                last_name: 'Adams',
-                salutation: 'Frau',
-                //first_name2: 'Sally',
-                //last_name2: 'Shortstay',
-                birthday: new Date(1945, 9, 6),
-                //birthday2: new Date(1965, 9, 23),
-                //email: 'longstay@nomail.org',
-                //firm: 'The Grand Central',
-                address1: 'Siegburger Straße 105',
-                address2: '',
-                city: 'Köln',
-                post_code: 50679,
-                telephone: '',
-                comments: 'Testing'
-              }, function (err) {
-                if (err) console.log(err);
-              });
-            }
-            else
-              console.log("Guest collection contains %d records", count);
-          });
-
           Resource.count(function (err, count) {
             if (count === 0) {
               console.log("Creating Resource collection");
@@ -1827,55 +1808,6 @@ define(['./module'], function (controllers) {
             }
           });
 
-          Firm.count(function (err, count) {
-            if (count === 0) {
-              console.log("Creating Firm collection");
-              Firm.create({
-                firm_name: 'Landessaatzuchtanstalt',
-                address1: 'Waldhof 2',
-                address2: '',
-                city: 'Eckartsweiler',
-                post_code: 77737,
-                room_price: 58
-              }, function (err) {
-                if (err) console.log(err);
-              });
-              Firm.create({
-                firm_name: 'ELB-SCHLIFF Werkzeugmaschinen GmbH/aba Grinding Technologies GmbH',
-                address1: 'Bollenwaldstraße 116',
-                address2: '',
-                city: 'Aschaffenburg',
-                post_code: 63743,
-                room_price: 57
-              }, function (err) {
-                if (err) console.log(err);
-              });
-              Firm.create({
-                firm_name: 'The Grand Central',
-                address1: 'Ovelgönne  4B',
-                address2: 'Suite 1',
-                city: 'Hamburg',
-                post_code: 22665,
-                room_price: 58,
-                contact: {name: 'Andreas Hanitsch', phone: '0154283451', email: 'hanitscha@elbschliff.de'}
-              }, function (err) {
-                if (err) console.log(err);
-              });
-              Firm.create({
-                firm_name: 'Federal-Mogul Systems Protection',
-                address1: 'Bürgermeister-Schmidt-Straße 17',
-                address2: '',
-                city: 'Bruscheid',
-                post_code: 51399,
-                room_price: 55
-              }, function (err) {
-                if (err) console.log(err);
-              });
-            }
-            else {
-              console.log("Firm collection contains %d records", count);
-            }
-          });
 
           // Listen for specific menu events and respond by navigating to a particular state.
           $scope.$on('export-tax', function (e, menu, item) {

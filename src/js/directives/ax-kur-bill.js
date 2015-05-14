@@ -79,6 +79,10 @@ define(['./module'], function (directives) {
               aggObj = [];
 
           if (haveAttributes) {
+            scope.rvm.getBillNumber(scope.room, scope.guest).then( function (bnum) {
+                  scope.billNumber = bnum;
+                }
+            );
             // get the total bill and taxes taxes
             calcResult = scope.rvm.calculateTotals([], scope.room, scope.guest, extras, false, '', false, !scope.isPrivate); //total everything
             scope.sectionTotal = {
@@ -93,6 +97,7 @@ define(['./module'], function (directives) {
             // save any copay and prescription charges
             scope.copay = calcResult.copay;
             scope.prescription = calcResult.prescription;
+            scope.copTotal = calcResult.copay + calcResult.prescription;
 
                 calcResult = scope.rvm.calculateTotals(unterItems, scope.room, scope.guest, extras, false);
             scope.section1 = {

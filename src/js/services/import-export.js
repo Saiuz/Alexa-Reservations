@@ -369,6 +369,7 @@ define(['./module'], function (services) {
           // Guest, Firm, Room, RoomPlan, Resource, Event, ItemType
           this.getAvailableModels = function () {
             return [
+              {value: -1, text: '<' + configService.loctxt.select + '>', model_name: ''},
               {value: 0, text: configService.loctxt.addressGuest, model_name: 'Guest'},
               {value: 1, text: configService.loctxt.firm, model_name: 'Firm'},
               {value: 2, text: configService.loctxt.room, model_name: 'Room'},

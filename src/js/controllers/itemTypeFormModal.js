@@ -196,6 +196,9 @@ define(['./module'], function (controllers) {
           // save button handler
           $scope.save = function () {
             //perform any pre save form validation or logic here
+            if (!$scope.itemType.count) {
+              $scope.itemType.count = 1;
+            }
             var msg = '';
             $scope.err = false;
             $scope.errSave = false;

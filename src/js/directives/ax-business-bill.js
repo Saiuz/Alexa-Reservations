@@ -57,6 +57,10 @@ define(['./module'], function (directives) {
 
         var updateData =  function(extras) {
           if (haveAttributes) {
+            scope.rvm.getBillNumber(scope.room, scope.guest).then( function (bnum) {
+                  scope.billNumber = bnum;
+                }
+            );
             calcResult = scope.rvm.calculateTotals(unterItems, scope.room, scope.guest, extras, false, '', busPachale);
             scope.section1 = {
               page_title: "Rechnung",

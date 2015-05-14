@@ -49,9 +49,10 @@ define(['./module'], function (services) {
       return adate;
     };
 
+    // resets time on the specified date to 00:00 and applies an optional day offset
     var _dateOnly = function (dateval, daysOffset) {
       if (dateval instanceof Date && !isNaN(dateval.valueOf())) {
-        var d = new Date(dateval.getFullYear(), dateval.getMonth(), dateval.getDate());
+        var d = new Date(dateval.getFullYear(), dateval.getMonth(), dateval.getDate(),0,0,0);
         if ((Object.prototype.toString.call(daysOffset) !== '[object Array]') && daysOffset - parseFloat(daysOffset) >= 0) {
           d.setDate(d.getDate() + daysOffset);
         }
@@ -60,11 +61,13 @@ define(['./module'], function (services) {
       else
         return dateval;
     };
-
+    //NOTE: Bug in original code using getTime - timezone dependent!
+    // find milliseconds from UTC date to stard of epoch then round up if current timezone is not UTC
     var _daysSinceEpoch = function (dateval) {
       if (_isDate(dateval)) {
-        var ms = new Date(dateval.getFullYear(), dateval.getMonth(), dateval.getDate(), 0, 0, 0).getTime();
-        return Math.floor(dateval / millisecondsPerDay) + 1;
+        var offset = dateval.getTimezoneOffset() * 60000;
+        var ms =  Date.UTC(dateval.getFullYear(), dateval.getMonth(), dateval.getDate(), 0, 0, 0) + offset;
+        return Math.floor(ms / millisecondsPerDay) + (offset === 0 ? 0 : 1); //UTC time zone, no rounding
       }
       else {
         return 0;
@@ -158,9 +161,13 @@ define(['./module'], function (services) {
       },
       // returns the number of days since Jan. 1, 1970
       daysSinceEpoch: _daysSinceEpoch,
-      // converts a days since Jan. 1 1970 value to a date
+      // converts a days since Jan. 1 1970 value to a date. Note the conversion must
+      // account for time zone by subtracting the TZ offset
       dseToDate: function (dseval) {
-        return _dateOnly(new Date(dseval * millisecondsPerDay));
+        var d = new Date();
+        var adjust = d.getTimezoneOffset() * 60000;
+        var d2 = new Date(dseval * millisecondsPerDay - adjust);
+        return _dateOnly(d2);
       },
       // converts a date to a string (no time) in the german format dd.MM.YYYY
       toDeDateString: function (dateval) {

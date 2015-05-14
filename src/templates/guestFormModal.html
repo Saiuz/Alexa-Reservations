@@ -31,6 +31,15 @@
             </div>
         </div>
         <div class="form-group">
+            <label class="control-label col-xs-4">{{txt.partner}}</label>
+            <div class="col-xs-8" ng-show="!edit">
+                <p class="form-control-static">{{guest.partner_name}}</p>
+            </div>
+            <div class="col-xs-8" ng-show="edit">
+                <input class="form-control" ng-model="guest.partner_name" type="text"/>
+            </div>
+        </div>
+        <div class="form-group">
             <label class="control-label col-xs-4">{{txt.birthday}}</label>
             <div class="col-xs-8" ng-show="!edit">
                 <p class="form-control-static">{{guest.birthday}}</p>
@@ -42,6 +51,23 @@
                        current-text="Heute" clear-text="Löschen"/>
                 <span class="input-group-btn">
                     <button class="btn btn-default" type="button" ng-click="openBday1($event)"><i
+                            class="glyphicon glyphicon-calendar"></i></button>
+                </span>
+            </span>
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="control-label col-xs-4">{{txt.partner_birthday}}</label>
+            <div class="col-xs-8" ng-show="!edit">
+                <p class="form-control-static">{{guest.birthday_partner}}</p>
+            </div>
+            <div class="col-xs-8" ng-show="edit">
+                <span class="input-group">
+                <input class="form-control" type="text" date-fix datepicker-popup="dd.MM.yyyy" is-open="openedBday2"
+                       ng-model="bdate2" datepicker-options="dateOptions" ng-required="false" close-text="OK"
+                       current-text="Heute" clear-text="Löschen"/>
+                <span class="input-group-btn">
+                    <button class="btn btn-default" type="button" ng-click="openBday2($event)"><i
                             class="glyphicon glyphicon-calendar"></i></button>
                 </span>
             </span>

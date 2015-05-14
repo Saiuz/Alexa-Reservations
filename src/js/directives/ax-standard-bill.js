@@ -60,6 +60,10 @@ define(['./module'], function (directives) {
               aggObj = [];
 
           if (haveAttributes) {
+            scope.rvm.getBillNumber(room, scope.guest).then( function (bnum) {
+                  scope.billNumber = bnum;
+                }
+            );
             // get the total bill and taxes taxes
             calcResult = scope.rvm.calculateTotals([],room, scope.guest); //total everything
             scope.sectionTotal = {

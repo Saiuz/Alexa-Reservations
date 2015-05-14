@@ -571,6 +571,7 @@ define(['./module'], function (model) {
 
       // This method is called prior to saving the reservation. It performs the following functions:
       //    Validates various reservation properties
+      //    Cleans up start and end dates (removes time component)
       //    Generates the reservation title.
       //    Copies the required expense items from the room plan to the reservation if the plan has changed.
       //    Copies the address details from the guest or firm if the guest or firm properties have changed.
@@ -584,6 +585,10 @@ define(['./module'], function (model) {
         }
         else {
           // perform stuff that doesn't require a promise
+          // clean dates - this is needed to deal with time zone changes
+          this.res.start_date = datetime.dateOnly(new Date(this.res.start_date));
+          this.res.end_date = datetime.dateOnly(new Date(this.res.end_date));
+
           // generate title (required field)
           if (this.res.firm) {
             this.res.title = this.res.firm + ' (' + this.res.guest.name + ')';
@@ -710,6 +715,37 @@ define(['./module'], function (model) {
             else {
               deferred.resolve();
             }
+          });
+        }
+        return deferred.promise;
+      };
+      // Method to retrieve bill number for the room guest combination. If the room guest combination does not
+      // have a bill number yet, one is created.
+      this.getBillNumber = function (room, guest) {
+        var deferred = $q.defer(),
+            bnItem = null,
+            rm = Number(room);
+        that.res.bill_numbers.forEach(function (bit) {
+          if (bit.room_number === rm && bit.guest === guest) {
+            bnItem = bit;
+          }
+        });
+        if (bnItem) {
+          deferred.resolve(bnItem.billNo);
+        }
+        else {
+          dashboard.getNewBillNumber().then(function(num) {
+            _addBillNumberItem(room, guest, num);
+            that.res.save(function (err){
+              if (err) {
+                deferred.reject(err);
+              }
+              else {
+                deferred.resolve(num);
+              }
+            });
+          }, function (err) {
+            deferred.reject(err);
           });
         }
         return deferred.promise;
@@ -1728,6 +1764,28 @@ define(['./module'], function (model) {
           exp.count = days;
           exp.taxable_price = roomItem.taxable_price;
           _addExpenseItem(room, exp, null, days);
+        }
+      }
+
+      // Adds a bill number sub document to the Reservation.bill_numbers property. Updates if it exists.
+      function _addBillNumberItem(room, guest, billNo) {
+        var bn = {
+              room_number: room,
+              guest: guest,
+              billNo: billNo
+            }, // object that will have the same properties as the BillNumber schema
+            bitem = null;
+
+        that.res.bill_numbers.forEach(function (bit) {
+          if (bit.room_number === room && bit.guest === guest) {
+            bitem = bit;
+          }
+        });
+        if (bitem) { // update
+          bitem.billNo = bn.billNo;
+        }
+        else {
+          that.res.bill_numbers.push(bn);
         }
       }
 

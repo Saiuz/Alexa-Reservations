@@ -7,7 +7,11 @@
                 <td></td>
             </tr>
             <tr>
-                <td>{{rvm.res.address1}} {{rvm.res.address2}}</td>
+                <td>{{rvm.res.address1}}</td>
+                <td></td>
+            </tr>
+            <tr ng-if="rvm.res.address2">
+                <td>{{rvm.res.address2}}</td>
                 <td></td>
             </tr>
             <tr>
@@ -30,11 +34,11 @@
                 <td></td>
             </tr>
             <tr>
-                <td>Nr. {{rvm.res.reservation_number}}</td>
+                <td>Nr. {{billNumber}}</td>
                 <td>&nbsp;</td>
             </tr>
             <tr>
-                <td>Herrn/Frau/Frl. {{guest}}</td>
+                <td>{{guest}}</td>
                 <td>&nbsp;</td>
             </tr>
             <tr>
