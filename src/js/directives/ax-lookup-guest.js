@@ -5,7 +5,7 @@
  */
 define(['./module'], function (directives) {
   'use strict';
-  directives.directive('axLookupGuest', ['dashboard', 'Guest', '$modal', function (dashboard, Guest, $modal) {
+  directives.directive('axLookupGuest', ['dashboard', 'Guest', 'modals', function (dashboard, Guest, modals) {
 
     var linker = function (scope, element, attrs) {
       var ignoreWatch = false;
@@ -17,6 +17,8 @@ define(['./module'], function (directives) {
       scope.notFound = false;
       scope.canClear = false;
 
+      // retrieves guest names that match the the value in val. See the guestNameLookup method for details about
+      // wild cards etc.
       scope.getGuests = function (val) {
         scope.loading = true;
         return dashboard.guestNameLookup(val, scope.firm).then(function (result) {
@@ -24,7 +26,7 @@ define(['./module'], function (directives) {
           names = [];
           if (result.length > 0) {
             for (var i = 0; i < result.length; i++) {  // using native for for speed
-              names.push({dname: result[i].unique_name, name: result[i].name, id: result[i]._id});
+              names.push({dname: result[i].unique_name, name: result[i].name, id: result[i]._id, firm: result[i].firm, partner: result[i].partner});
             }
 //            angular.forEach(result,function(item){
 //              names.push({dname: item.unique_name, name: item.name, id: item._id});
@@ -46,10 +48,30 @@ define(['./module'], function (directives) {
         scope.guest = {};
       };
 
+      scope.editGuest = function () {
+        var model = modals.getModelEnum().guest,
+            dataObj = {data: scope.selectedGuest ? scope.selectedGuest.id : 0, extraData: undefined};
+
+        modals.update(model, dataObj, function (result) {
+          console.log("Modal returned: " + result);
+          names = [{dname: result.unique_name, name: result.name, id: result._id, firm: result.firm, partner: result.partner}];
+          scope.selectedGuest = names[0];
+          if (scope.guestCallback) {
+            scope.guestCallback(result);
+          }
+          scope.axguest =  result.unique_name;
+          scope.guest = {name: result.name, id: result._id};
+          scope.notFound = false;
+        });
+      };
+
       scope.guestChanged = function ($item, $model, $label) {
         ignoreWatch = true;
         scope.guest = {name: $item.name, id: $item.id};
         scope.selectedGuest = $item;
+        if (scope.guestCallback) {
+          scope.guestCallback($item);
+        }
         scope.canClear = true;
         //_updateTitle();
       };
@@ -73,6 +95,9 @@ define(['./module'], function (directives) {
             for (var j = 0; j < names.length; j++) {
               if (names[j].id.id === scope.guest.id.id) {
                 scope.selectedGuest = names[j];
+                if (scope.guestCallback) {
+                  scope.guestCallback(names[j]);
+                }
                 scope.axguest = names[j].dname;
                 scope.notFound = false;
                 found = true;
@@ -84,8 +109,11 @@ define(['./module'], function (directives) {
             dashboard.getGuestById(scope.guest.id).then(function (result) {
               names = [];
               if (result.name) {
-                names.push({dname: result.unique_name, name: result.name, id: result._id});
+                names.push({dname: result.unique_name, name: result.name, id: result._id, firm: result.firm, partner: result.partner});
                 scope.selectedGuest = names[0];
+                if (scope.guestCallback) {
+                  scope.guestCallback(result);
+                }
                 scope.axguest = names[0].dname;
                 scope.notFound = false;
                 scope.canClear = true;
@@ -98,29 +126,21 @@ define(['./module'], function (directives) {
       });
 
       scope.newGuest = function (size) {
+        var model = modals.getModelEnum().guest,
+            dataObj = {data: scope.axguest ? scope.axguest.split(' ') : [], extraData: undefined};
+
         //if the name in the input field is in the db then ignore the button click
         if (names.length !== 0 && scope.axguest) {
           return;
         }
         scope.canClear = true;
-        var modalInstance = $modal.open({
-          templateUrl: './templates/guestFormModal.html',
-          controller: 'GuestFormModalCtrl',
-          size: size,
-          resolve: {
-            modalParams: function () {
-              return {
-                data: scope.axguest.split(' '),
-                mode: 'Create'  //CRUD mode: 'Create', 'Read', 'Update', 'Delete'
-              };
-            }
-          }
-        });
-
-        modalInstance.result.then(function (result) {
+        modals.create(model, dataObj, function (result) {
           console.log("Modal returned: " + result);
-          names = [{dname: result.unique_name, name: result.name, id: result._id}];
-          scope.selectedGuest = names[0]
+          names = [{dname: result.unique_name, name: result.name, id: result._id, firm: result.firm, partner: result.partner}];
+          scope.selectedGuest = names[0];
+          if (scope.guestCallback) {
+            scope.guestCallback(result);
+          }
           scope.axguest =  result.unique_name;
           scope.guest = {name: result.name, id: result._id};
           scope.notFound = false;
@@ -135,7 +155,8 @@ define(['./module'], function (directives) {
       scope: {
         guest: '=', // the value of the input field (guest)
         firm: '=', // if provided, will be used to limit the guest lookup to guests that are associated with the specific firm.
-        displayOnly: '='
+        displayOnly: '=',
+        guestCallback: '=' // optional method to call when the selectedGuest (internal parameter changes.
       }
     };
   }]);

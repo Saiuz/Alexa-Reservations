@@ -223,12 +223,22 @@ define(['./module'], function (controllers) {
           };
 
           // modal button click methods
-          // save button handler
+          // save button handler  Save the guest but then retrieve the guest object
           $scope.save = function () {
             //perform any pre save form validation here
             // if the salutation contains '' then set the salutation field to undefined
             if ($scope.guest.salutation === '') {
               $scope.guest.salutation = undefined;
+            }
+
+            // If the firm field contains a firm name, then clear address fields.  The address of the firm will
+            // be used.
+            if ($scope.guest.firm) {
+              $scope.guest.address1 = '';
+              $scope.guest.address2 = '';
+              $scope.guest.post_code = '';
+              $scope.guest.city = '';
+              $scope.guest.country = '';
             }
             //save guest and return
             $scope.guest.save(function (err) {

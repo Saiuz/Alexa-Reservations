@@ -22,7 +22,7 @@
         </tr>
         </thead>
         <tbody>
-        <tr ng-repeat="item in rvm.res.expenses | filter:{category: itemType, guest: guest, name: '!' + txt.breakfastInc}" ng-show="!item.no_display || showHidden">
+        <tr ng-repeat="item in rvm.res.expenses | filter:{category: itemType, guest: guest, room: room, name: '!' + txt.breakfastInc}" ng-show="!item.no_display || showHidden">
             <td ng-if="item.name !== txt.cityTax && (item.bill_code !== con.bcPackageItem && item.bill_code !== con.bcKurPackageItem)">
                 <span ng-if="!item.edit_name">
                     {{item.name}} ({{item.room}} - {{item.guest}} - {{item.last_updated | date:'shortDate'}})

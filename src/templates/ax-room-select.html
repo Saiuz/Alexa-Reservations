@@ -70,12 +70,20 @@
                     <td>
                         <button ng-click="removeRoom(room.number)" class="btn btn-xs"><span
                                 class="glyphicon glyphicon-remove"></span>
+                        </button> &nbsp;
+                        <button ng-click="startRoomSwap(room.number)" class="btn btn-xs"><span
+                                class="glyphicon glyphicon-retweet"></span>
                         </button>
+                        <select ng-show="room.swapFlg" ng-model="room.newRoom" ng-change="endRoomSwap(room.number)"
+                                ng-options="r.display_name for r in roomList | filter:filterSameType"></select>
                     </td>
                     <td>{{room.number}}</td>
                     <td>{{room.room_type}}</td>
-                    <td ng-if="!oneRoomB">{{room.guest}}<span ng-if="room.guest2">/{{room.guest2}}</span></td>
-                    <td>{{room.price | currency: '€'}}</td>
+                    <td ng-if="!oneRoomB && editGuestB">
+                        <a href="#" editable-text="room.guest" onaftersave="guestEdited(room.number)">{{room.guest}}</a>
+                    </td>
+                    <td ng-if="!oneRoomB && !editGuestB">{{room.guest}}<span ng-if="room.guest2">/{{room.guest2}}</span></td>
+                    <td><a href="#" editable-text="room.priceTxt" onaftersave="priceEdited(room.number)">{{room.price | currency}}</a></td>
                 </tr>
             </table>
         </div>

@@ -3,7 +3,7 @@
         <table class="table-bill-page">
             <thead>
             <tr>
-                <td>{{rvm.res.firm}}</td>
+                <td><a href="#" editable-text="rvm.res.billing_name" onaftersave="rvm.updateBillingNameSave()">{{rvm.res.billing_name}}</a></td>
                 <td></td>
             </tr>
             <tr>
@@ -34,10 +34,6 @@
                 <td>&nbsp;</td>
             </tr>
             <tr>
-                <td>Kontakt: {{rvm.res.guest.name}}</td>
-                <td>&nbsp;</td>
-            </tr>
-            <tr>
                 <td>Aufenthalt vom {{rvm.res.start_date | date:'dd. MMMM yyyy'}} bis {{rvm.res.end_date | date:'dd. MMMM yyyy'}}
                 </td>
                 <td>&nbsp;</td>
@@ -60,9 +56,29 @@
                             <td>&nbsp;</td>
                             <td>&nbsp;</td>
                         </tr>
+                        </tbody>
+                    </table>
+                </td>
+            </tr>
+            <tr>
+                <td class="bill-section-heading">{{section2.section_title}}</td>
+                <td>&nbsp;</td>
+            </tr>
+            <tr>
+                <td colspan="2">
+                    <table class="table-bill-detail">
+                        <tbody>
+                        <tr ng-repeat="item in section2.items">
+                            <td>{{item.text}}</td>
+                            <td>{{item.total | currency}}</td>
+                        </tr>
+                        <tr ng-repeat="p in section3.padding">
+                            <td>&nbsp;</td>
+                            <td>&nbsp;</td>
+                        </tr>
                         <tr>
-                            <td  class="text-right">{{section1.total_text}}</td>
-                            <td><span class="bill-total">{{section1.total | currency}}</span></td>
+                            <td class="text-right">{{sectionTotal.total_text}}</td>
+                            <td><span class="bill-total">{{sectionTotal.total | currency}}</span></td>
                         </tr>
                         </tbody>
                     </table>
@@ -74,7 +90,7 @@
             </tr>
             <tr>
                 <td colspan="2">
-                    <ax-bill-taxes taxes="section1.taxes" />
+                    <ax-bill-taxes taxes="sectionTotal.taxes" />
                 </td>
             </tr>
             </tbody>
@@ -85,43 +101,19 @@
             </tfoot>
         </table>
     </div>
-    <div class="bill-page-2" ng-repeat="bill in roomBills">
+    <div class="bill-page-2" ng-if="details && hasDetails">
         <hr class="no-print" />
         <table class="table-bill-page">
-            <thead>
-            <tr>
-                <td>{{rvm.res.firm}}</td>
-                <td></td>
-            </tr>
-            <tr>
-                <td>{{rvm.res.address1}} {{rvm.res.address2}}</td>
-                <td></td>
-            </tr>
-            <tr>
-                <td>{{rvm.res.post_code}} {{rvm.res.city}}</td>
-                <td></td>
-            </tr>
-            <tr>
-                <td>{{rvm.res.country}}</td>
-                <td></td>
-            </tr>
-            <tr>
-                <td>&nbsp;</td>
-                <td>&nbsp;</td>
-            </tr>
+            <thead class="bill-next-page-header">
             <tr>
                 <td colspan="2">Bad Mergentheim, {{today | date:'dd. MMMM yyyy'}}</td>
             </tr>
             <tr>
-                <td><b>{{bill.page_title}}</b></td>
+                <td><b>{{section4.page_title}}</b></td>
                 <td></td>
             </tr>
             <tr>
-                <td>Nr. {{billNumber}}</td>
-                <td>&nbsp;</td>
-            </tr>
-            <tr>
-                <td>{{bill.guest}}</td>
+                <td>Herrn/Frau/Frl. {{guest}}</td>
                 <td>&nbsp;</td>
             </tr>
             <tr>
@@ -132,24 +124,24 @@
             </thead>
             <tbody>
             <tr>
-                <td class="bill-section-heading">{{bill.section_title}}</td>
+                <td class="bill-section-heading">{{section4.section_title}}</td>
                 <td>&nbsp;</td>
             </tr>
             <tr>
                 <td colspan="2">
                     <table class="table-bill-detail">
                         <tbody>
-                        <tr ng-repeat="item in bill.items">
+                        <tr ng-repeat="item in section4.items">
                             <td>{{item.text}}</td>
                             <td>{{item.total | currency : fmtC(item.total)}}</td>
                         </tr>
-                        <tr ng-repeat="p in bill.padding">
+                        <tr ng-repeat="p in section4.padding">
                             <td>&nbsp;</td>
                             <td>&nbsp;</td>
                         </tr>
                         <tr>
-                            <td  class="text-right">{{bill.total_text}}</td>
-                            <td><span class="bill-total">{{bill.total | currency}}</span></td>
+                            <td class="text-right">{{section4.total_text}}</td>
+                            <td><span class="bill-total">{{section4.total | currency}}</span></td>
                         </tr>
                         </tbody>
                     </table>
@@ -161,10 +153,11 @@
             </tr>
             <tr>
                 <td colspan="2">
-                    <ax-bill-taxes taxes="bill.taxes" />
+                    <ax-bill-taxes taxes="section4.taxes" />
                 </td>
             </tr>
             </tbody>
         </table>
+
     </div>
 </div>

@@ -12,6 +12,9 @@
  *                                         display purposes only. Other collection objects required for the VM will
  *                                         not be retrieved from the database.
  *
+ * Note this module is very large and has a lot of complex business logic. The class exposes many properties and methods.
+ * Methods that begin with an underscore '_' are private methods. While this is a view-model for the reservation model,
+ * by necessity, there are a number of other db models an methods that must be accessed.
  */
 define(['./module'], function (model) {
   'use strict';
@@ -38,16 +41,19 @@ define(['./module'], function (model) {
       this.single_only = false; // viewmodel property that is true if the selected room plan is a single room only plan.
       this.double_only = false; // viewmodel property that is true if the selected room plan is a double room only plan.
       this.isGroup = false; //viewmodel property that is true if the selected plan is a group plan with multiple rooms.
+      this.isPackage = false; // viewmodel property that is true if the selected plan is a package plan.
       this.oneBill = false; // viewmodel property that is true if the selected plan is a group plan and requires a single bill.
       this.oneRoom = true; // viewmodel property that is true if the selected plan has the one_room flag set
       this.isStandard = false; // True if the reservation type is "Standard";
       this.isBusiness = false; // True if the reservation type is "Business" or is a group reservation with multiple bills.
       this.isKur = false; // True if the reservation type is "Kur"
       this.isTour = false; // True if the reservation type is a group reservation with one bill.
+      this.isPrivateGroup = false; // True if reservation type is private group (multi-room private reservation)
       this.secondGuest = false; // VM property that is true if selected plan has the second_guest flag set
       this.showSecondGuest = false; // VM property that is true if selected plan has the second_guest flag set and the
                                     // reservation has 2 guests and  and the plan has the one_room flag set
       this.includesBreakfast = false; // True if selected plan includes breakfast.
+      this.includesBusBreakfast = false; // True if firm associated with res. has the includes_breakfast (in price) flag set
       this.guestLookup = false; // If true then quest name associated with room must be in guest database.
       this.planPrice = 0; //set by room plan selection
       this.firmPrice = 0; // set by selection of a firm with a negotiated price
@@ -59,6 +65,8 @@ define(['./module'], function (model) {
       this.sourceList = dbEnums.getReservationSourceEnum();
       this.resTypeList = dbEnums.getReservationTypeEnum(); //holds a list of the reservation types e.g. standard, business, cure
       this.insuranceList = dbEnums.getReservationInsuranceEnum();
+      this.fullGuestInfo = null; // will hold full info about primary guest
+      this.fullFirmInfo = null ; // will hold full info about firm associated with reservation
       var rOpts = [];
       this.resTypeList.forEach(function (item) {
         rOpts.push({value: item, text: item});
@@ -68,8 +76,9 @@ define(['./module'], function (model) {
         {value: 1, text: '1'},
         {value: 2, text: '2'}
       ];
-
-      // used by pre-save function. Set to the initial value of the plan property of the reservation
+      // **** Other private globals ***
+      // used by pre-save function. Set to the initial value of the plan property of an existing reservation when loaded,
+      // default values are given for new reservations.
       var lastPlanCode,
           lastGuest,
           lastGuest2,
@@ -80,13 +89,22 @@ define(['./module'], function (model) {
           lastResourceHash,
           lastInsurance1,
           lastInsurance2;
-
+      var planRequiredItems = []; //used by pre-save code stores required items of current plan.
 
       // *** Public methods assigned to VM ***
 
       // Utility method to return a room type abbreviation from a reservedRoom item
       this.generateRoomAbbrv = function (rrObj) {
         return dbEnums.getRoomDisplayAbbr(rrObj);
+      };
+
+      // test function used by UI. Returns true if the insurance selected allows copay
+      this.allowCopay = function () {
+         return (that.res.insurance && that.res.insurance !== 'Privat'); // todo - this is hardwired. Not the best approach
+      };
+      // test function used by UI. Returns true if the insurance2 selected allows copay
+      this.allowCopay2 = function () {
+        return (that.res.insurance2 && that.res.insurance2 !== 'Privat'); // todo - this is hardwired. Not the best approach
       };
 
       // Respond to change of reservation type from UI.
@@ -155,11 +173,13 @@ define(['./module'], function (model) {
           this.double_only = plan.double_only;
           this.isGroup = plan.is_group;
           this.oneBill = plan.one_bill;
+          this.isPackage = plan.is_plan;
           this.oneRoom = plan.one_room;
           this.isStandard = this.res.type === dbEnums.getReservationTypeEnum()[0];
           this.isBusiness = (this.res.type === dbEnums.getReservationTypeEnum()[1]) || (this.res.type === dbEnums.getReservationTypeEnum()[3] && !plan.one_bill);
           this.isKur = (this.res.type === dbEnums.getReservationTypeEnum()[2]);
-          this.isTour = (this.res.type === dbEnums.getReservationTypeEnum()[3] && plan.one_bill);
+          this.isTour = (this.res.type === dbEnums.getReservationTypeEnum()[3] && plan.one_bill && plan.needs_firm);
+          this.isPrivateGroup = (this.res.type === dbEnums.getReservationTypeEnum()[3] && plan.one_bill && !plan.needs_firm);
           this.secondGuest = plan.second_guest;
           this.includesBreakfast = plan.includes_breakfast;
           this.showSecondGuest = plan.second_guest && this.res.occupants === 2 && plan.one_room;
@@ -288,7 +308,7 @@ define(['./module'], function (model) {
         return deferred.promise;
       };
 
-      // guest changed, perform logic to update guest name in room if needed.
+      // guest changed, perform logic to update guest name in room if needed.   Only applies to one room reservations
       this.guestChanged = function (secondGuest) {
         if (that.oneRoom && that.res.rooms.length === 1) {
           if (secondGuest && that.res.guest2) {
@@ -296,6 +316,21 @@ define(['./module'], function (model) {
           }
           else if (that.res.guest) {
             that.res.rooms[0].guest = that.res.guest.name;
+          }
+        }
+      };
+
+      // called by UI when a new guest is selected from the select-guest directive. Performs a potential update of the
+      // Firm field if needed, and for Kur reservations, updates the Guest 2 name to the partner name of the main guest
+      this.guestSelectionChanged = function (guest) {
+        if (guest) {
+          //console.log("Guest changed: " + guest.firm);
+          if (that.showFirm && guest.firm) {
+            that.res.firm = guest.firm;
+          }
+
+          if (that.isKur && that.showSecondGuest) {
+            that.res.guest2 = {name: guest.partner, id: that.res.guest.id};
           }
         }
       };
@@ -365,14 +400,16 @@ define(['./module'], function (model) {
             extras = {nights: that.res.nights, roomType: rmObj.room_type, roomPrice: rmObj.price};
            result.displayText = convert.formatDisplayString(plan,extras, instructions);
           }
-          else if (that.isGroup && that.oneBill) { //group tour reservation.
+          else if (that.isGroup && that.oneBill) { //group tour and private group reservation.
             extras = {nights: that.res.nights, occupants: that.res.occupants, roomCnt: that.res.rooms.length};
             result.displayText = convert.formatDisplayString(plan,extras, instructions);
 
-            // for this case the UI needs to create buttons for each room
-            that.res.rooms.forEach(function(rm) {
-              result.groupRooms.push({room: rm.number, guest: rm.guest});
-            })
+            // for the tour case the UI needs to create buttons for each room
+            //if (that.isTour) {
+              that.res.rooms.forEach(function (rm) {
+                result.groupRooms.push({room: rm.number, guest: rm.guest});
+              });
+            //}
           }
           else if (that.oneRoom && that.oneBill) { //should cover standard reservations
             extras = {nights: that.res.nights, roomprice: rmExp.price};
@@ -576,10 +613,11 @@ define(['./module'], function (model) {
       //    Copies the required expense items from the room plan to the reservation if the plan has changed.
       //    Copies the address details from the guest or firm if the guest or firm properties have changed.
       this.beforeSave = function () {
-        var deferred = $q.defer();
+        var deferred = $q.defer(),
+            changes, vobj;
 
         // first validate the reservation, if it fails validation reject the promise.
-        var vobj = _validate();
+        vobj = _validate();
         if (vobj.hasErrors()) {
           deferred.reject(vobj);
         }
@@ -598,7 +636,7 @@ define(['./module'], function (model) {
                              + (this.res.guest2 && this.res.guest2.name ? ' / ' + this.res.guest2.name : '');
           }
 
-          // If we have insurance, check if the plan requires a perscription fee. If so then set the
+          // If we have insurance, check if the plan requires a prescription fee. If so then set the
           // res prescripton_charges flag.
           if (this.res.insurance && (this.res.insurance !== dbEnums.getReservationInsuranceEnum()[3])){
             this.res.prescription_charges = true;
@@ -607,22 +645,24 @@ define(['./module'], function (model) {
             this.res.prescription_charges2 = true;
           }
 
+          // Code requiring promises. Get guest and firm and update address and guest name if changed
+          _updateNameFirmAddressReqItems().then(function () {
+            _getPlanRequiredItems().then(function () {
+              // if a new reservation Copy required items from the plan, if the plan or room info changed then
+              // remove the existing items and replace with new plan, if resources changed then replace related
+              // resource expense items.
+              changes = _updateRequiredExpenses();
+              // required expenses update then resource expenses where also updated, if no change then we still want
+              // to check for any resource changes.
+              if (!changes ) {
+                _updateResourceExpenses();
+              }
+              //add/update the expenses for prescription charges and or copay if required.
+              _updatePrescriptionAndCopay();
 
-          // if a new reservation Copy required items from the plan, if the plan or room info changed then
-          // remove the existing items and replace with new plan, if resources changed then replace related
-          // resource expense items.
-          _updateRequiredExpenses().then(function (changes) {
-            // required expenses update then resource expenses where also updated, if no change then we still want
-            // to check for any resource changes.
-            if (!changes ) {
-              _updateResourceExpenses();
-            }
-            //add/update the expenses for prescripton charges and or copay if required.
-            _updatePrescriptionAndCopay();
+              // update the day count if needed.
+              _updateDayCount();
 
-            // update the day count and the address information if needed.
-            _updateDayCount();
-            _updateAddress().then(function () {
               deferred.resolve();
             }, function (err) {
               deferred.reject(new utility.errObj(err));
@@ -719,6 +759,7 @@ define(['./module'], function (model) {
         }
         return deferred.promise;
       };
+
       // Method to retrieve bill number for the room guest combination. If the room guest combination does not
       // have a bill number yet, one is created.
       this.getBillNumber = function (room, guest) {
@@ -750,6 +791,72 @@ define(['./module'], function (model) {
         }
         return deferred.promise;
       };
+
+      // This method generates the billing name associated with the billing address
+      // For business and Travel group reservations, the Firm Name is used for the billing name. For Kur reservations
+      // the individuals name is used, for Standard reservations, if a single person, that persons name is used, if
+      // a couple then the main person and partner name is used. If the custom_name flag is set then we do nothing.
+      this.generateBillingName = function () {
+        var deferred = $q.defer();
+
+         if (!that.res.custom_name) {
+           if (that.showFirm) {
+             that.res.billing_name = that.res.firm;
+             deferred.resolve();
+           }
+           else {
+             if (that.res.occupants === 1) {
+               that.res.billing_name = that.res.guest.name;
+               deferred.resolve();
+             }
+             else if (that.res.occupants === 2 && that.res.rooms.length === 1) {
+               dashboard.getGuestById(that.res.guest.id).then(function (guest) {
+                 //build name
+                 if (guest) {
+                   that.res.billing_name = guest.billing_name;
+                   deferred.resolve();
+                 }
+                 else {
+                   that.res.billing_name = '???';
+                   deferred.reject("NAME NOT FOUND");
+                 }
+               },
+               function (err) {
+                 that.res.billing_name = "*** ERROR ***";
+                 deferred.reject(err);
+               });
+             }
+             else {
+               that.res.billing_name = that.res.guest.name;
+               deferred.resolve();
+             }
+           }
+         }
+        else {
+           deferred.resolve();
+         }
+        return deferred.promise;
+      };
+
+      // called when UI changes billing_name. Sets the custom_name flag and saves the reservation as-is.
+      this.updateBillingNameSave = function () {
+        var deferred = $q.defer();
+        if (that.res.billing_name) {
+          that.res.custom_name = true;
+          that.res.save(function( err) {
+            if (err) {
+              deferred.reject(err);
+            }
+            else {
+              deferred.resolve();
+            }
+          });
+        }
+        else {
+          return deferred.resolve();
+        }
+        return deferred.promise;
+      }
 
       // method to save reservation after an expense item is edited. The only business logic implemented is
       // if the edited expense item is a room expense item and the price is modified. We must recalculate
@@ -791,6 +898,7 @@ define(['./module'], function (model) {
             instructions = {price: 'c', credit: 'c'}, //formatting instructions for price/credit in bill item
             hidden = [], //for holding all hidden items.
             hiddenKur = [], // for holding hidden Cure items
+            roomBin = [], // for multi room bills that require breaking out room details based on room type and price
             roomItem = undefined, //for holding room item
             hiddenTotal = 0,
             ignoreRmGuest = !room && !guest,
@@ -806,8 +914,35 @@ define(['./module'], function (model) {
           this.bill_code = expItem.bill_code;
           this.price = expItem.price;
           this.isRoom = expItem.is_room;
+          this.clone = function () {
+            return {
+              text: this.text,
+              total: this.total,
+              bus_pauschale: this.bus_pauschale,
+              count: this.count,
+              display_string: this.display_string,
+              bill_code: this.bill_code,
+              price: this.price,
+              isRoom: this.isRoom
+            }
+          }
         };
 
+        var binRoomItems = function (rbin, ritem) {
+          var room = that.getRoomInReservation(ritem.room),
+              ix;
+          if (rbin && room) {
+            for (ix = 0; ix < rbin.length; ix++) {
+              if (room.room_type === rbin[ix].type && room.room_class === rbin[ix].class && ritem.price === rbin[ix].price) {
+                rbin[ix].count++;
+                break;
+              }
+            }
+            if (ix === rbin.length) {
+              rbin.push({count: 1, type: room.room_type, class: room.room_class, price: ritem.price, days: ritem.count});
+            }
+          }
+        };
         // process each expense item and create detail items for display as well as calculating totals and taxes
         angular.forEach(that.res.expenses, function (item) {
           var includeIt = ((that.oneBill && !that.isGroup)  || ignoreRmGuest || (item.guest === guest && item.room === Number(room))),
@@ -825,6 +960,7 @@ define(['./module'], function (model) {
               else {
                 roomItem = new LineItem(item, extras, instructions); //add one room item
               }
+              binRoomItems(roomBin, item);
             }
             else if(item.no_display) {
               // special kur item handling
@@ -888,7 +1024,22 @@ define(['./module'], function (model) {
           roomItem.total += hiddenTotal;
         }
         // now pop the room item at the top of the details array
-        if (roomItem) {
+        if (roomItem && roomBin.length === 1 && roomBin[0].count === 1) {
+          calcResult.detail.unshift(roomItem);
+        }
+        else if (roomItem && roomBin.length > 0) { // pop individual room items onto top of details array
+          roomItem.total = undefined;
+          roomBin.forEach(function (bitem) {
+            var newItem = roomItem.clone(),
+                extra = {type: bitem.type, class: bitem.class, days: bitem.days};
+
+            newItem.display_string = "%count% x %days% Tag|Tage - %class% %type%  à %price%"//configService.loctxt.roomTypeDisplayString;
+            newItem.count = bitem.count;
+            newItem.price = bitem.price;
+            newItem.total = bitem.count * bitem.price * bitem.days;
+            newItem.text = convert.formatDisplayString(newItem, extra, instructions);
+            calcResult.detail.unshift(newItem);
+          });
           calcResult.detail.unshift(roomItem);
         }
         // If we have hidden cure items but no roomItem then add these hidden items to the detail array.
@@ -1050,6 +1201,7 @@ define(['./module'], function (model) {
           item.numStart = false;
         }
       }
+
       // This method checks critical reservation properties for validity.
       //  It returns an object with an isValid property (true if valid) and a valErrors array of error
       // messages if the reservation is not valid.
@@ -1057,7 +1209,8 @@ define(['./module'], function (model) {
         var res = that.res,
             vObj = new utility.errObj(),
             plan = that.getPlanInReservation(res.plan_code),
-            privat = dbEnums.getReservationInsuranceEnum()[3];
+            privat = dbEnums.getReservationInsuranceEnum()[3],
+            gcnt;
 
         // first check that a valid plan is specified (plan_code defined and greater than 0), we do not
         // check if the plan code is valid.
@@ -1093,24 +1246,55 @@ define(['./module'], function (model) {
             && ((res.insurance !== privat) || (res.insurance2 && res.insurance2 !== privat))) {
           vObj.push(configService.loctxt.val_invalidPlanInsurance);
         }
+        // if group make sure that the number of guests match the number of guests in all of the rooms.
+        if (that.isGroup) {
+           gcnt = 0;
+          that.res.rooms.forEach(function (rm) {
+            gcnt += rm.guest_count;
+          });
+          if (gcnt !== that.res.occupants) {
+            vObj.push(configService.loctxt.val_guestCountMismatch);
+          }
+        }
         return vObj;
       }
 
-      // method to update the required expense items if the room plan has changed. Or if the number of rooms or occupants
-      // have changed. Also if guest names have changed then we need to also update the names in the expenses
+      //retrieves the required items associated with the current plan.
+      function _getPlanRequiredItems() {
+        var deferred = $q.defer(),
+            curPlan = that.getPlanInReservation(),
+            requiredItems = curPlan ? curPlan.required_items : [];
+
+        dashboard.getItemTypesInList(requiredItems).then(function (items) {
+          if (items.length > 0) {
+            planRequiredItems = items;
+            deferred.resolve();
+          }
+          else {
+            deferred.reject('ERROR: Invalid or missing plan code: ' + that.res.plan_code);
+          }
+        }, function (err) {
+          deferred.reject("Error retrieving plan: " + err);
+        });
+        return deferred.promise;
+      }
+      // Method to update the expense items to deal with changes to the reservation such as to the number of rooms or
+      // occupants.
       // It will try and update existing expenses with the changes made to the reservation. Some changes, such as
       // changing the plan will require replacing the required expenses associated with the plan.
       function _updateRequiredExpenses() {
-        var deferred = $q.defer(),
-            category = dbEnums.getItemTypeEnum()[0], // Retrieve first item category which is the plan items category
+        var category = dbEnums.getItemTypeEnum()[0], // Retrieve first item category which is the plan items category
             guest = that.res.guest ? that.res.guest.name : '',
             guest2 = that.res.guest2 ? that.res.guest2.name : '',
             roomsChanged = (lastRoomHash !== _buildRoomHash(that.res.rooms, that.res.occupants)),
             changesMade = false,
             replaceAll = false,
-            curPlan = that.getPlanInReservation();
+            curPlan = that.getPlanInReservation(),
+            lstPlan = lastPlanCode ? that.getPlanInReservation(lastPlanCode) : null,
+            lastRequiredItems = lstPlan ? lstPlan.required_items.slice(0) : [], // Must make copies because curPlan &;
+            roommate = lastGuest + '-' + configService.loctxt.roommate,
+            rchanges;
 
-        // Perform checks that don't require async operations
         //Update the count property of items based on the number of nights of the reservation
         // also, check to see if this reservation is a plan with a fixed duration, if so make sure
         // we add or adjust extra nights.
@@ -1122,7 +1306,7 @@ define(['./module'], function (model) {
           that.res.expenses.forEach(function (exp) {
             if (exp.day_count) {
               if (exp.is_room) {
-                if (!curPlan.is_plan) {
+                if (!curPlan.is_plan) {    //todo with new logic may have to update or add extra night item here
                   exp.count = that.res.nights;
                 }
               }
@@ -1142,9 +1326,9 @@ define(['./module'], function (model) {
           _removeExistingExpenseItemsByBillCode(configService.constants.bcKur,guest2)
         }
 
-        // Update the names associated with the expense items if the names of the guests change.
-        if (lastGuest !== guest || lastGuest2 !== guest2) {
-          var roommate = lastGuest + '-' + configService.loctxt.roommate;
+        // Update the names associated with the expense items if the names of the guests change and we only have
+        // one room. For multi room reservations, this will be handled by looking at room changes
+        if (that.oneRoom && (lastGuest !== guest || lastGuest2 !== guest2)) {
           that.res.expenses.forEach(function (exp) {
             switch (exp.guest) {
               case lastGuest:
@@ -1161,110 +1345,252 @@ define(['./module'], function (model) {
           changesMade = true;
         }
 
-        // If room hash has changed, see if we can handle changes without replacing the required expenses
-        if (roomsChanged) {
-          replaceAll = _updateExpenseRooms(lastRoomInfo, that.res.rooms);
+        // If the plan has not changed but the room hash has changed, see if we can handle changes without replacing
+        // all expenses.
+        if (lastPlanCode === that.res.plan_code && roomsChanged) {
+          rchanges = _buildRoomChanges(lastRoomInfo, that.res.rooms);
+          if (that.res.rooms.length) that.res.rooms[0].update_date = new Date(); // handles bug if only array length changes.
+          replaceAll = _updateExpenseRooms(rchanges, curPlan);
+          changesMade = true;
         }
 
-        // If plan changed, or room hash changed the easiest thing to do is to replace all required expense items
-        // and replace them. We then have to clean up any non required expense items. If the plan changes,  we
-        // need to change the required expenses and all plan expenses r
+        // If plan changed, or we couldn't handle room changes then remove all expense items
+        // and replace the required items. This is a drastic move since we could deleted recorded expense items
+        // such as food or drink.
         if (lastPlanCode !== that.res.plan_code || replaceAll) {
           // First see if we can
           // Remove the current required items, retrieve the new required Items and add them to the current reservation
           // (copy and initialize based on business logic) TODO-- Need to refine all this logic based on Billing Logic doc.
-          var curPlan = that.getPlanInReservation(),
-              lstPlan = lastPlanCode ? that.getPlanInReservation(lastPlanCode) : null,
-              lastRequiredItems = lstPlan ? lstPlan.required_items.slice(0) : [], // Must make copies because curPlan &
-              requiredItems = curPlan ? curPlan.required_items.slice(0) : []; // lstPlan can point to same object
 
           lastRequiredItems.push(configService.loctxt.breakfastInc);
           lastRequiredItems.push(configService.loctxt.cityTax);
           _removeExistingExpenseItemsByCategory(category, lastRequiredItems);
-
-          dashboard.getItemTypesInList(requiredItems).then(function (items) {
-            if (items.length > 0) {
-              _addRequiredExpenses(items, curPlan);
-              _updateResourceExpenses(); // updated any resource expenses if needed
-              deferred.resolve(true);
-            }
-            else {
-              deferred.reject('ERROR: Invalid or missing plan code: ' + that.res.plan_code);
-            }
-          }, function (err) {
-            deferred.reject("Error retrieving plan: " + err);
-          });
+          _addRequiredExpenses(planRequiredItems, curPlan);
+          _updateResourceExpenses(); // updated any resource expenses if needed
+          changesMade = true;
         }
         else {
           changesMade = _updateResourceExpenses(); // updated any resource expenses if needed
-          deferred.resolve(changesMade); //no changes
         }
 
-        return deferred.promise;
+        return changesMade;
       }
 
-      // Tries to update expenses for multiple rooms. If too much has changed then the method returns
-      // true which tells the caller we need to replace all required expenses
-      function _updateExpenseRooms(oldInfo, rooms) {
-         var i,
-             cantDoIt = false;
-        // number of rooms haven't changed or rooms have been added
-        if (oldInfo.length === rooms.length || oldInfo.length < rooms.length ) {
+      // Tries to update expenses for multiple rooms. If we can't deal with the changes then the method returns
+      // true which tells the caller we need to replace all expenses. This method deals with the array returned
+      // from the _buildRoomChanges method. It handles room adds, deletes, swaps as well as room guest name changes and
+      // room price changes.
+      function _updateExpenseRooms(chgArr, plan) {
+        var darr = [],
+            aarr = [],
+            carr = [],
+            ix = -1,
+            item, bfast, room;
 
-          for (i=0; i < oldInfo.length; i++){
-           if (_updateExpenseRoomInfo(oldInfo[i], rooms[i])) {
-             cantDoIt = true;
-           } // assume that the order hasn't changed
+        if (chgArr && chgArr.length) {
+          chgArr.forEach(function (c) { //first categorize room change types into delete, add, or other changes
+            ix++;
+            if (c.a) aarr.push(ix);
+            if (c.d) darr.push(ix);
+            if (c.s || c.g || c.g1 || c.p || c.c) carr.push(ix);
+          });
+
+          // see if we can handle - if the current room plan is a packaged plan then don't deal with adds or deletes,
+          // also if the one room flag is set and we have an add and delete then we changed room types. Safer to not
+          // try and handle this. We should be able to handle other changes.
+          if ((that.isPackage || that.oneRoom) && (darr.length || aarr.length)) {
+            return true;
           }
-          return cantDoIt ? true : ( oldInfo.length < rooms.length); // If we added a room, we still need to update required expenses
-        }
 
+          // now process in order of deletes, adds, changes
+          //room deleted, remove all expense items associated with the specified room number
+          darr.forEach(function (i) {
+            item = chgArr[i];
+            _removeExpenseFromProperty('room', item.r);
+          });
+
+          // add the new room's required expenses - also uddate the room's checked-in flag. We do this here
+          // since we have access to all of the info.
+          aarr.forEach(function (i) {
+            item = chgArr[i];
+            room = that.getRoomInReservation(item.r);
+            if (room) {
+              room.isCheckedIn = datetime.isDate(that.res.checked_in);
+            }
+            _addRequiredExpenses(planRequiredItems, plan, item.r);
+          });
+
+          // handle all other changes
+          carr.forEach(function (i) {
+             var chng = chgArr[i], rmitem, room;
+            if (chng.s) { //swap room numbers
+              _updateExpenseRoomProperty(chng.s.oldval, 'room', chng.s.newval);
+            }
+
+            if (chng.g) { //guest name changed for room
+              _updateExpenseProperty('guest', chng.g.oldval, chng.g.newval);
+            }
+
+            if (chng.g2) { //second guest name changed for room
+              _updateExpenseProperty('guest2', chng.g2.oldval, chng.g2.newval);
+            }
+
+            if (chng.c) { //room occupancy count changed
+              rmitem = _getRoomExpenseItem(chng.r);
+              rmitem.guest_count = chng.c.newval;
+              if (chng.c.oldval < chng.c.newval) {  //added a guest to room, add bfast and kurtax if needed for second guest.
+                room = that.getRoomInReservation(chng.r);
+                _removeExpenseRoomProperty(chng.r,'name', configService.loctxt.breakfast); //remove all breakfast and kurtax entries for room
+                _removeExpenseRoomProperty(chng.r,'name', configService.loctxt.kurtax);
+                //add breakfast and curtax if needed
+                bfast = plan.includesBreakfast ? configService.constants.breakfast : 0;
+                _addBreakfastKurtax(room, bfast); //todo check that this works for bus res.
+              }
+              else if (chng.c.oldval > chng.c.newval) {  //removed guest in room, remove second guest's items.
+                _removeExpenseFromProperty('guest', chng.c.oldval);
+              }
+            }
+
+            if (chng.p) {   //room price changed. We do not handle price logic if business res.
+              rmitem = _getRoomExpenseItem(chng.r);
+              if (rmitem) { //adjust taxable_price if plan includes bfast
+                if (plan.includes_breakfast) {
+                  rmitem.taxable_price = chng.p.newval - configService.constants.breakfast;
+                  rmitem.taxable_price = rmitem.taxable_price > 0 ? rmitem.taxable_price : 0;
+                }
+                else {
+                  rmitem.taxable_price = 0;
+                }
+                rmitem.price = chng.p.newval;
+              }
+            }
+          });
+        }
         return false;
       }
+      // build room change list handle adds, deletes, swaps and price and name changes
+      function _buildRoomChanges(oldRms, newRms) {
+         var findRm = function (rmNum, rmArray) {
+           var rm = null;
+           for (var i=0; i < rmArray.length; i++) {
+             if (rmNum === rmArray[i].number) {
+               rm = rmArray[i];
+               break;
+             }
+           }
+           return rm
+         };
+         var carray = [],
+             darray = [],
+             aarray = [],
+             sarray = [],
+             ix;
 
-      // updates existing expenses based on the changes to the specified room
-      // If the return value is true then the update needs to be handled by replacing the
-      // required expenses.
-      function _updateExpenseRoomInfo(oldInfo, curRoom) {
-        var numChng = oldInfo.number !== curRoom.number,
-            gChng = oldInfo.guest !== curRoom.guest,
-            g2Chng = oldInfo.guest2 !== curRoom.guest2,
-            prChng = oldInfo.price !== curRoom.price,
-            cntInc = oldInfo.count <  curRoom.guest_count,
-            cntDec = oldInfo.count >  curRoom.guest_count,
-            guestDec = oldInfo.guest2 ? oldInfo.guest2 : oldInfo.guest + '-' + configService.loctxt.roommate;
+        // start by checking old against new
+        oldRms.forEach(function (orm) {
+          var nrm = findRm(orm.number, newRms),
+              rec = {r: orm.number, d:false, a: false, s: null, g1: null, g2: null, p: null, c: null},
+              change = false;
 
-        // update expenses with changes
-        if (numChng) {
-          _updateExpenseProperty('room', oldInfo.number, curRoom.number)
-        }
-        if (gChng) {
-          _updateExpenseProperty('guest', oldInfo.guest, curRoom.guest)
-        }
-        if (prChng || cntInc) { // best way to handle price or occupancy increase is to replace the required expenses
-          return true;
-        }
-        if (cntDec) {  // We need to remove expenses associated with guest 2 we will remove them all
+          if (nrm) { //check new against old
+            if (orm.guest !== nrm.guest) {
+              change = true;
+              rec.g1 = {oldval: orm.guest, newval: nrm.guest};
+            }
+            if (orm.guest2 !== nrm.guest2) {
+              change = true;
+              rec.g2 = {oldval: orm.guest2, newval: nrm.guest2};
+            }
+            if (orm.count !== nrm.guest_count) {
+              rec.c = {oldval: orm.count, newval: nrm.guest_count};
+            }
+            if (orm.price !== nrm.price) {
+              change = true;
+              rec.p = {oldval: orm.price, newval: nrm.price};
+            }
+            if (change) carray.push(rec);
+          }
+          else {
+            darray.push(orm); //add to delete array
+          }
+        });
 
-          _removeExpenseFromProperty('guest', guestDec);
-        }
-        if (g2Chng) {
-          _updateExpenseProperty('guest', oldInfo.guest2, curRoom.guest2)
+        // check for new rooms added
+        newRms.forEach(function (nrm) {
+          if (!findRm(nrm.number, oldRms)) {
+            aarray.push(nrm); // add to add array
+          }
+        });
+
+        // Now look for swapped rooms and add deletes and adds to list if not swapped
+        if (aarray.length > 0 && darray.length > 0) { //check for swaps
+          ix = -1;
+          darray.forEach(function (dr) {
+            var ar;
+            ix++;
+            for (var i=0; i < aarray.length; i++) {
+              ar = aarray[i];
+              if (ar.room_type === dr.type && ar.guest === dr.guest && ar.guest2 === dr.guest2) {
+                sarray.push({dr: dr.number, ar: ar.number, dp: oldRms[ix].price, ap: newRms[i].price});
+              }
+            }
+          });
+
+          sarray.forEach(function (sp) {  // now process swaps only update price if they are different.
+            carray.push({r: sp.ar, d:false, a: false, s: {oldval: sp.dr, newval: sp.ar}, g1: null, g2: null, p: sp.dp !== sp.ap ? {oldval: sp.dp, newval: sp.ap} : null});
+            darray.splice(sp.dx, 1);
+            aarray.splice(sp.ax, 1);
+          });
         }
 
-        return false;
+        if (aarray.length) {   //anything left is an add
+          aarray.forEach(function (nrm){
+            carray.push({r: nrm.number, d:false, a: true, s: null, g1: null, g2: null, p: null});
+          });
+        }
+
+        if (darray.length) {
+          darray.forEach(function (orm) {   //anything left is a delete
+            carray.push({r: orm.number, d:true, a: false, s: null, g1: null, g2: null, p: null});
+          });
+        }
+
+        return carray;
       }
-
       // method to update the specified property of all expenses items that have the value
       // specified by 'oldval' with the value in the 'newval' parameter
       function _updateExpenseProperty (prop, oldval, newval) {
         that.res.expenses.forEach(function (exp) {
           if (exp[prop] === oldval) {
+            exp.last_updated = new Date();
             exp[prop] = newval;
           }
         });
       }
-
+      // method to update the specified property of all expense items with the specified room number
+      // with the value in the 'newval' parameter
+      function _updateExpenseRoomProperty (rmNum, prop, newval) {
+        that.res.expenses.forEach(function (exp) {
+          if (exp.room === Number(rmNum)) {
+            exp.last_updated = new Date();
+            exp[prop] = newval;
+          }
+        });
+      }
+      // removes the expense item for the specified room and with the specified property value
+      function _removeExpenseRoomProperty( rmNum, prop, propval) {
+        var expIDs = [];
+        //find expenses to remove
+        that.res.expenses.forEach(function (exp) {
+          if (exp.room === Number(rmNum) && exp[prop] === propval) {
+            expIDs.push(exp._id);
+          }
+        });
+        // now remove the expenses
+        expIDs.forEach(function (id) {
+          that.res.expenses.id(id).remove();
+        });
+      }
       // removes expense items where the value of the specified property matches the specified property value
       function _removeExpenseFromProperty(prop, propval) {
         var expIDs = [];
@@ -1279,7 +1605,15 @@ define(['./module'], function (model) {
           that.res.expenses.id(id).remove();
         });
       }
-
+      // gets the room expense item for the specified room
+      function _getRoomExpenseItem(rmNum) {
+        for (var ix = 0; ix < that.res.expenses.length; ix++) {
+          if (that.res.expenses[ix].room === Number(rmNum)) {
+            return that.res.expenses[ix];
+          }
+        }
+        return null;
+      }
       // removes and replaces the resource related expenses such as parking if needed.
       function _updateResourceExpenses () {
         var curResHash = _buildResourceHash(that.res.resources),
@@ -1292,7 +1626,6 @@ define(['./module'], function (model) {
 
         return changesMade;
       }
-
       // Add expense items for the booked resources such as parking
       function _addResourceExpenses() {
         that.res.resources.forEach(function(res) {
@@ -1315,7 +1648,6 @@ define(['./module'], function (model) {
           exp.addThisToDocArray(that.res.expenses, res.price, that.res.nights);
         });
       }
-
       // checks to see if the reservation is a Kur reservation, if so, handle adding the prescription_charge expense
       // item if the insurance requires it and also add or update the copay expense item if the reservation's copay
       // flag is set. Copay is a fixed percentage of all items. It needs to add the amounts for each person in the
@@ -1417,7 +1749,6 @@ define(['./module'], function (model) {
 
         }
       }
-
       // add prescription charge expense item
       function _addPrescriptionCharge(room, guest, insurance) {
         var exp = new Itemtype(),
@@ -1445,7 +1776,6 @@ define(['./module'], function (model) {
         exp.count = 1;
         exp.addThisToDocArray(that.res.expenses);
       }
-
       // add copay charge expense item
       function _addCopayItem(room, guest, copayAmt, insurance) {
         var exp = new Itemtype();
@@ -1472,7 +1802,6 @@ define(['./module'], function (model) {
         exp.count = 1;
         exp.addThisToDocArray(that.res.expenses);
       }
-
       // Removes expenses by category. If the specificItems parameter is specified (array)
       // Then only the specific items (by name) in the array (in the specified category) will be removed.
       function _removeExistingExpenseItemsByCategory(category, specificItems){
@@ -1497,7 +1826,6 @@ define(['./module'], function (model) {
           that.res.expenses.id(id).remove();
         });
       }
-
       // Removes expenses by bill code. If the specificItems parameter is specified (array)
       // Then only the specific items (by name) in the array (with the specified bill code) will be removed.
       // If the guest is specified then only the items specific to the guest will be removed.
@@ -1527,8 +1855,6 @@ define(['./module'], function (model) {
           that.res.expenses.id(id).remove();
         });
       }
-
-
       // Removes the existing expenses related to any booked resources (such as parking)
       function _removeExistingResourceExpenseItems() {
         var resExp = [];
@@ -1555,36 +1881,29 @@ define(['./module'], function (model) {
         }
       }
 
-
-      // General function that removes all embedded documents from the specified Model document array
-      function _removeAllEmbeddedDocs(docArray){
-        var ids = [];
-        docArray.forEach(function (doc) {  // Find the IDs of all embedded docs
-          ids.push(doc._id);
-        });
-        ids.forEach(function(id) {
-          docArray.id(id).remove();
-        });
-      }
-
       // Adds all of the required expense items to a reservation as defined by the 'required_items' property of the
       // reservation's selected plan. Business logic:
-      // Items are added for each room in the reservation
+      // Items are added for each room in the reservation unless the roomNum is specified, then only add items for that room.
       // If an item has the 'per_person' property set true then the item is added for each person in a room
       // The plan must have one required item that represents the room expense ('is_room' property true)
-      // Breakfast is added automatically if the plan specifies ('includes_breakfast' property true)
+      // Breakfast is added automatically if the plan specifies ('includes_breakfast' property true) but is not displayed,
+      // also the room price is internally adjusted for tax purposes but displays the price including breakfast.
+      // If 'includesBusBreakfast' is set then breakfast is added as a displayable item and the displayed room price is adjusted
       // Kurtaxe is added automatically to each person in each room.
       // The taxable_rate property is calculated for the room expense item since components such as breakfast that may
       //  be included in the room price are taxed at a different rate.
-      function _addRequiredExpenses(items, curPlan) {
+      function _addRequiredExpenses(items, curPlan, roomNum) {
         // Process each required item
         // First find if breakfast is part of the room plan. We need to get the price being charged.
         // The logic is extended for any other item that are "baked in" to the room price.
-        var includedInPrice = 0;
-        var single = dbEnums.getRoomTypeEnum()[0];
+        var includedInPrice = 0,
+            single = dbEnums.getRoomTypeEnum()[0],
+            singleRoom = roomNum ? that.getRoomInReservation(roomNum) : null;
 
         // first  get the price of any item other than breakfast that is included in room price but has a different
-        // tax rate than the room. (Currently only breakfast but able to handle other custom items)
+        // tax rate than the room. (Currently only breakfast but able to handle other custom items) NOTE: breakfast
+        // items should not be part of the plan's required item list. Breakfast items are generated as needed based on
+        // the .includes_breakfast flag.
         items.forEach(function(item) {
           if (item.included_in_room) {
             includedInPrice = includedInPrice + item.price;
@@ -1597,26 +1916,37 @@ define(['./module'], function (model) {
 
         // now add the items to the reservation and implement the room logic.
         items.forEach(function (item) {
-          // Implement item for each room as needed
-            that.res.rooms.forEach(function (room){
-              // Each plan should have one room ExpenseItem associated with it. It is added to the expense list
-              // at least once and then kurtax and breakfast items are also added for each person in the room if
-              // needed.
+          // Implement item for each room as needed or only to a single room
+            if (singleRoom) {
               if (item.is_room) {
-                _addRoomTaxBreakfast(room, curPlan, includedInPrice, item);
+                _addRoomTaxBreakfast(singleRoom, curPlan, includedInPrice, item);
               }
               else {
                 // add item or items if item needs to be duplicated.
-                _addExpenseItem(room, item);
+                _addExpenseItem(singleRoom, item);
               }
-             });
+            }
+            else {
+              that.res.rooms.forEach(function (room) {
+                // Each plan should have one room ExpenseItem associated with it. It is added to the expense list
+                // at least once and then kurtax and breakfast items are also added for each person in the room if
+                // needed.
+                if (item.is_room) {
+                  _addRoomTaxBreakfast(room, curPlan, includedInPrice, item);
+                }
+                else {
+                  // add item or items if item needs to be duplicated.
+                  _addExpenseItem(room, item);
+                }
+              });
+            }
         });
       }
 
       // Implements the complex business logic around adding the room component to the total bill. Also
-      // adds breakfast (if needed) and kurtax entries for each person in the room. May break out a room component for
-      // each person in a double room if needed. Can also add an extra days item if the # of nights of the reservation
-      // exceed the duration of a plan.
+      // adds breakfast (if needed) and kurtax entries for each person in the room for non-business reservations.
+      // May break out a room component for each person in a double room if needed. Can also add an extra days item if
+      // the # of nights of the reservation exceed the duration of a plan.
       function _addRoomTaxBreakfast (room, curPlan, includedInPrice, item) {
 
         var price,
@@ -1636,10 +1966,11 @@ define(['./module'], function (model) {
           count = curPlan.duration;
           extraDays = that.res.nights - curPlan.duration; // do we need to add or subtract extra days?
 
-          // Included component is typically breakfast. We need to add an expense item for it (can be genaric)
-          // If there is an included item, it is probable at a differnt tax rate so remove it for the  price.
+          // Included component is typically breakfast. We need to add an expense item for it (can be generic)
+          // If there is an included item, it is probable at a different tax rate so remove it for the  price.
           if (includedInPrice) {
             item.taxable_price = (price - (includedInPrice * room.guest_count));
+            if (item.taxable_price < 0 ) item.taxable_price = 0;
           }
 
           // Now add room item for the main guest and duplicate if necessary
@@ -1656,6 +1987,12 @@ define(['./module'], function (model) {
           count = that.res.nights;
           if (includedInPrice) {
             item.taxable_price = (price - (includedInPrice * room.guest_count));
+            if (item.taxable_price < 0 ) item.taxable_price = 0;
+          }
+          // If a business reservation and the firm includes breakfast then reduce the room price
+          // by the amount of the breakfast.
+          if (that.isBusiness && that.includesBusBreakfast) {
+            price = room.price - configService.constants.breakfast;
           }
           _addExpenseItem(room, item, price, count);
           _addBreakfastKurtax(room, includedInPrice);
@@ -1666,40 +2003,64 @@ define(['./module'], function (model) {
         }
       }
 
-      // Creates and adds expense items for included expenses (breakfast) and kurtaxe
+      // Creates and adds expense items for included expenses (breakfast) and kurtaxe for non business reservations
       function _addBreakfastKurtax(room, includedInPrice) {
-        if (includedInPrice) {
-          var exp = new Itemtype();
-          exp.name = configService.loctxt.breakfastInc;
-          exp.category = dbEnums.getItemTypeEnum()[0];
-          exp.bill_code = configService.constants.bcPackageItem;
-          exp.per_person = true;
-          exp.no_delete = true;
-          exp.no_display = true;
-          exp.included_in_room = true;
-          exp.day_count = true;
-          exp.fix_price = true;
-          exp.low_tax_rate = false;
-          exp.display_order = 2;
-          exp.taxable_price = includedInPrice;
-          exp.price = 0;
-          _addExpenseItem(room, exp);
+        if (that.isBusiness) {
+          if (that.includesBusBreakfast) {
+            var exp = new Itemtype();
+            exp.name = configService.loctxt.breakfast;
+            exp.category = dbEnums.getItemTypeEnum()[0];
+            exp.bill_code = configService.constants.bcMeals;
+            exp.per_person = true;
+            exp.no_delete = false;
+            exp.no_display = false;
+            exp.included_in_room = false;
+            exp.day_count = true;
+            exp.edit_count = true;
+            exp.fix_price = true;
+            exp.low_tax_rate = false;
+            exp.bus_pauschale = true;
+            exp.display_order = 2;
+            exp.display_string = '%count% %name% à %price%';
+            exp.taxable_price = 0;
+            exp.price = configService.constants.get('breakfast');
+            _addExpenseItem(room, exp);
+          }
         }
-        //now add city tax (kurtax)
-        exp = new Itemtype();
-        exp.name = configService.loctxt.cityTax;
-        exp.category = dbEnums.getItemTypeEnum()[0];
-        exp.bill_code = configService.constants.bcKurTax;
-        exp.bus_pauschale = true;
-        exp.per_person = true;
-        exp.day_count = true;
-        exp.no_delete = true;
-        exp.fix_price = true;
-        exp.one_per = true;
-        exp.low_tax_rate = true;
-        exp.display_string = configService.loctxt.addedKurtaxDisplayString;
-        exp.display_order = 3;
-        _addExpenseItem(room, exp, configService.constants.cityTax);
+        else {
+          if (includedInPrice) {
+            var exp = new Itemtype();
+            exp.name = configService.loctxt.breakfastInc;
+            exp.category = dbEnums.getItemTypeEnum()[0];
+            exp.bill_code = configService.constants.bcPackageItem;
+            exp.per_person = true;
+            exp.no_delete = true;
+            exp.no_display = true;
+            exp.included_in_room = true;
+            exp.day_count = true;
+            exp.fix_price = true;
+            exp.low_tax_rate = false;
+            exp.display_order = 2;
+            exp.taxable_price = includedInPrice;
+            exp.price = 0;
+            _addExpenseItem(room, exp);
+          }
+          //now add city tax (kurtax)
+          exp = new Itemtype();
+          exp.name = configService.loctxt.cityTax;
+          exp.category = dbEnums.getItemTypeEnum()[0];
+          exp.bill_code = configService.constants.bcKurTax;
+          exp.bus_pauschale = true;
+          exp.per_person = true;
+          exp.day_count = true;
+          exp.no_delete = true;
+          exp.fix_price = true;
+          exp.one_per = true;
+          exp.low_tax_rate = true;
+          exp.display_string = configService.loctxt.addedKurtaxDisplayString;
+          exp.display_order = 3;
+          _addExpenseItem(room, exp, configService.constants.cityTax);
+        }
       }
       //Simple method to add an expense item, It will duplicate item if needed based on the item flags and room guest
       // count
@@ -1825,25 +2186,29 @@ define(['./module'], function (model) {
         }
       }
 
-
       // Updates the taxable_price property of the room expense item if its price has been changed by the user.
-      // The taxable_price is simply the room item's price minus the some of any items (such as breakfast) that
+      // The taxable_price is simply the room item's price minus the sum of any items (such as breakfast) that
       // have their 'included_in_room' flag set.
       function _updateRoomTaxablePrice(item) {
         var includedInPrice = 0,
             room = that.getRoomInReservation(item.room),
             iprice;
 
-        //Total any items (such as breakfast that is included in room price
+        //Total any items (such as breakfast) that is included in room price. There should be individual items for
+        // each person in the room for breakfast.
         that.res.expenses.forEach(function (exp) {
-          if (exp.included_in_room) {
+          if (exp.room === item.room && exp.included_in_room) {
             iprice = exp.taxable_price ? exp.taxable_price : exp.price; //Taxable price always has priority
-            iprice = exp.per_person ? (iprice * room.guest_count) : iprice;
             includedInPrice = includedInPrice + iprice;
           }
         });
 
         item.taxable_price = item.price - includedInPrice;
+        if (item.taxable_price < 0 ) item.taxable_price = 0;
+
+        // update the room price to reflect the change in the expense item
+        room.price = item.price;
+        room.update_date = new Date();
       }
 
       // If the number of nights change then update  count of the items that have their day_count flag set to true
@@ -1904,12 +2269,14 @@ define(['./module'], function (model) {
         }
       }
 
-      //method to update the address information associated with the reservation.
-      function _updateAddress() {
-        var deferred = $q.defer();
-        // first determine if we need to update.
-        var updateFromFirm = that.showFirm && (that.res.firm !== lastFirm);
-        var updateFromGuest = !that.showFirm && (that.res.guest.id !== lastGuest);
+      //method to update the address information associated with the reservation and to check for name changes for the
+      // guest. If the name has changed then we need to update the room and existing expenses with the new guest name.
+      // We also need to retrieve specific firm information.
+      function _updateNameFirmAddressReqItems() {
+        var deferred = $q.defer(),
+            updateFromFirm = that.showFirm,
+            curGuestName = that.res.guest.name;
+
         if (updateFromFirm){
           dashboard.getFirmByName(that.res.firm).then(function (firm){
             if (firm) {
@@ -1918,7 +2285,8 @@ define(['./module'], function (model) {
               that.res.city = firm.city;
               that.res.post_code = firm.post_code;
               that.res.country = firm.country;
-              deferred.resolve();
+              that.includesBusBreakfast = firm.includes_breakfast;
+              //deferred.resolve();
             }
             else {
               deferred.reject('ERROR: Invalid or missing Firm: ' + that.res.firm);
@@ -1927,14 +2295,30 @@ define(['./module'], function (model) {
             deferred.reject("Error retrieving firm: " + err);
           });
         }
-        else if (updateFromGuest){
-          dashboard.getGuestById(that.res.guest.id).then(function (guest){
+        dashboard.getGuestById(that.res.guest.id).then(function (guest){
             if (guest) {
-              that.res.address1 = guest.address1;
-              that.res.address2 = guest.address2;
-              that.res.city = guest.city;
-              that.res.post_code = guest.post_code;
-              that.res.country = guest.country;
+              if (!updateFromFirm) {
+                that.res.address1 = guest.address1;
+                that.res.address2 = guest.address2;
+                that.res.city = guest.city;
+                that.res.post_code = guest.post_code;
+                that.res.country = guest.country;
+              }
+              if (guest.name !== curGuestName) {  // name has changed for the id
+                that.res.guest.name = guest.name;
+                that.res.rooms.forEach(function (rm){
+                  if (rm.guest === curGuestName) {
+                    rm.guest = guest.name;
+                  }
+                });
+                var mdate = new Date();
+                that.res.expenses.forEach(function (exp) {
+                  if (exp.guest === curGuestName) {
+                    exp.guest = guest.name;
+                    exp.last_updated = mdate;
+                  }
+                });
+              }
               deferred.resolve();
             }
             else {
@@ -1943,19 +2327,40 @@ define(['./module'], function (model) {
           }, function (err) {
             deferred.reject("Error retrieving Guest: " + err);
           });
-        }
-        else { //no change
-          deferred.resolve();
-        }
+
         return deferred.promise;
       }
 
+      // General function that removes all embedded documents from the specified Model document array
+      function _removeAllEmbeddedDocs(docArray){
+        var ids = [];
+        docArray.forEach(function (doc) {  // Find the IDs of all embedded docs
+          ids.push(doc._id);
+        });
+        ids.forEach(function(id) {
+          docArray.id(id).remove();
+        });
+      }
+
+
       // Builds a hash from the reservation rooms array. Used to determine if the rooms and or occupants have changed
       function _buildRoomHash(rooms, occupants) {
-        var hash = 0;
-        var ix = rooms.length + 2;
+        var hash = 0,
+            ix = rooms.length + 2,
+            strHash = function(s){
+              if (s) {
+                return s.split("").reduce(function (a, b) {
+                  a = ((a << 5) - a) + b.charCodeAt(0);
+                  return a & a
+                }, 0);
+              }
+              else {
+                return 0;
+              }
+            };
         rooms.forEach(function(room) {
-          hash = hash + (room.number * room.price * ix * occupants);
+          var rp = room.price > 0 ? room.price : 66;
+          hash = hash + (room.number * room.price * ix * occupants + strHash(room.guest) + strHash(room.guest2));
           ix--;
         });
         return hash;
@@ -2029,15 +2434,15 @@ define(['./module'], function (model) {
       // Now that everything is defined, initialize the VM based on the reservation model
       // perform model setup actions
       if (reservation) {
-        lastPlanCode = reservation.plan_code;
+        lastPlanCode = reservation.plan_code ? reservation.plan_code : -1;
         lastGuest = reservation.guest ? reservation.guest.name : '';
         lastGuest2 = reservation.guest2 ? reservation.guest2.name : '';
         lastFirm = reservation.firm ? reservation.firm : '';
         lastNights = reservation.nights;
         lastRoomHash = _buildRoomHash(reservation.rooms, reservation.occupants);
         lastResourceHash = _buildResourceHash(reservation.resources);
-        lastInsurance1 = reservation.insurance;
-        lastInsurance2 = reservation.insurance2;
+        lastInsurance1 = reservation.insurance ? reservation.insurance : '';
+        lastInsurance2 = reservation.insurance2 ? reservation.insurance2 : '';
 
         if (reservation.rooms.length) {
           reservation.rooms.forEach(function(room){

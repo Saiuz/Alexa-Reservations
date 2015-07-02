@@ -42,7 +42,7 @@ define(['./module'], function (controllers) {
           $scope.$watch('selected.reservation', function (newval) {
             if (!newval || !newval.number) return; //We expect an object with (res) number, room and guest properties
             // Get reservation and prepare the room plan text and handle the special case
-            // where we have a group reservation with one bill- need to show the rooms
+            // where we have a tour group reservation with one bill- need to show the rooms
             ReservationVM.getReservationVM(newval.number, true).then(function (resVM) {
               if(resVM.res) {
                 $scope.rvm = resVM;

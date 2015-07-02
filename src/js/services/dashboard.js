@@ -14,31 +14,10 @@ define(['./module'], function (services) {
       function (Reservation, Guest, Room, RoomPlan, Resource, Itemtype, Firm, Event, Counters,
                 dbEnums, datetime, $q, configService, $filter) {
     return {
-      getNextDaysDate: function (dateval) {
-        return datetime.dateOnly(dateval, 1);
-      },
-      getUpcomming: function (dateval) {
-        var deferred = $q.defer();
-        Reservation.find()
-            .where('end_date')
-            .gte(datetime.dateOnly(dateval))
-            .lte(datetime.dateOnly(dateval, 1))
-            .sort('end_date')
-            .exec(function (err, reservations) {
-              if (err) {
-                deferred.reject(err);
-                console.log("getUpcomming query failed: " + err);
-              }
-              else {
-                deferred.resolve(reservations);
-              }
-            });
-        return deferred.promise;
-      },
       // Return reservations with start dates on date specified
       getArrivals: function (dateval) {
         var deferred = $q.defer();
-        var qry = {$and: [{start_date: {$gte: datetime.dateOnly(dateval)}}, {start_date: {$lte: datetime.dateOnly(dateval, 1)}}]};
+        var qry = {$and: [{start_date: {$gte: datetime.dateOnly(dateval)}}, {start_date: {$lt: datetime.dateOnly(dateval, 1)}}]};
         Reservation.find(qry)
             .sort('room')
             .exec(function (err, reservations) {
@@ -55,7 +34,7 @@ define(['./module'], function (services) {
       // Return reservations with end dates on date specified
       getDepartures: function (dateval) {
         var deferred = $q.defer();
-        var qry = {$and: [{end_date: {$gte: datetime.dateOnly(dateval)}}, {end_date: {$lte: datetime.dateOnly(dateval, 1)}}]};
+        var qry = {$and: [{end_date: {$gte: datetime.dateOnly(dateval)}}, {end_date: {$lt: datetime.dateOnly(dateval, 1)}}]};
         Reservation.find(qry)
             .sort('room')
             .exec(function (err, reservations) {
@@ -258,47 +237,75 @@ define(['./module'], function (services) {
       },
       // retrieves guest names based on a partial name. If firm is provided, then the firm name must match. There
       // are two special search character sequences '^' and '^^' that can start the string. A single caret means
-      // search the first name, a double caret means search the last name.
+      // search the first name, a double caret means search the last name.  Also if val starts with ?? and there is a
+      // firm name
       guestNameLookup: function (val, firm) {
         var deferred = $q.defer(),
             clean = /[\\.\#\^\$\|\?\+\(\)\[\{\}\]*]/g, //contains all regex special characters
             specialSearch = (val.match(/^\^+/) || []).length ? val.match(/^\^+/)[0].length : 0,//look for special search chars at start of string
+            allFirmNames = (firm && firm.trim().length) && (val.trim() === '?'),
             qry = {},
             sort = {};
 
-        val = val.replace(clean, ''); //remove any regex specific characters from input string, otherwise unpredictable results
-
-        switch (specialSearch) { //build the query
-          case 0:  // default match val anywhere in the unique_name field
-            sort = {unique_name: 1};
-            qry = firm ? {firm: firm, unique_name: { $regex: val, $options: 'i'}} : {unique_name: { $regex: val, $options: 'i' }};
-            break;
-
-          case 1:  // first_name field starts with val
-            sort = {first_name: 1};
-            val = '^' + val;
-            qry = firm ? {firm: firm, first_name: { $regex: val, $options: 'i'}} : {first_name: { $regex: val, $options: 'i' }};
-            break;
-
-          case 2: // last_name field starts with val
-            sort = {last_name: 1};
-            val = '^' + val;
-            qry = firm ? {firm: firm, last_name: { $regex: val, $options: 'i'}} : {last_name: { $regex: val, $options: 'i' }};
-            break;
+        if (allFirmNames) {   // search for all names associated with the specified firm
+          specialSearch = 10;
         }
 
-        Guest.find(qry)
-            .sort(sort)
+        val = val.replace(clean, ''); //remove any regex specific characters from input string, otherwise unpredictable results
+        if (val.length || specialSearch === 10) {
+          switch (specialSearch) { //build the query
+            case 0:  // default match val anywhere in the unique_name field
+              sort = {unique_name: 1};
+              qry = firm ? {firm: firm, unique_name: {$regex: val, $options: 'i'}} : {
+                unique_name: {
+                  $regex: val,
+                  $options: 'i'
+                }
+              };
+              break;
+
+            case 1:  // (^) first_name field starts with val
+              sort = {first_name: 1};
+              val = '^' + val;
+              qry = firm ? {firm: firm, first_name: {$regex: val, $options: 'i'}} : {
+                first_name: {
+                  $regex: val,
+                  $options: 'i'
+                }
+              };
+              break;
+
+            case 2: // (^^) last_name field starts with val
+              sort = {last_name: 1};
+              val = '^' + val;
+              qry = firm ? {firm: firm, last_name: {$regex: val, $options: 'i'}} : {
+                last_name: {
+                  $regex: val,
+                  $options: 'i'
+                }
+              };
+              break;
+            case 10: // (?) retrieve all names associated with the firm
+              sort = {last_name: 1};
+              qry = {firm: firm};
+          }
+
+          Guest.find(qry)
+              .sort(sort)
             //.select('_id name unique_name') -can't select just virtual fields!! if they are calculated from fields that aren't returned in model
-            .exec(function (err, guests) {
-              if (err) {
-                deferred.reject(err);
-                console.log("guestNameLookup query failed: " + err);
-              }
-              else {
-                deferred.resolve(guests);
-              }
-            });
+              .exec(function (err, guests) {
+                if (err) {
+                  deferred.reject(err);
+                  console.log("guestNameLookup query failed: " + err);
+                }
+                else {
+                  deferred.resolve(guests);
+                }
+              });
+        }
+        else {
+          deferred.resolve([]);
+        }
         return deferred.promise;
       },
       //retrieves firms based on a partial name string. The partial string can occur anywhere in the firm name. If

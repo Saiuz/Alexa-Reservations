@@ -89,6 +89,14 @@ define(['./module'], function (directives) {
            }
         });
 
+        // respond to the appReady event, repaint calendar if we have a date
+        scope.$on(configService.constants.appReadyEvent, function (event) {
+            if (datetime.isDate(scope.theDate)) {
+              console.log('ax-room-plan responding to app ready event');
+              _buildCalendar(false);
+            }
+        });
+
         scope.$watch('theDate', function (newval, oldval) {
           // respond to change in calendar.
           console.log('*** ax-room-plan watch fired ' + newval + '|' + oldval);
@@ -113,6 +121,17 @@ define(['./module'], function (directives) {
           }*/
         });
 
+        // respond to a user clicking the "New Reservation" button
+        scope.newRes = function() {
+          var cObj = {
+            start: datetime.dateOnly(new Date()),
+            end: datetime.dateOnly(new Date(), 1),
+            room: -1
+          };
+          if (scope.blankClickFunction) {
+            scope.blankClickFunction(cObj);
+          }
+        };
 
         // respond to a user clicking on a reservation item
         scope.rClick = function (link, start) {
@@ -227,7 +246,7 @@ define(['./module'], function (directives) {
                 $(this).width(pw);
               });
             }
-          }, 200);
+          }, 500);
         }
 
         function _buildMonthHeader(start, end, cols) {

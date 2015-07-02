@@ -17,7 +17,7 @@
       "url": "https://github.com/jgrenon"
     }],
   "window": {
-    "toolbar": false,
+    "toolbar": true,
     "width": 1200,
     "height": 960,
     "icon":"./images/logo.png"

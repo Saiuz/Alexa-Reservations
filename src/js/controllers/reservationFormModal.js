@@ -253,6 +253,17 @@ define(['./module'], function (controllers) {
             }
           });
 
+          // callback for when the Guest name changes. If firm is active and selected guest has a firm associated with it
+          // then the firm is updated with the firm associated with the guest
+          $scope.guestChanged = function (guest) {
+            if (guest) {
+              console.log("Guest changed: " + guest.firm);
+              if ($scope.rvm.showFirm && guest.firm) {
+                $scope.rvm.res.firm = guest.firm;
+              }
+            }
+          };
+
           // for date pickers
           $scope.openStart = function ($event) {
             $event.preventDefault();

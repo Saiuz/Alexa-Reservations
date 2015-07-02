@@ -1,12 +1,15 @@
 <span class="input-group" ng-class="{'has-error': notFound}">
   <input class="form-control" type="text" ng-model="axguest" typeahead="n.dname for n in getGuests($viewValue)"
-         typeahead-on-select="guestChanged($item, $model, $label)" typeahead-wait-ms="300" typeahead-min-length="2" />
+         typeahead-on-select="guestChanged($item, $model, $label)" typeahead-wait-ms="300" typeahead-min-length="1" />
   <span class="input-group-btn">
       <button class="btn btn-default" type="button" ng-click="newGuest()" ng-show="!canClear">
           <i class="glyphicon glyphicon-open"></i>
       </button>
       <button class="btn btn-default" type="button" ng-click="clearGuest()" ng-show="canClear">
           <i class="glyphicon glyphicon-remove"></i>
+      </button>
+      <button class="btn btn-default" type="button" ng-click="editGuest()" ng-show="canClear">
+          <i class="glyphicon glyphicon-edit"></i>
       </button>
   </span>
     <i class="glyphicon glyphicon-refresh" ng-show="loading"></i>

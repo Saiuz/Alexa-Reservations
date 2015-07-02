@@ -1,50 +1,50 @@
 /**
- * Directive to generate a standard bill.  The directive attributes are:
+ * Directive to generate a Private Group bill. A private group is simply a private individual that reserves more than
+ * one room. There is no firm associated with the bill and the main guest is responsible for paying the full bill.
+ *
+ * The directive attributes are:
  *    reservationVm - a reservation view-model object containing the business reservation.
- *    details -  a boolean that if true will show a detailed list of miscellaneous items on a second page
  *
  * Other business logic:
- *    The bill shows the room information, has a section for Kurtax and a section for Diverses. The kurtax section is
- *    aggregated if there are 2 people in the room. Under the Diverses section, drinks and eats are shown as totals.
- *    There is an option to have a second page where the Diverses detail is shown.
+ *    This bill has one main page that covers room and kurtax and diverses summ which is paid by the main guest. It can
+ *    generate a separate itemized bill for  food or drinks.
  */
 define(['./module'], function (directives) {
   'use strict';
-  directives.directive('axStandardBill', ['$filter', 'configService',
+  directives.directive('axPgroupBill', ['$filter', 'configService',
     function ($filter, configService) {
       var linker = function (scope, element, attrs) {
-        console.log("axStandardBill linker fired");
+        console.log("axTourBill linker fired");
         //define which items appear in which section of the bill_dec32
         var c = configService.constants,
-            unterItems = [c.bcRoom, c.bcPackageItem, c.bcExtraRoom],
-            kurtax = [c.bcKurTax],
-            other = [c.bcDrink, c.bcFood, c.bcMeals, c.bcPlanDiverses, c.bcKur, c.bcResources, c.bcDienste],
+            unterItems = [c.bcRoom, c.bcPackageItem, c.bcMeals, c.bcKurTax ],
+            personal = [c.bcDrink, c.bcFood, c.bcMeals, c.bcPlanDiverses, c.bcKur, c.bcResources, c.bcDienste],//[c.bcDrink, c.bcFood, c.bcKur, c.bcDienste],
             haveAttributes = false,
             calcResult,
             room,
             rmObj,
-            detailedPage;
+            maxBillRows = 7,
+            busPachale;
 
         scope.txt = configService.loctxt;
         scope.tax7 = configService.constants.get('roomTax');
         scope.tax19 = configService.constants.get('salesTax');
         scope.today = new Date();
+        scope.roomBills = [];
 
         // build the local select list from the expenseItemArray
         // filter the list by the itemType property. Note we must wait until
         // both properties have been set during the compile phase of the hosting page
-        scope.$watchCollection('[reservationVm, details]', function (newvals) {
+        scope.$watchCollection('[reservationVm]', function (newvals) {
           var extras = {};
 
-          if (newvals[0] && newvals[1] !== undefined) {
-            console.log("axStandardBill watch fired with all parameters " + newvals[1]);
+          if (newvals[0] !== undefined) {
+            console.log("axTourBill watch fired with all parameters " + newvals[1]);
             haveAttributes = true;
             scope.rvm = newvals[0]; // same as reservationVM just less typing
-            scope.ktax = configService.constants.get("cityTax") * scope.rvm.res.nights;
-            room = scope.rvm.res.rooms[0].number;
-            scope.guest = scope.rvm.res.guest.name; //Todo may want to get name without salutation or change res to store name without salutation.
-            rmObj = scope.rvm.generatePlanRoomString(room, scope.guest);
-            detailedPage = newvals[1];
+            room = Number(newvals[1]);
+            rmObj = scope.rvm.generatePlanRoomString(scope.rvm.res.rooms[0].number, scope.rvm.res.rooms[0].guest);
+            busPachale = newvals[3];
             // build 'vocabulary' that expense display strings may need.
             extras['planName'] = rmObj.displayText;
             extras['planPrice'] = scope.rvm.planPrice;
@@ -56,18 +56,25 @@ define(['./module'], function (directives) {
         });
 
         var updateData =  function(extras) {
-          var ktext =  scope.rvm.oneBill ? configService.loctxt.aggregatePersonDisplayString : '',
-              aggObj = [];
+          var roomBills = [],
+              ktext =  scope.rvm.oneBill ? configService.loctxt.aggregatePersonDisplayString : '',
+              aggObj = [
+                {code: c.bcDrink, text: "Getränke"},
+                {code: c.bcFood, text: "Speisen"},
+                {code: c.bcKur, text: "Dienste"}
+              ],
+              bill;
 
           if (haveAttributes) {
-            scope.rvm.getBillNumber(room, scope.guest).then( function (bnum) {
+            // Get the main bill expenses rooms and tax. Ignore room/guest specific expenses at this point.
+            scope.rvm.getBillNumber(scope.rvm.res.rooms[0].number, scope.guest).then( function (bnum) {
                   scope.billNumber = bnum;
                 }
             );
             scope.rvm.generateBillingName();
 
             // get the total bill and taxes taxes
-            calcResult = scope.rvm.calculateTotals([],room, scope.guest); //total everything
+            calcResult = scope.rvm.calculateTotals([]); //total everything
             scope.sectionTotal = {
               page_title: "Rechnung",
               section_title: "",
@@ -77,34 +84,21 @@ define(['./module'], function (directives) {
               items: [],
               padding: _padRows(calcResult.detail.length, 0)
             };
-            calcResult = scope.rvm.calculateTotals(unterItems, room, scope.guest, extras, false);
+            // get rooms and tax etc
+            calcResult = scope.rvm.calculateTotals(unterItems, null, null, extras, true, ktext);
             scope.section1 = {
-              page_title: "",
+              page_title: "Rechnung",
               section_title: "Unterkunft:",
-              total_text: "Total",
+              total_text: "Gesamtbetrag inklusive Umsatzsteuer",
               total: calcResult.sum,
               taxes: calcResult.taxes,
               items: calcResult.detail,
-              padding: _padRows(calcResult.detail.length, 3)
+              padding: _padRows(calcResult.detail.length, maxBillRows)
             };
-            calcResult = scope.rvm.calculateTotals(kurtax, scope.room, scope.guest, extras, true, ktext);
-            scope.section2 = {
-              page_title: "",
-              section_title: "Kurtaxe:",
-              total_text: "Total",
-              taxes: calcResult.taxes,
-              total: calcResult.sum,
-              items: calcResult.detail,
-              padding: _padRows(calcResult.detail.length, 2)
-            };
-            calcResult = scope.rvm.calculateTotals(other, room, scope.guest);
-            aggObj = [
-              {code: c.bcDrink, text: "Getränke"},
-              {code: c.bcFood, text: "Speisen"},
-              {code: c.bcKur, text: "Dienste"}
-            ];
+            // Get other expenses for all rooms
+            calcResult = scope.rvm.calculateTotals(personal);
             scope.hasDetails = calcResult.detail.length > 0;
-            scope.section3 = {
+            scope.section2 = {
               page_title: "",
               section_title: "Diverses:",
               total_text: "Total",
@@ -138,7 +132,7 @@ define(['./module'], function (directives) {
       return {
         restrict: 'E',
         link: linker,
-        templateUrl: './templates/ax-standard-bill.html',
+        templateUrl: './templates/ax-pgroup-bill.html',
         scope: {
           reservationVm: '=',
           details: '='
@@ -146,3 +140,4 @@ define(['./module'], function (directives) {
       };
     }]);
 });
+

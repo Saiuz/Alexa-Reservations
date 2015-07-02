@@ -4,7 +4,6 @@
  * determine which reservations are shown:
  *     a (arrival) - shows reservations with the start date equal to the specified date.
  *     d (departure) = shows reservations with the end date equal to the specified date.
- *     u (upcomming) - shows departures within two days of the specified date
  *     c (current) - shows reservations that are currently active (have check-in date but no check-out date).
  *     r (recent) - shows reservations that have checked out between the current date and the specified date. If
  *                  the spcified date is not provided, the date defaults to the last week.
@@ -151,17 +150,6 @@ define(['./module'], function (directives) {
 
               case 'd':
                 dashboard.getDepartures(theDate).then(function (result) {
-                      scope.reservations = _buildList(result, useLink);
-                      _setChecked(scope.selectedReservation);
-                    },
-                    function (err) {
-                      scope.error = err;
-                    });
-                break;
-
-              case 'u':
-                scope.show = true;
-                dashboard.getUpcomming(theDate).then(function (result) {
                       scope.reservations = _buildList(result, useLink);
                       _setChecked(scope.selectedReservation);
                     },

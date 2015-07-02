@@ -67,6 +67,12 @@
             </div>
         </div>
         <div class="form-group">
+            <label class="control-label col-xs-4">{{txt.includesBreakfast}}</label>
+            <div class="col-xs-3">
+                <input type="checkbox" ng-disabled="read" ng-model="firm.includes_breakfast"/>
+            </div>
+        </div>
+        <div class="form-group">
             <label class="control-label col-xs-4">{{txt.contact_name}}</label>
             <div class="col-xs-8" ng-show="read">
                 <p class="form-control-static">{{firm.contact_name}}</p>

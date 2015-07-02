@@ -58,6 +58,7 @@ define(['./module'], function (controllers) {
                 $scope.stdRes = resVM.isStandard;
                 $scope.kurRes = resVM.isKur;
                 $scope.tourRes = resVM.isTour;
+                $scope.pGroupRes = resVM.isPrivateGroup;
                 $scope.err="";
                 $scope.hasErr = false;
               }

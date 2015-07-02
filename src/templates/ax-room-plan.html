@@ -1,6 +1,9 @@
 <div class="panel panel-default">
     <div class="panel-heading">
-        {{txt.week_plan_for}} {{dates.weekStart | date:'shortDate'}} {{txt.until}} {{dates.weekEnd | date:'shortDate'}}
+        {{txt.week_plan_for}} {{dates.weekStart | date:'shortDate'}} {{txt.until}} {{dates.weekEnd | date:'shortDate'}} &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        <button class="btn btn-default pull-right" type="button" ng-click="newRes()">
+            {{txt.newReservation}}
+        </button>
         <ax-week-buttons picked-date='theDate'/>
     </div>
     <div class="panel-body zp-container">

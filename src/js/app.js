@@ -95,6 +95,7 @@ define("app", [
 
     $rootScope.appTitle = appConstants.appTitle;   //may need language switching
     $rootScope.appBrand = appConstants.appName;
+    $rootScope.version = appConstants.version;
     editableOptions.theme = 'bs3'; //for the radioButtonGroup directive (third party)
     $state.go('home');
   });

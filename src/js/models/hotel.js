@@ -7,7 +7,8 @@ define(['./module'], function (model) {
   console.log('Creating hotel model');
   // ** enums used to control fields in various schemas **
   // Salutaion enum for Guest
-  var salutationEnum = ['Dr.', 'Frau', 'Familie', 'Herr', 'Herrn'];
+  var salutationEnum = ['Herrn', 'Frau', 'Familie', 'Dr.','Herr', 'Damen', 'Prof. Dr.', 'Herrn Pfarrer', 'Gräfin']; // provides display order
+  var salutationSearchOrder = [6,7,0,1,2,3,4,5,8];// order to search for salutations (two word salutations first)
   // item type enum used in ExpenseItem and ItemType schema
   var itemTypeEnum =['Plan', 'Allgemein', 'Speisen', 'Getränke', 'Dienste', 'VDAK', 'AOK & Andere', 'Privat'];
   // enums used in Room and ReservedRoom schemas
@@ -17,7 +18,7 @@ define(['./module'], function (model) {
   var roomClassAbbrEnum=['Econ', 'Std', 'Komf', 'BK', ''];
   // enums used in Reservation Schema
   var resStatusEnum = ['Sicher', 'Vorreservation'];
-  var resSourceEnum = ['Phone', 'HRS Group', 'Booking.Com'];
+  var resSourceEnum = ['HRS Group', 'Phone', 'Booking.Com'];
   var resInsuranceEnum = ['','VDAK', 'AOK & Andere', 'Privat'];
   var resTypeEnum = ['Std.', 'Bus.', 'Kur', 'Gruppe'];
   // enum for Resource Schema
@@ -50,7 +51,23 @@ define(['./module'], function (model) {
         }
       },
       //some specific plan types
-      itemTypePlan: function() {return itemTypeEnum.slice(0)[0];}
+      itemTypePlan: function() {return itemTypeEnum.slice(0)[0];},
+      // extracts the salutation (title) from a name
+      extractSalutation: function(name)  {
+        var salutation = '',
+            ix, olen, newName;
+        if (name) {
+          olen = name.length;
+          for (ix = 0; ix < salutationEnum.length; ix++) {
+            newName = name.replace(salutationEnum[salutationSearchOrder[ix]], '');
+            if (newName.length != olen) {
+              salutation = salutationEnum[ix];
+              break;
+            }
+          }
+        }
+        return salutation;
+      }
     }
   });
 
@@ -207,7 +224,7 @@ define(['./module'], function (model) {
            configObj = {
              category: category,
              bill_code: configService.constants.get(catCodeMap[category]),
-             displayString: '%count% %name% à %price%',
+             display_string: '%count% %name% à %price%',
              display_order: 1,
              edit_count: true
            };
@@ -235,7 +252,9 @@ define(['./module'], function (model) {
       price: Number,  // the room price
       isCheckedIn: Boolean, // true when the guest or guests in this room have checked in.
       isCheckedOut: Boolean, // true when the guest or guests in this room have checked out.
-      billNumber: Number // unique bill number for room.
+      billNumber: Number, // unique bill number for room.
+      update_date: Date  // This is needed to take care of a Tingus bug that will not properly save a document
+                         // collection if an existing member is not changed.
     });
     schema.virtual('display_type').get(function() {
       return this.room_class + (this.room_class === '' ? "" : "-") + this.room_type;
@@ -274,6 +293,7 @@ define(['./module'], function (model) {
     });
   });
 
+  // defines a subdocument for bill numbering for each bill associated with a reservation
   model.factory('BillNumber', function(db) {
     return new db.db.Schema({
       room_number: Number,
@@ -283,7 +303,7 @@ define(['./module'], function (model) {
   });
 
   // Guest Schema
-  model.factory('Guest', function(db) {
+  model.factory('Guest', function(db, dbEnums) {
 
     var schema = new db.db.Schema({
         first_name: { type: String},
@@ -301,7 +321,7 @@ define(['./module'], function (model) {
         country: String,
         telephone: String,
         comments: String,
-        unique_name: {type: String, unique: true} //NOTE this field should not be exposed as an editable field on a UI form. It is generated on save.
+        unique_name: {type: String} //NOTE this field should not be exposed as an editable field on a UI form. It is generated on save.
     });
     // Virtual fields
     schema.virtual('name').get(function() {
@@ -310,6 +330,52 @@ define(['./module'], function (model) {
       } else {
         return this.first_name + " " + this.last_name;
       }
+    });
+    // if partner then generate the partner name
+    schema.virtual('partner').get(function () {
+      var name = '',
+          psal, parts;
+
+      if (!this.partner_name) {
+         name = '*******';
+      }
+      else {
+        psal = dbEnums.extractSalutation(this.partner_name);
+        parts = this.partner_name.trim().split(' ');
+        if (psal) {
+          parts.shift();
+        }
+        if (parts.length > 1) {
+          name = this.partner_name;
+        }
+        else {
+          name = this.partner_name + " " + this.last_name;
+        }
+      }
+      return name;
+    });
+    // if partner then generate a combined name such as Bill and Nancy Smith
+    schema.virtual('billing_name').get(function () {
+      var name = '',
+          psal, parts;
+
+       if (!this.partner_name) {
+         name = this.name;
+       }
+      else {
+         psal = dbEnums.extractSalutation(this.partner_name);
+         parts = this.partner_name.trim().split(' ');
+         if (psal) {
+           parts.shift();
+         }
+         if (parts.length > 1) {
+            name = this.name + ' und ' + this.partner_name;
+         }
+         else {
+           name = (this.salutation ? this.salutation + ' ' + this.first_name : this.first_name) + " und "  + this.partner_name + " " + this.last_name;
+         }
+       }
+      return name;
     });
     // Note there is no equivalent function for update. Unique name does not get updated
     // when say the firm name is changed and the guests firm fields are updated with an update command.
@@ -373,7 +439,8 @@ define(['./module'], function (model) {
       needs_firm: Boolean, //True if plan requires a firm name as part of the reservation.
       second_guest: Boolean, //True if plan requires a separate bill for a second guest in a double room
       needs_insurance: Boolean, //True if plan requires an insurance provider as part of the reservation.
-      includes_breakfast: Boolean, //True if the plan includes breakfast in the room or package price
+      includes_breakfast: Boolean, //Applies to no-business res. True if the plan includes breakfast in the room or package price
+      bus_breakfast: Boolean, // Applies to business res. If true then check firm if breakfast is included in price. If so then adjust room price and add breakfast
       pp_price: Number, // Per person price based on Double Room used by package plans
       single_surcharge: Number, // Extra amount paid by single person, used by package plans
       duration: Number, //Number of days the plan covers
@@ -393,7 +460,8 @@ define(['./module'], function (model) {
       guest: {name: String, id: db.db.Schema.Types.ObjectId}, //primary guest or contact from Address collection list
       guest2: {name: String, id: db.db.Schema.Types.ObjectId}, //optional second guest in a double room from Address
                                                             // collection list, used for non-group plans that require separate bills
-                                                            // for each guest in a double room.
+                                                            // for each guest in a double room. For Kur reservation, This
+                                                            // will contain the partner name field for the main guest
       firm: String,
       start_date: { type: Date, required: true},
       end_date: { type: Date, required: true},
@@ -413,6 +481,8 @@ define(['./module'], function (model) {
       copay2: Boolean, // set in reservation- per person???
       source: {type: String, enum: resSourceEnum},
       comments: String,
+      billing_name: String, // name displayed on bill before address.
+      custom_name: Boolean, // set to true if the billing_name is entered manually and not generated
       address1: String,  //address fields to be printed on the bill, come from guest or firm collections
       address2: String,
       city: String,
@@ -467,6 +537,7 @@ define(['./module'], function (model) {
       city: String,
       country: String,
       room_price: Number,
+      includes_breakfast: Boolean,
       contact_name: String,
       contact_phone: String,
       contact_email: String,

@@ -85,6 +85,9 @@ define(['./module'], function (controllers) {
                 model;
             console.log('HOME room: ' + cObj.room + ' start: ' + cObj.start + ' end: ' + cObj.end);
             if (cObj.room) {
+              if (cObj.room < 2) {
+                dataObj.extraData.room = undefined;
+              }
               model = modals.getModelEnum().reservation;
               modals.create(model, dataObj); //nothing to do after create
             }

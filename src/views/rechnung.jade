@@ -25,7 +25,7 @@ include nav_common.jade
           div.input-group-lg(ng-show="busRes && showCharges")
             input(type="checkbox" ng-model="busPauschale")
             span &nbsp;{{txt.busPauschale}}
-          div.input-group-lg(ng-show="stdRes && showCharges")
+          div.input-group-lg(ng-show="(stdRes || pGroupRes) && showCharges")
             input(type="checkbox" ng-model="resDetails")
             span &nbsp;{{txt.miscellaneousDetails}}
         .panel-body
@@ -38,5 +38,6 @@ include nav_common.jade
               ax-business-bill(ng-if="busRes" reservation-vm="rvm" room="{{room}}" guest="{{guest}}" pauschale="busPauschale")
               ax-kur-bill(ng-if="kurRes" reservation-vm="rvm" room="{{room}}" guest="{{guest}}")
               ax-tour-bill(ng-if="tourRes" reservation-vm="rvm")
+              ax-pgroup-bill(ng-if="pGroupRes" reservation-vm="rvm" details="resDetails")
 
 
