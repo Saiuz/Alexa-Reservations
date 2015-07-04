@@ -65,7 +65,7 @@ define(['./module'], function (directives) {
         });
       };
 
-      scope.firmChanged = function ($item, $model, $label) {
+      scope.firmChanged = function ($item) {
         ignoreWatch = true;
         scope.firm = $item.name;
         scope.selectedFirm = $item;
@@ -130,7 +130,7 @@ define(['./module'], function (directives) {
         console.log("Firm Name watch fired, " + newval);
       });
 
-      scope.newFirm = function (size) {   //TODO convert to use modals service-add reference to module.
+      scope.newFirm = function () {
         var model = modals.getModelEnum().firm,
             dataObj = {data: scope.axfirm ? scope.axfirm : '', extraData: undefined};
         //if the name in the input field is in the db then ignore the button click
@@ -143,7 +143,7 @@ define(['./module'], function (directives) {
           names = [
             {name: result.firm_name, id: result._id, price: result.room_price}
           ];
-          scope.selectedFirm = names[0]
+          scope.selectedFirm = names[0];
           scope.axfirm = result.firm_name;
           scope.firm = result.firm_name;
           scope.firmPrice = result.room_price;
