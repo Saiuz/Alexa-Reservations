@@ -1,11 +1,15 @@
 /**
  * This directive provides a firm lookup input field with a pop-up form that gives the ability to add a new firm
- * to the firm collection.
- *
+ * to the firm collection or edit the selected firm.
+ * Directive parameters:
+ *      firm         - The name of the firm to be displayed or that was selected by the user
+ *      firmPrice    - The room price of the firm to be displayed or that was selected by the user
+ *      displayOnly  - If true then it will only display the value of the firm. No selection capabilities
+ *      firmCallback -
  */
 define(['./module'], function (directives) {
   'use strict';
-  directives.directive('axLookupFirm', ['dashboard', 'Firm', '$modal', function (dashboard, Firm, $modal) {
+  directives.directive('axLookupFirm', ['dashboard', 'Firm', 'modals', function (dashboard, Firm, modals) {
 
     var linker = function (scope, element, attrs) {
       var ignoreWatch = false;
@@ -43,12 +47,33 @@ define(['./module'], function (directives) {
         scope.firm = '';
       };
 
+      scope.editFirm = function () {
+        var model = modals.getModelEnum().firm,
+            dataObj = {data: scope.selectedFirm ? scope.selectedFirm.id : 0, extraData: undefined};
+
+        modals.update(model, dataObj, function (result) {
+          console.log("Modal returned: " + result);
+          names = [{name: result.firm_name, id: result._id, price: result.room_price}];
+          scope.selectedFirm = names[0];
+          scope.axfirm =  result.firm_name;
+          scope.firm = result.firm_name;
+          scope.firmPrice = result.room_price;
+          scope.notFound = false;
+          if (scope.firmCallback) {
+            scope.firmCallback(result);
+          }
+        });
+      };
+
       scope.firmChanged = function ($item, $model, $label) {
         ignoreWatch = true;
         scope.firm = $item.name;
         scope.selectedFirm = $item;
         scope.firmPrice = $item.price;
         scope.canClear = true;
+        if (scope.firmCallback) {
+          scope.firmCallback(result);
+        }
         //_updateTitle();
       };
 
@@ -78,6 +103,9 @@ define(['./module'], function (directives) {
                 scope.notFound = false;
                 found = true;
                 scope.canClear = true;
+                if (scope.firmCallback) {
+                  scope.firmCallback(result);
+                }
               }
             }
           }
@@ -91,6 +119,9 @@ define(['./module'], function (directives) {
                 scope.firmPrice = names[0].price;
                 scope.notFound = false;
                 scope.canClear = true;
+                if (scope.firmCallback) {
+                  scope.firmCallback(result);
+                }
               }
             });
           }
@@ -99,36 +130,27 @@ define(['./module'], function (directives) {
         console.log("Firm Name watch fired, " + newval);
       });
 
-      scope.newFirm = function (size) {
+      scope.newFirm = function (size) {   //TODO convert to use modals service-add reference to module.
+        var model = modals.getModelEnum().firm,
+            dataObj = {data: scope.axfirm ? scope.axfirm : '', extraData: undefined};
         //if the name in the input field is in the db then ignore the button click
         if (names.length !== 0 && scope.axfirm) {
           return;
         }
         scope.canClear = true;
-        var modalInstance = $modal.open({
-          templateUrl: './templates/firmFormModal.html',
-          controller: 'FirmFormModalCtrl',
-          size: size,
-          resolve: {
-            modalParams: function () {
-              return {
-                data: scope.axfirm,
-                mode: 'Create' //CRUD mode: 'Create', 'Read', 'Update', 'Delete'
-              };
-            }
-          }
-        });
-
-        modalInstance.result.then(function (result) {
+        modals.create(model, dataObj, function (result) {
           console.log("Firm Modal returned: " + result);
           names = [
-            {name: result.firm_name, id: result._id}
+            {name: result.firm_name, id: result._id, price: result.room_price}
           ];
           scope.selectedFirm = names[0]
           scope.axfirm = result.firm_name;
           scope.firm = result.firm_name;
           scope.firmPrice = result.room_price;
           scope.notFound = false;
+          if (scope.firmCallback) {
+            scope.firmCallback(result);
+          }
         });
       };
     };
@@ -140,7 +162,8 @@ define(['./module'], function (directives) {
       scope: {
         firm: '=', // the value of the input field (firm)
         firmPrice: '=', // the negotiated room price of the selected firm
-        displayOnly: '='
+        displayOnly: '=',
+        firmCallback: '=' // optional method to call when the selectedFirm (internal parameter changes.
       }
     };
   }]);
