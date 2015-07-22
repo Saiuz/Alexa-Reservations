@@ -35,7 +35,7 @@
                         ng-options="c.text for c in billCodes"></select>
             </div>
         </div>
-        <div class="form-group"  ng-show="full">
+        <div class="form-group"  ng-show="full || plan">
             <label class="control-label col-xs-4">{{txt.displayString}}</label>
             <div class="col-xs-8" ng-show="read">
                 <p class="form-control-static">{{itemType.display_string}}</p>
@@ -53,16 +53,16 @@
                 <input class="form-control" type="number" min="1" ng-model="itemType.display_order"/>
             </div>
         </div>
-        <div class="form-group" ng-show="full">
+        <div class="form-group" ng-show="full || plan">
             <label class="control-label col-xs-4">{{txt.priceLookup}}</label>
             <div class="col-xs-8" ng-show="read">
-                <p class="form-control-static">{{itemType.price_lookup}}</p>
+                <p class="form-control-static">{{selLookup.text}}</p>
             </div>
             <div class="col-xs-8" ng-show="edit">
-                <input class="form-control" ng-model="itemType.price_lookup" type="text"/>
+                <select  class="form-control" ng-model="selLookup" ng-options="l as l.text for l in lookups" ng-change="lookupChanged()"></select>
             </div>
         </div>
-        <div class="form-group">
+        <div class="form-group" ng-show="price">
             <label class="control-label col-xs-4">{{txt.price}}</label>
             <div class="col-xs-8" ng-show="read">
                 <p class="form-control-static">{{itemType.price | currency}}</p>
@@ -91,7 +91,7 @@
                 <input class="form-control" ng-model="decimals.double_price" type="text" ax-de-number/>
             </div>
         </div>
-        <div class="form-group" ng-show="full">
+        <div class="form-group" ng-show="(full || plan) && !itemType.day_count">
             <label class="control-label col-xs-4">{{txt.count}}</label>
             <div class="col-xs-8" ng-show="read">
                 <p class="form-control-static">{{itemType.count}}</p>
@@ -106,8 +106,20 @@
                 <input type="checkbox" ng-disabled="read" ng-model="itemType.low_tax_rate"/>
             </div>
         </div>
-        <hr/ ng-show="full">
-        <div class="form-group" ng-show="full">
+        <div class="form-group" ng-if="plan">
+            <label class="control-label col-xs-4">{{txt.perDay}}</label>
+            <div class="col-xs-3">
+                <input type="checkbox" ng-disabled="read" ng-model="itemType.day_count"/>
+            </div>
+        </div>
+        <div class="form-group" ng-if="plan">
+            <label class="control-label col-xs-4">{{txt.perPerson}}</label>
+            <div class="col-xs-3">
+                <input type="checkbox" ng-disabled="read" ng-model="itemType..per_person"/>
+            </div>
+        </div>
+        <hr ng-show="full" />
+        <div class="form-group"  ng-if="full">
             <label class="control-label col-xs-4">{{txt.advancedSettings}}</label>
             <div class="col-xs-8">
                 <table class="table-flags">

@@ -1,6 +1,4 @@
-/**
- * Created by Owner on 05.08.2014.
- *
+/*
  * Controller for other List maintenance
  */
 define(['./module'], function (controllers) {
@@ -13,7 +11,7 @@ define(['./module'], function (controllers) {
         'dbEnums',
         'configService',
         function ($scope, $state, $rootScope, dbEnums, configService) {
-          console.log("Addresse  controller fired") ;
+          console.log("List controller fired") ;
 
           $scope.appTitle = $rootScope.appTitle;
           $scope.appBrand = $rootScope.appBrand;
@@ -67,12 +65,7 @@ define(['./module'], function (controllers) {
 
           $scope.selected = function (tab) {
             for (var p in $scope.tabsActive) {
-              if (p === tab) {
-                $scope.tabsActive[p] = true;
-              }
-              else {
-                $scope.tabsActive[p] = false;
-              }
+              $scope.tabsActive[p] = p === tab;
             }
 
           }

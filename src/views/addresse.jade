@@ -55,6 +55,9 @@ include nav_common.jade
             .form-group
               label.control-label.col-xs-4 Test ItemType
               .col-xs-8
+                lable.btn.btn-primary(ng-model="itemMode" btn-radio="-1") Full
+                lable.btn.btn-primary(ng-model="itemMode" btn-radio="0") Simple
+                lable.btn.btn-primary(ng-model="itemMode" btn-radio="1") Plan
                 button(ng-click="testItem('c')") New
                 button(ng-click="testItem('r')") Read
                 button(ng-click="testItem('u')") Update Id.
@@ -107,6 +110,25 @@ include nav_common.jade
                 label.control-label.col-xs-4 Results:
                 .col-xs-8
                   div {{resTestResult | json}}
+            hr
+            .form-group
+              label.control-label.col-xs-4 Test Room Plan
+              .col-xs-8
+                lable.btn.btn-primary(ng-model="rpResType" btn-radio="'Std.'") Std.
+                lable.btn.btn-primary(ng-model="rpResType" btn-radio="'Kur'") Kur
+                br
+                lable.btn.btn-primary(ng-model="rplanMode" btn-radio="0") Full
+                lable.btn.btn-primary(ng-model="rplanMode" btn-radio="1") Package
+                button(ng-click="testRP('c')") New
+                button(ng-click="testRP('r')") Read
+                button(ng-click="testRP('u')") Update (Name).
+                button(ng-click="testRP('d')") Delete
+                span Res No:
+                  input(type="number" ng-model="testRPid")
+              .form-group
+                label.control-label.col-xs-4 Results:
+                .col-xs-8
+                  div {{rpTestResult | json}}
     .col-md-8
       ax-week-buttons(picked-date='dateInWeek')
       span  {{dateInWeek}}

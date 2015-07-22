@@ -50,6 +50,8 @@ define(['./module'], function (model) {
           return '***';
         }
       },
+      stdResType: resTypeEnum[0],
+      kurResType: resTypeEnum[2],
       //some specific plan types
       itemTypePlan: function() {return itemTypeEnum.slice(0)[0];},
       // extracts the salutation (title) from a name
@@ -89,7 +91,7 @@ define(['./module'], function (model) {
   // define a child schema for expense_items. Used in RoomPlan and Reservation models as embedded document properties.
   // The schema is also used in the ExpenseType model.
   // This schema is very similar to the ExpenseType's schema.
-  model.factory('ExpenseItem', function (db, convert, configService){
+  model.factory('ExpenseItem', function (db, convert, configService, dbEnums){
     var expenseItem = new db.db.Schema({
       name: {type: String, required: true },  //Name of item type, often used to display on bill
       category: {type: String, enum: itemTypeEnum},  // the expense item type category
@@ -99,6 +101,7 @@ define(['./module'], function (model) {
       room: Number, // the room number the expense item is associated with.
       date_added: Date, // Date-time stamp for when this item was added to the room.
       last_updated: Date, //Date-time stamp for when this item was last modified.
+      is_system: Boolean, // Set true if this item is a "system" required item and can't be modified by the UI
       is_room: Boolean, // True if this expense item represents an actual room expense for a reservation.
       included_in_room: Boolean, // True if the taxable price or price of this item is included in the room price associated with the reservation
       per_room: Boolean, // If true then this item should be duplicated for each room. Used by room plan items.
@@ -231,6 +234,26 @@ define(['./module'], function (model) {
          }
 
       return configObj;
+    };
+
+    // Builds a default properties object for the ExpenseItem schema that can be used by the UI
+    // to populate a new ExpenseType item that represents package plan expense types.
+   expenseItem.statics.planExpenseItemDefaults = function (planBillCode) {
+      return {
+        category: dbEnums.itemTypePlan(),
+        bill_code: planBillCode,
+        per_room: false,
+        //per_person: true,
+        no_delete: true,
+        no_display: true,
+        //day_count: false,
+        one_per: false,
+        edit_name: false,
+        bus_pauschale: false,
+        //low_tax_rate: true,
+        display_string: '%count% %name% à %price%',
+        display_order: 2
+      };
     };
 
     return expenseItem;  //return schema not the mongoose model
@@ -425,12 +448,12 @@ define(['./module'], function (model) {
     return db.db.model('itemtype', ExpenseItem);
   }) ;
 
-  model.factory('RoomPlan', function (db) {
+  model.factory('RoomPlan', function (db, dbEnums) {
     var schema = new db.db.Schema({
       name: {type: String, required: true, unique: true },
       resTypeFilter: [String], //A string array of allowed reservation types for this plan.
       is_default: Boolean, // True if plan is the default plan pre selected from the list of plans within same type
-      is_plan: Boolean,  //True if this is a package plan
+      is_plan: Boolean,  //True if this is a package plan. This is only plan type that can be edited, created or deleted.
       is_group: Boolean, // True if this is a group plan with multiple rooms allowed.
       one_bill: Boolean, // True if a group plan reservation requires one bill for all guests (e.g. Tour group).
       one_room: Boolean, // True if the plan limits the reservation to only one room.
@@ -441,12 +464,37 @@ define(['./module'], function (model) {
       needs_insurance: Boolean, //True if plan requires an insurance provider as part of the reservation.
       includes_breakfast: Boolean, //Applies to no-business res. True if the plan includes breakfast in the room or package price
       bus_breakfast: Boolean, // Applies to business res. If true then check firm if breakfast is included in price. If so then adjust room price and add breakfast
+      requires_kurtax: Boolean, // True if plan requires the collection of Kurtax for each person.
       pp_price: Number, // Per person price based on Double Room used by package plans
       single_surcharge: Number, // Extra amount paid by single person, used by package plans
+      single_room_price: Number, // For a package, the per person room price for a single room
+      double_room_price: Number, // For a package, the per person room price for a double room
       duration: Number, //Number of days the plan covers
       display_string: String, //Formatted string that is displayed on the bill for the plan. (special formatting)
       required_items: [String] // A list of required expense items that are associated with a room plan.
     });
+
+    // Builds a default properties object for the ExpenseItem schema that can be used by the UI
+    // to populate a new ExpenseType item that represents package plan expense types.
+    schema.statics.packagePlanDefaults = function (reservationType) {
+      var rtype = reservationType ? reservationType : dbEnums.stdResType;
+      return {
+        resTypeFilter: [rtype],
+        is_default: false,
+        is_plan: true,
+        is_group: false,
+        one_bill: true,
+        one_room: true,
+        single_only: false,
+        double_only: false,
+        second_guest: false,
+        needs_firm: false,
+        requires_kurtax: true,
+        needs_insurance:  reservationType === dbEnums.kurResType,
+        includes_breakfast: true,
+        display_string: '%duration% Tag|Tage %name% %perPerson%',
+      };
+    };
 
     return db.db.model('roomplan', schema);
   });

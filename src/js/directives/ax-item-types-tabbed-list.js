@@ -72,7 +72,7 @@ define(['./module'], function (directives) {
               {
                 data: undefined,
                 extraData: Itemtype.simpleExpenseItemDefaults(scope.tabs[ix].category),
-                shortDisplay: true
+                displayMode: 0
               },
               model = modals.getModelEnum().itemType;
 

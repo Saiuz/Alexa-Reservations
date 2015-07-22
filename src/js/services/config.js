@@ -84,7 +84,7 @@ define(['./module'], function (services) {
       weekButtonsSetEvent: 'WEEK_BTN1',
       appReadyEvent: '', // broadcast when app.js finishes.
       bcRoom: 0,
-      bcPackageItem: 1,
+      bcPackageItem: 1, // item is a required item for a standard package plan
       bcExtraRoom: 2,
       bcMeals: 3,
       bcResources: 4,
@@ -93,9 +93,14 @@ define(['./module'], function (services) {
       bcFood: 7,
       bcDrink: 8,
       bcKur: 9,
-      bcKurPackageItem: 10,
+      bcKurPackageItem: 10, // item is a required item for a kur package plan
       bcKurSpecial: 11, //for copay and prescription charges
       bcDienste: 12, // for other services
+
+      // Method to retrieve an array of bill codes associated with package plans
+      getPackageItemCodes: function (){
+        return [1,10]; //bcPackageItem and bcKurPackageItem
+      },
 
       // Method to retrieve value of the specified constant. (For programmatic retrieval of constant value.)
       get: function (constName) {
@@ -115,6 +120,7 @@ define(['./module'], function (services) {
       'accommodation': 'Unterkunft',
       'accommodationType': 'Unterkunft Typ',
       'accommodationPlan': 'Unterkunft Plan',
+      'accommodationPlans': 'Unterkunft Pläne',
       'add': 'Hinzufügen',
       'address1': 'Adresse 1',
       'address2': 'Adresse 2',
@@ -174,7 +180,9 @@ define(['./module'], function (services) {
       'DietAndAccommodation': 'Diätkost und Unterkunft',
       'double': 'Doppel',
       'doublePrice': 'Doppel Preis',
+      'doubleRoomPriceAbr': 'DZ Preise',
       'drink': 'Getränke',
+      'duration': 'Dauer',
       'edit': 'Bearbeiten',
       'email': 'E-Mail',
       'expenseItemErr1': 'Expense Artikel, Zimmer oder Gastnamen nicht vorgesehen.',
@@ -207,6 +215,7 @@ define(['./module'], function (services) {
       'forTwoPeople': 'für 2 Personen',
       'free': 'Frei',
       'from': 'Von',
+      'fromPriceList': 'Von Preisliste',
       'fullCityTax': 'Voll Kurtaxe',
       'fullPension': 'Vollpension',
       'fullPensionInc': 'VollpensionInc',
@@ -229,6 +238,7 @@ define(['./module'], function (services) {
       'includesBreakfast': 'Inklusive Frühstück',
       'insurance': 'Krankenkasse',
       'item': 'Artikel',
+      'itemsFor': 'Artikel für',
       'item_notFound': 'Artikel nicht gefunden',
       'lastName': 'Nachname',
       'lastNameSearch': 'Nachnamen Suche...',
@@ -239,6 +249,7 @@ define(['./module'], function (services) {
       'multiple': 'Mehrere',
       'name': 'Name',
       'newReservation': 'Neue Reservierung',
+      'newPackage': 'Neue Pauschalangebot',
       'night': 'Nacht',
       'nights': 'Nächte',
       'no': 'Kein',
@@ -251,11 +262,16 @@ define(['./module'], function (services) {
       'ok': 'Ok',
       'onlyOneInRoom': 'Nur ein im Doppelzimmer',
       'open': 'Öffnen',
+      'overnightAbr': 'ÜN',
+      'packages': 'Pauschalangebote',
       'partner': 'Partner',
       'partner_birthday': 'Partner Geburtstag',
       'parkPlace': 'Parkplatz',
       'parkCharge': 'Parkgebür',
+      'perDay': 'Pro Tag',
+      'perPerson': 'Pro Person',
       'perPersonAbrv': 'p.P.',
+      'perPersonPriceAbrv': 'p.P. Preis',
       'postCode': 'PLZ',
       'prescription_charge': ' Rezeptgebühr',
       'price': 'Preis',
@@ -273,6 +289,7 @@ define(['./module'], function (services) {
       'resourceType': 'Ressourcentyp',
       'reduction': 'Ermässigung',
       'reinstate': 'Zurückgeben',
+      'requiresKurtaxe': 'Verlangt Kurtaxe',
       'res_num': 'Res. Nr.',
       'reservation': 'Reservierung',
       'reservations': 'Reservierungen',
@@ -289,6 +306,7 @@ define(['./module'], function (services) {
       'room_titleRead': 'Zimmer zur Reservierung',
       'roomAbrv': 'Zi.',
       'roomClass': 'Zimmerklasse',
+      'roomDisplayString': '%planName%',
       'roommate': 'Zimmergenosse',
       'roomNumber': 'Zimmernummer',
       'roomNumberAbrv': 'ZNr',
@@ -309,6 +327,8 @@ define(['./module'], function (services) {
       'services': 'Dienste',
       'single': 'Einzel',
       'singlePrice': 'Einzel Preis',
+      'singleRoomPriceAbr': 'EZ Preise',
+      'singleSurchargeAbr': 'EZ Zuschlag',
       'source': 'Quelle',
       'status': 'Status',
       'start': 'Starten',

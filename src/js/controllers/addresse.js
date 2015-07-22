@@ -19,7 +19,8 @@ define(['./module'], function (controllers) {
         'modals',
         'nwService',
         'configService',
-        function ($scope, $state, $rootScope, dashboard, datetime, Reservation, ExpenseItem, $modal, $document, modals, nwService, configService) {
+        'dbEnums',
+        function ($scope, $state, $rootScope, dashboard, datetime, Reservation, ExpenseItem, $modal, $document, modals, nwService, configService, dbEnums) {
           console.log("Addresse  controller fired")
           $scope.appTitle = $rootScope.appTitle;
           $scope.appBrand = $rootScope.appBrand;
@@ -285,10 +286,12 @@ define(['./module'], function (controllers) {
             }
           };
 
+          $scope.itemMode = -1;
           $scope.testIid = 0;
           var lastModei = '',
-              dataObjI = {data: undefined, extraData: undefined, shortDisplay: undefined};
+              dataObjI = {data: undefined, extraData: undefined, displayMode: 0};
           $scope.testItem = function(mode) {
+            dataObjI.displayMode = $scope.itemMode;
             lastModei = mode;
             var model = modals.getModelEnum().itemType;
             switch (mode) {
@@ -301,7 +304,6 @@ define(['./module'], function (controllers) {
                   display_order: 1,
                   edit_count: true
                 };
-                dataObjI.shortDisplay = true;
                 modals.create(model,dataObjI,function(result) {
                   $scope.testIid = result._id.id;
                   $scope.itmTestResult = result;
@@ -309,7 +311,6 @@ define(['./module'], function (controllers) {
                 break;
               case 'r':
                 dataObjI.data = $scope.testIid;
-                dataObjI.shortDisplay = false;
                 modals.read(model,dataObjI,function(result) {
                   $scope.itmTestResult = result;
                 });
@@ -441,6 +442,46 @@ define(['./module'], function (controllers) {
                 dataObjR.data = $scope.testRid;
                 modals.delete(model,dataObjR,function(result) {
                   $scope.resTestResult = result;
+                });
+                break
+            }
+          };
+
+          $scope.testRpid = 0;
+          var lastModer = '',
+              dataObjRP = {data: undefined, extraData: undefined, displayMode: 0};
+
+          $scope.rplanMode = 0;
+          $scope.rpResType = dbEnums.stdResType;
+          $scope.testRP = function(mode) {
+            lastModer = mode;
+            var model = modals.getModelEnum().roomPlan;
+            dataObjRP.displayMode = $scope.rplanMode;
+            switch (mode) {
+              case 'c':
+                dataObjRP.data = undefined;
+                dataObjRP.extraData = dashboard.getRoomPlanPackageDefaultObj($scope.rpResType);
+                modals.create(model,dataObjRP,function(result) {
+                  $scope.testRPid = result._id.id;
+                  $scope.rpTestResult = result;
+                });
+                break;
+              case 'r':
+                dataObjRP.data = $scope.testRPid;
+                modals.read(model,dataObjRP,function(result) {
+                  $scope.rpTestResult = result;
+                });
+                break;
+              case 'u':
+                dataObjRP.data = $scope.testRPid;
+                modals.update(model,dataObjRP,function(result) {
+                  $scope.rpTestResult = result;
+                });
+                break;
+              case 'd':
+                dataObjRP.data = $scope.testRPid;
+                modals.delete(model,dataObjRP,function(result) {
+                  $scope.rpTestResult = result;
                 });
                 break
             }

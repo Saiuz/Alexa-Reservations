@@ -1,0 +1,162 @@
+<div class="modal-header">
+    <h3 class="modal-title">{{title}}</h3>
+</div>
+<div class="modal-body">
+    <div class="form-horizontal" ng-show="!errLoad && !hide">
+        <div class="form-group">
+            <label class="control-label col-xs-4">{{txt.description}}</label>
+
+            <div class="col-xs-8" ng-show="read">
+                <p class="form-control-static">{{roomPlan.name}}</p>
+            </div>
+            <div class="col-xs-8" ng-show="edit">
+                <input class="form-control" ng-model="roomPlan.name" type="text"/>
+            </div>
+        </div>
+        <div class="form-group" ng-show="full">
+            <label class="control-label col-xs-4">{{txt.reservationType}}</label>
+
+            <div class="col-xs-8" ng-show="read">
+                <p class="form-control-static">{{roomPlan.resTypeFilter[0]}}</p>
+            </div>
+            <div class="col-xs-8" ng-show="edit">
+                <select class="form-control" ng-model="selResType"
+                        ng-options="c for c in categories" ng-change="resTypeChanged()"></select>
+            </div>
+        </div>
+        <div class="form-group" ng-show="full || plan">
+            <label class="control-label col-xs-4">{{txt.overnightAbr}}</label>
+            <div class="col-xs-8" ng-show="read">
+                <p class="form-control-static">{{roomPlan.duration}}</p>
+            </div>
+            <div class="col-xs-3" ng-show="edit">
+                <input class="form-control" type="number" min="1" ng-model="roomPlan.duration"/>
+            </div>
+        </div>
+        <div class="form-group" ng-show="full">
+            <label class="control-label col-xs-4">{{txt.perPersonPriceAbrv}}</label>
+            <div class="col-xs-8" ng-show="read">
+                <p class="form-control-static">{{roomPlan.pp_price | currency}}</p>
+            </div>
+            <div class="col-xs-8" ng-show="edit">
+                <input class="form-control" ng-model="decimals.pp_price" type="text" ax-de-number/>
+            </div>
+        </div>
+        <div class="form-group" ng-show="full">
+            <label class="control-label col-xs-4">{{txt.singleSurchargeAbr}}</label>
+
+            <div class="col-xs-8" ng-show="read">
+                <p class="form-control-static">{{roomPlan.single_surcharge | currency}}</p>
+            </div>
+            <div class="col-xs-8" ng-show="edit">
+                <input class="form-control" ng-model="decimals.single_surcharge" type="text" ax-de-number/>
+            </div>
+        </div>
+        <div class="form-group" ng-show="full || plan">
+            <label class="control-label col-xs-4">{{txt.singleRoomPriceAbr}}</label>
+
+            <div class="col-xs-8" ng-show="read">
+                <p class="form-control-static">{{roomPlan.single_room_price | currency}}</p>
+            </div>
+            <div class="col-xs-8" ng-show="edit">
+                <input class="form-control" ng-model="decimals.single_room_price" type="text" ax-de-number/>
+            </div>
+        </div>
+        <div class="form-group" ng-show="full || plan">
+            <label class="control-label col-xs-4">{{txt.doubleRoomPriceAbr}}</label>
+
+            <div class="col-xs-8" ng-show="read">
+                <p class="form-control-static">{{roomPlan.double_room_price | currency}}</p>
+            </div>
+            <div class="col-xs-8" ng-show="edit">
+                <input class="form-control" ng-model="decimals.double_room_price" type="text" ax-de-number/>
+            </div>
+        </div>
+        <div class="form-group"  ng-show="full">
+            <label class="control-label col-xs-4">{{txt.displayString}}</label>
+            <div class="col-xs-8" ng-show="read">
+                <p class="form-control-static">{{roomPlan.display_string}}</p>
+            </div>
+            <div class="col-xs-8" ng-show="edit">
+                <input class="form-control" ng-model="roomPlan.display_string" type="text"/>
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="control-label col-xs-4">{{txt.requiresKurtaxe}}</label>
+            <div class="col-xs-3">
+                <input type="checkbox" ng-disabled="read" ng-model="roomPlan.requires_kurtax"/>
+            </div>
+        </div>
+
+        <hr ng-show="full" />
+        <div class="form-group"  ng-if="full">
+            <label class="control-label col-xs-4">{{txt.advancedSettings}}</label>
+            <div class="col-xs-8">
+                <table class="table-flags">
+                    <tbody>
+                    <tr>
+                        <th>Is Default</th>
+                        <th>Is Plan</th>
+                        <th>Is Group</th>
+                    </tr>
+                    <tr>
+                        <th><input type="checkbox" ng-disabled="read" ng-model="roomPlan.is_default"/></th>
+                        <th><input type="checkbox" ng-disabled="read" ng-model="roomPlan.is_plan"/></th>
+                        <th><input type="checkbox" ng-disabled="read" ng-model="roomPlan.is_group"/></th>
+                    </tr>
+                    <tr>
+                        <th>One Bill</th>
+                        <th>One Room</th>
+                        <th>Needs Firm</th>
+                    </tr>
+                    <tr>
+                        <th><input type="checkbox" ng-disabled="read" ng-model="roomPlan.one_bill"/></th>
+                        <th><input type="checkbox" ng-disabled="read" ng-model="roomPlan.one_room"/></th>
+                        <th><input type="checkbox" ng-disabled="read" ng-model="roomPlan.needs_firm"/></th>
+                    </tr>
+                    <tr>
+                        <th>Single Only</th>
+                        <th>Double Only</th>
+                        <th>Second Guest</th>
+                    </tr>
+                    <tr>
+                        <th><input type="checkbox" ng-disabled="read" ng-model="roomPlan.single_only"/></th>
+                        <th><input type="checkbox" ng-disabled="read" ng-model="roomPlan.double_only"/></th>
+                        <th><input type="checkbox" ng-disabled="read" ng-model="roomPlan.second_guest"/></th>
+                    </tr>
+                    <tr>
+                        <th>Needs Insurance</th>
+                        <th>Includes Breakfast</th>
+                        <th>Bus. Breakfast</th>
+                    </tr>
+                    <tr>
+                        <th><input type="checkbox" ng-disabled="read" ng-model="roomPlan.needs_insurance"/></th>
+                        <th><input type="checkbox" ng-disabled="read" ng-model="roomPlan.includes_breakfast"/></th>
+                        <th><input type="checkbox" ng-disabled="read" ng-model="roomPlan.bus_breakfast"/></th>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+    <div class="alert alert-danger" ng-show="errLoad || errSave">
+        <a class="close" ng-click="hideErr()" ng-show="!errLoad">&times;</a>
+
+        <h3>Error!</h3>
+        <ul>
+            <li ng-repeat="e in err.errors()">{{e}}</li>
+        </ul>
+    </div>
+    <div class="alert alert-success" ng-show="hide">
+        <strong>{{actionMsg}}</strong>
+    </div>
+</div>
+<div class="modal-footer">
+    <label class="btn  btn-primary" ng-show="deleteMode && !hide"><input type="checkbox" ng-model="confirmed"/>{{txt.confirmDelete}}</label>
+    <button class="btn btn-danger" ng-click="delete()" ng-show="!errLoad && deleteMode && confirmed && !hide">
+        {{saveTxt}}
+    </button>
+    <button class="btn btn-primary" ng-click="save()" ng-show="!errLoad && edit && !hide">{{saveTxt}}</button>
+    <button class="btn btn-warning" ng-click="cancel()">{{cancelTxt}}</button>
+</div>

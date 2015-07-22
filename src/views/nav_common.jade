@@ -18,8 +18,10 @@
       a(href="#/reservations") Reservierungen
     li(ng-class="{active: (url.indexOf('/liste') > -1)}")
       a(href="#/liste") Liste
-    //li(ng-class="{active: (url.indexOf('/addresse') > -1)}")
-    //  a(href="#/addresse") DevTest
+    li(ng-class="{active: (url.indexOf('/plans') > -1)}")
+      a(href="#/plans") Pauschalangebote
+    li(ng-class="{active: (url.indexOf('/addresse') > -1)}")
+      a(href="#/addresse") DevTest
   ul.nav.navbar-nav.pull-right
     li
     a(href="") V {{version}} &nbsp;

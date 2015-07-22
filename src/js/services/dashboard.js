@@ -779,7 +779,47 @@ define(['./module'], function (services) {
               }
             });
         return deferred.promise;
+      },
+      // Retrieve a list of plans that use a specified plan expense item.
+      getPlansUsingItem: function (itemName) {
+        var deferred = $q.defer();
+        RoomPlan.find({required_items: itemName})
+            .exec(function (err, plans) {
+              if (err) {
+                deferred.reject(err);
+                console.log("getPlansUsingItem query failed: " + err);
+              }
+              else {
+                deferred.resolve(plans);
+              }
+            });
+        return deferred.promise;
+      },
+      // retrieve item types that are associated with package plans, returns all item types
+      getPackagePlanItemTypes: function () {
+        var deferred = $q.defer(),
+            types = configService.constants.getPackageItemCodes();
+
+        Itemtype.find({bill_code: {$in: types}})
+            .sort({display_order: 1})
+            .exec(function (err, itemtypes) {
+              if (err) {
+                deferred.reject(err);
+                console.log("getPackagePlanItemTypes query failed: " + err);
+              }
+              else {
+                deferred.resolve(itemtypes);
+              }
+            });
+        return deferred.promise;
+      },
+      getPackagePlanItemDefaultObj: function(bill_code) {
+        return Itemtype.planExpenseItemDefaults(bill_code);
+      },
+      getRoomPlanPackageDefaultObj: function(resType) {
+        return RoomPlan.packagePlanDefaults(resType);
       }
+
     }
   });
 });

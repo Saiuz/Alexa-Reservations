@@ -7,7 +7,7 @@ define(['./module'], function (services) {
   services.service('modals', ['$q', '$modal', '$document', function ($q, $modal, $document) {
     // define the Mongoose Models the service knows about and the modal form - also other utility modals
     // templates and controllers.
-    var models = ['Reservation', 'Guest', 'Firm', 'Event', 'ItemType', 'Room', 'Resource', 'YesNo', 'Bill'],
+    var models = ['Reservation', 'Guest', 'Firm', 'Event', 'ItemType', 'Room', 'Resource', 'RoomPlan', 'YesNo', 'Bill'],
         templates = ['./templates/reservationFormModal.html',
                      './templates/guestFormModal.html',
                      './templates/firmFormModal.html',
@@ -15,6 +15,7 @@ define(['./module'], function (services) {
                      './templates/itemTypeFormModal.html',
                      './templates/roomFormModal.html',
                      './templates/resourceFormModal.html',
+                     './templates/roomPlanFormModal.html',
                      './templates/yesNoFormModal.html',
                      './templates/billDisplayModal.html'],
         controllers = ['ReservationFormModalCtrl',
@@ -24,9 +25,10 @@ define(['./module'], function (services) {
                        'ItemTypeFormModalCtrl',
                        'RoomFormModalCtrl',
                        'ResourceFormModalCtrl',
+                       'RoomPlanFormModalCtrl',
                        'YesNoFormModalCtrl',
                        'BillDisplayModalCtrl'],
-        formSize = ['lg', 'lg', 'lg', 'lg', 'lg', 'lg', 'lg', 'sm', 'lg'], // size of modal
+        formSize = ['lg', 'lg', 'lg', 'lg', 'lg', 'lg', 'lg', 'lg', 'sm', 'lg'], // size of modal
         mode = {c: 0, r: 1, u: 2, d: 3}, // CRUD mode object
         modeStr = ['c', 'r', 'u', 'd'];
 
@@ -40,8 +42,9 @@ define(['./module'], function (services) {
         itemType: 4,
         room: 5,
         resource: 6,
-        yesNo: 7,
-        bill: 8
+        roomPlan: 7,
+        yesNo: 8,
+        bill: 9
       }
     };
 

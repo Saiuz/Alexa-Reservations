@@ -28,7 +28,8 @@ define("app", [
     'app.states',
     'app.models',
     'ui.bootstrap',
-    "ui.bootstrap.tpls",
+    'ui.bootstrap.tpls',
+    'ui.bootstrap.tooltip',
     'ui.router',
     'ngLocale',
     'xeditable'

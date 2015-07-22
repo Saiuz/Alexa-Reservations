@@ -51,5 +51,12 @@ define(['./module'], function (states) {
 
         });
 
+        $stateProvider.state('plans', {
+          url:'/plans',
+          template: viewProvider.renderView('plans'),
+          controller: 'plansCtrl'
+
+        });
+
       }]);
 });
