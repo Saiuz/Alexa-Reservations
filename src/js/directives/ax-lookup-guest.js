@@ -108,7 +108,7 @@ define(['./module'], function (directives) {
           if (names.length === 0 || !found) { //if not there then find in db
             dashboard.getGuestById(scope.guest.id).then(function (result) {
               names = [];
-              if (result.name) {
+              if (result && result.name) {
                 names.push({dname: result.unique_name, name: result.name, id: result._id, firm: result.firm, partner: result.partner});
                 scope.selectedGuest = names[0];
                 if (scope.guestCallback) {

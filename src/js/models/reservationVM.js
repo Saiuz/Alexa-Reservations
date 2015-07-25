@@ -163,6 +163,7 @@ define(['./module'], function (model) {
         console.log("Room plan changed. ID: " + this.selectedPlan.value);
         var plan = _findSelectedPlan();
         if (plan) {
+          planRequiredItems =  plan.required_items;// used by methods that manage reservation expense items
           // Update reservation fields with plan information
           this.res.plan = plan.name;
           this.res.plan_code = plan._id.id;
@@ -323,8 +324,12 @@ define(['./module'], function (model) {
       };
 
       // called by UI when a new guest is selected from the select-guest directive. Performs a potential update of the
-      // Firm field if needed, and for Kur reservations, updates the Guest 2 name to the partner name of the main guest
+      // Firm field if needed, and for Kur reservations, updates the Guest 2 name to the partner name of the main guest.
+      // For standard reservations, if the occupants are 2 then if the guest partner name is defined, use it, if not
+      // then second guest becomes "roomate". Room updating is handled by the guestChanged method.
       this.guestSelectionChanged = function (guest) {
+        var name2 = '';
+
         if (guest) {
           //console.log("Guest changed: " + guest.firm);
           if (that.showFirm && guest.firm) {
@@ -333,7 +338,19 @@ define(['./module'], function (model) {
 
           if (that.isKur && that.showSecondGuest) {
             that.res.guest2 = {name: guest.partner, id: that.res.guest.id};
+            name2 = guest.partner;
           }
+
+          if (that.isStandard && that.res.occupants == 2) {
+            name2 = (guest.partner && guest.partner.indexOf('**') === -1) ? guest.partner : configService.loctxt.roommate;
+            that.res.guest2 = {name: name2, id: that.res.guest.id};
+          }
+
+          //if (that.oneRoom && that.res.rooms.length)  {
+          //  that.res.rooms[0].guest = guest.name;
+          //  if (name2)  {
+          //    that.res.rooms[0].guest2 = name2;
+          //  }
         }
       };
 
@@ -647,7 +664,7 @@ define(['./module'], function (model) {
 
           // Code requiring promises. Get guest and firm and update address and guest name if changed
           _updateNameFirmAddressReqItems().then(function () {
-            _getPlanRequiredItems().then(function () {
+            //_getPlanRequiredItems().then(function () {
               // if a new reservation Copy required items from the plan, if the plan or room info changed then
               // remove the existing items and replace with new plan, if resources changed then replace related
               // resource expense items.
@@ -664,9 +681,9 @@ define(['./module'], function (model) {
               _updateDayCount();
 
               deferred.resolve();
-            }, function (err) {
-              deferred.reject(new utility.errObj(err));
-            });
+            //}, function (err) {
+            //  deferred.reject(new utility.errObj(err));
+            //});
           }, function (err) {
             deferred.reject(new utility.errObj(err));
           });
@@ -707,7 +724,7 @@ define(['./module'], function (model) {
               that.res.expenses[rlen].count = that.res.expenses[rlen].count * 2; //double count
             }
             else { // add the extra item
-              item.guest = item.guest + '-' + configService.loctxt.roommate;
+              item.guest = configService.loctxt.roommate;
               item.addThisToDocArray(that.res.expenses, null, count);
             }
           }
@@ -1264,7 +1281,7 @@ define(['./module'], function (model) {
         return vObj;
       }
 
-      //retrieves the required items associated with the current plan.
+/*      //retrieves the required items associated with the current plan.
       function _getPlanRequiredItems() {
         var deferred = $q.defer(),
             curPlan = that.getPlanInReservation(),
@@ -1277,7 +1294,7 @@ define(['./module'], function (model) {
           deferred.reject("Error retrieving plan: " + err);
         });
         return deferred.promise;
-      }
+      }*/
 
       // Method to update the expense items to deal with changes to the reservation such as to the number of rooms or
       // occupants.
@@ -1292,8 +1309,8 @@ define(['./module'], function (model) {
             replaceAll = false,
             curPlan = that.getPlanInReservation(),
             lstPlan = lastPlanCode ? that.getPlanInReservation(lastPlanCode) : null,
-            lastRequiredItems = lstPlan ? lstPlan.required_items.slice(0) : [], // Must make copies because curPlan &;
-            roommate = lastGuest + '-' + configService.loctxt.roommate,
+            lastRequiredItems = _getPlanRequiredItemNames(lstPlan),
+            roommate = configService.loctxt.roommate,
             rchanges;
 
         //Update the count property of items based on the number of nights of the reservation
@@ -1336,7 +1353,7 @@ define(['./module'], function (model) {
                 exp.guest = that.res.guest.name;
                 break;
               case roommate:
-                exp.guest = that.res.guest.name + '-' + configService.loctxt.roommate;
+                exp.guest = configService.loctxt.roommate;
                 break;
               case lastGuest2:
                 exp.guest = that.res.guest2.name;
@@ -1377,6 +1394,16 @@ define(['./module'], function (model) {
         return changesMade;
       }
 
+      // Retrieve the names of the required items that are associated with the specified plan
+      function _getPlanRequiredItemNames(plan) {
+        var pnames = [];
+        if (plan) {
+          plan.required_items.forEach(function (itm) {
+            pnames.push(itm.name);
+          });
+        }
+        return pnames;
+      }
       // Tries to update expenses for multiple rooms. If we can't deal with the changes then the method returns
       // true which tells the caller we need to replace all expenses. This method deals with the array returned
       // from the _buildRoomChanges method. It handles room adds, deletes, swaps as well as room guest name changes and
@@ -2013,7 +2040,7 @@ define(['./module'], function (model) {
         var exp = new Itemtype();
         exp.name = configService.loctxt.room;
         exp.category = dbEnums.getItemTypeEnum()[0];
-        exp.bill_code = configService.constants.bcMeals;
+        exp.bill_code = configService.constants.bcRoom;
         exp.is_room = true;
         exp.per_person = (that.isBusiness || curPlan.is_plan);  //todo-do we need true for kur, was not that way before.
         exp.no_delete = true;
@@ -2112,14 +2139,17 @@ define(['./module'], function (model) {
         // For standard reservation with package items, for two people don't add another, just modify the
         // count of the last item added
         if (item.per_person && room.guest_count === 2) {
-          if (that.oneBill && !that.isGroup && item.bill_code === configService.constants.bcPackageItem) {
+          item.guest = room.guest2 ? room.guest2 : configService.loctxt.roommate;
+          item.addThisToDocArray(that.res.expenses, price, count);
+
+          /*if (that.oneBill && !that.isGroup && item.bill_code === configService.constants.bcPackageItem) {
             var rlen = that.res.expenses.length - 1;
             that.res.expenses[rlen].count = that.res.expenses[rlen].count * 2; //double count
           }
-          else { //add item
+          else { //add item for second person
             item.guest = room.guest2 ? room.guest2 : room.guest + '-' + configService.loctxt.roommate;
             item.addThisToDocArray(that.res.expenses, price, count);
-          }
+          }*/
         }
 
         //Now return the item or items just added

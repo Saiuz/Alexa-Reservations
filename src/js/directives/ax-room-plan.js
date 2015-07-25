@@ -140,8 +140,10 @@ define(['./module'], function (directives) {
         };
 
         // respond to a user clicking on a calendar event item
-        scope.eClick = function (id) {
-          scope.selectedEvent = id;
+        scope.eClick = function (elink) {
+          if (scope.eventClickFunction) {
+            scope.eventClickFunction(elink);
+          }
         };
 
         // part of the select blanks functionality.
@@ -658,7 +660,7 @@ define(['./module'], function (directives) {
         scope: {
           dateInWeek: '=',
           selectedReservation: '=',
-          selectedEvent: '=',
+          eventClickFunction: '=',
           blankClickFunction: '=',
           startDate: '@',
           weekSpan: '@', // number of weeks each side of 'active' week

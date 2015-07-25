@@ -89,7 +89,7 @@ define(['./module'], function (controllers) {
             mode = modalParams.mode.substring(0, 1).toLowerCase();
             switch (mode) {
               case 'c':
-                $scope.title = configService.loctxt.expenseItem_titleCreate;
+                $scope.title = configService.loctxt.roomPlan_titleCreate;
                 $scope.roomPlan = new RoomPlan();
                 _prePopulateItem(modalParams.extraData);
                 if ($scope.roomPlan.resTypeFilter.length === 0) {
@@ -103,7 +103,7 @@ define(['./module'], function (controllers) {
                 $scope.read = false;
                 break;
               case 'r':
-                $scope.title = configService.loctxt.expenseItem_titleRead;
+                $scope.title = configService.loctxt.roomPlan_titleRead;
                 RoomPlan.findOne(qry, function (err, roomPlan) {
                   if (err) {
                     $scope.err = new utility.errObj(err);
@@ -125,7 +125,7 @@ define(['./module'], function (controllers) {
                 });
                 break;
               case 'u':
-                $scope.title = configService.loctxt.expenseItem_titleUpdate;
+                $scope.title = configService.loctxt.roomPlan_titleUpdate;
                 RoomPlan.findOne(qry, function (err, roomPlan) {
                   if (err) {
                     $scope.err = new utility.errObj(err);
@@ -152,7 +152,7 @@ define(['./module'], function (controllers) {
                 });
                 break;
               case 'd':
-                $scope.title = configService.loctxt.expenseItem_titleDelete;
+                $scope.title = configService.loctxt.roomPlan_titleDelete;
                 RoomPlan.findOne(qry, function (err, roomPlan) {
                   if (err) {
                     $scope.err = new utility.errObj(err);

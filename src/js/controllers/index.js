@@ -18,6 +18,7 @@ define([
     './firmFormModal',
     './reservationFormModal',
     './itemTypeFormModal',
+    './docArrayItemFormModal',
     './roomFormModal',
     './resourceFormModal',
     './roomPlanFormModal',

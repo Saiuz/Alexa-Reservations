@@ -781,7 +781,7 @@ define(['./module'], function (services) {
         return deferred.promise;
       },
       // Retrieve a list of plans that use a specified plan expense item.
-      getPlansUsingItem: function (itemName) {
+/*      getPlansUsingItem: function (itemName) {
         var deferred = $q.defer();
         RoomPlan.find({required_items: itemName})
             .exec(function (err, plans) {
@@ -794,7 +794,7 @@ define(['./module'], function (services) {
               }
             });
         return deferred.promise;
-      },
+      },*/
       // retrieve item types that are associated with package plans, returns all item types
       getPackagePlanItemTypes: function () {
         var deferred = $q.defer(),

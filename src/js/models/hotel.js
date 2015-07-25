@@ -248,9 +248,9 @@ define(['./module'], function (model) {
         no_display: true,
         //day_count: false,
         one_per: false,
+        per_person: true,
         edit_name: false,
         bus_pauschale: false,
-        //low_tax_rate: true,
         display_string: '%count% %name% à %price%',
         display_order: 2
       };
@@ -448,7 +448,7 @@ define(['./module'], function (model) {
     return db.db.model('itemtype', ExpenseItem);
   }) ;
 
-  model.factory('RoomPlan', function (db, dbEnums) {
+  model.factory('RoomPlan', function (db, dbEnums, ExpenseItem) {
     var schema = new db.db.Schema({
       name: {type: String, required: true, unique: true },
       resTypeFilter: [String], //A string array of allowed reservation types for this plan.
@@ -471,7 +471,7 @@ define(['./module'], function (model) {
       double_room_price: Number, // For a package, the per person room price for a double room
       duration: Number, //Number of days the plan covers
       display_string: String, //Formatted string that is displayed on the bill for the plan. (special formatting)
-      required_items: [String] // A list of required expense items that are associated with a room plan.
+      required_items: [ExpenseItem] // A list of required expense items that are associated with a room plan.
     });
 
     // Builds a default properties object for the ExpenseItem schema that can be used by the UI

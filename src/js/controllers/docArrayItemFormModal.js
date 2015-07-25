@@ -1,11 +1,17 @@
 /**
- * Controller for the ItemType Modal form. The ItemType Modal form manages CRUD operations for the ItemType collection.
+ * Controller for the docArrayItem Modal form. The docArrayItem Modal form manages CRUD operations for ExpenseItems that
+ * are part of a document array such as RoomPlan.required_items or Reservation.expenses. This controller behaves
+ * differently than controllers for the db Model modal forms in that it does not modify the db Collections, rather it
+ * works on items in a document array which is a property of a Model. It is up to the caller of this modal form to
+ * actually save the host Model. Note: These property arrays are of schema type "ExpenseItem" but we must work with
+ * Mongoose Model objects that utilize the ExpenseItem schema. This Model type is "ItemType".
  * The form utilizes the angular bootstrap ui Modal directive.
  * Data is passed to the controller via the 'modalParams' object injected into the controller. The object must have
- * two parameters:
+ * the following parameters:
  *    modalParams.mode - A string value starting with 'C', 'R', 'U', or 'D'. This determines the operational mode
  *                       of the form and is not case sensitive.
- *    modalParams.data - A property that identifies the instance of the ItemType collection to work with. This is the
+ *    modalParams.docArray - The document array holding or receiving the ExpenseItem document. (ItemType model)
+ *    modalParams.data - A property that identifies the instance of the ExpensItem (ItemType) to work with. This is the
  *                       id of the item in the case of 'R', 'U' or 'D' operations.
  *    modalParams.extraData - An optional object containing ItemType data that will be placed in specific properties
  *                            when creating a new instance (mode 'C'). The object property names match the ItemType
@@ -18,10 +24,11 @@
  * For 'C', 'U' and 'D' operations, successful completion, after pressing the save button, the form will display a
  * success message then automatically close after a pre-defined delay. The form will return the new or updated
  * instance object. In the case of a delete operation, the _id of the deleted object will be returned.
+ * NOTE: This controller uses the same html template file as the ItemTypeFormModal controller.
  *
  * The form is activated, and any returned results are handled by the following code:
  *        var modalInstance = $modal.open({
- *                     templateUrl: './templates/itemTypeFormModal.html',
+ *                     templateUrl: './templates/docArrayItemFormModal.html',
  *                     controller: 'itemTypeFormModalCtrl',
  *                     size: size,
  *                     resolve: {
@@ -32,7 +39,7 @@
  *                   });
  *
  *        modalInstance.result.then(function (result) {
- *                     // handle result which is the instance of the ItemType collection the modal form worked with.
+ *                     // handle result which is the instance of the ItemType object the modal form worked with.
  *                     // in the case of the delete ('d' mode), the id of the deleted instance is returned.
  *                   });
  *
@@ -40,7 +47,7 @@
 define(['./module'], function (controllers) {
   'use strict';
 
-  controllers.controller('ItemTypeFormModalCtrl',
+  controllers.controller('DocArrayItemFormModalCtrl',
       ['$scope',
         '$modalInstance',
         'modalParams',
@@ -51,7 +58,7 @@ define(['./module'], function (controllers) {
         'utility',
         'dbEnums',
         function ($scope, $modalInstance, modalParams, ItemType, AppConstants, configService, $timeout, utility, dbEnums) {
-          console.log("ItemTypeFormModal controller fired");
+          //console.log("DocArrayItemFormModalCtrl controller fired");
           var mode;
 
           $scope.err = {};
@@ -92,14 +99,18 @@ define(['./module'], function (controllers) {
               $scope.lookups = consts;
               $scope.selLookup = consts[0];
             }
+            // Check that docArray is defined, if not show error
+            if (!modalParams.docArray || !Array.isArray(modalParams.docArray)) {
+              $scope.err = new utility.errObj("SYSTEM ERROR! The document array is not defined or not of type ItemType");
+              $scope.errLoad = true;
+            }
 
             // Determine the display mode. The default is to show only the
             $scope.full = (modalParams && modalParams.displayMode < 0);
             $scope.plan = (modalParams && modalParams.displayMode > 0);
             // Determine CRUD mode of form.
             // For all but 'C' the query can be by id or by the name property which is also unique.
-            var qry = {'_id': parseInt(modalParams.data)},
-                notFound = configService.loctxt.expenseItem + ' "' + modalParams.data + '" ' + configService.loctxt.notFound;
+            var notFound = configService.loctxt.expenseItem + ' "' + modalParams.data + '" ' + configService.loctxt.notFound;
 
             mode = modalParams.mode.substring(0, 1).toLowerCase();
             switch (mode) {
@@ -115,7 +126,7 @@ define(['./module'], function (controllers) {
                 break;
               case 'r':
                 $scope.title = configService.loctxt.expenseItem_titleRead;
-                ItemType.findOne(qry, function (err, itemType) {
+                _findItemInDoc(modalParams.data, function (err, itemType) {
                   if (err) {
                     $scope.err = new utility.errObj(err);
                     $scope.errLoad = true;
@@ -139,7 +150,7 @@ define(['./module'], function (controllers) {
                 break;
               case 'u':
                 $scope.title = configService.loctxt.expenseItem_titleUpdate;
-                ItemType.findOne(qry, function (err, itemType) {
+                _findItemInDoc(modalParams.data, function (err, itemType) {
                   if (err) {
                     $scope.err = new utility.errObj(err);
                     $scope.errLoad = true;
@@ -167,7 +178,7 @@ define(['./module'], function (controllers) {
                 break;
               case 'd':
                 $scope.title = configService.loctxt.expenseItem_titleDelete;
-                ItemType.findOne(qry, function (err, itemType) {
+                _findItemInDoc(modalParams.data, function (err, itemType) {
                   if (err) {
                     $scope.err = new utility.errObj(err);
                     $scope.errLoad = true;
@@ -232,6 +243,8 @@ define(['./module'], function (controllers) {
           // save button handler
           $scope.save = function () {
             var msg = '';
+            $scope.err = false;
+            $scope.errSave = false;
 
             //perform any pre save form validation or logic here
             $scope.itemType.last_updated = new Date();
@@ -239,41 +252,41 @@ define(['./module'], function (controllers) {
             if (!$scope.itemType.count) {
               $scope.itemType.count = 1;
             }
-            $scope.err = false;
-            $scope.errSave = false;
-            //save/update ItemType and return
-            $scope.itemType.save(function (err) {
-              if (err) {
-                console.log('ItemType save error: ' + err);
-                $scope.err = new utility.errObj(err);
-                $scope.errSave = true;
-                $scope.$apply();
-              }
-              else {
-                msg = (mode === 'c' ? configService.loctxt.expenseItem + configService.loctxt.success_saved :
-                    configService.loctxt.success_changes_saved);
-                _autoClose(msg, $scope.itemType);
-              }
-            });
+            //if mode == create then add item to document array
+            if (mode === 'c') {
+              modalParams.docArray.push($scope.itemType);
+            }
+
+            msg = (mode === 'c' ? configService.loctxt.expenseItem + configService.loctxt.success_saved :
+                configService.loctxt.success_changes_saved);
+            _autoClose(msg, $scope.itemType);
           };
 
           // Delete btn handler
           $scope.delete = function (err) {
-            var id = $scope.itemType._id.id;
+            var icnt = modalParams.docArray.length,
+                err = 'ItemType delete error: Item ' + $scope.itemType.name + ' not removed';
+
             $scope.err = false;
             $scope.errSave = false;
-            $scope.itemType.remove(function (err) {
-              if (err) {
-                console.log('ItemType delete error: ' + err);
-                $scope.err = new utility.errObj(err);
-                $scope.errSave = true;
-                $scope.$apply();
+
+            modalParams.docArray.id($scope.itemType._id).remove();
+            if (modalParams.docArray.length === icnt) {
+              console.log(err);
+              $scope.err = new utility.errObj(err);
+              $scope.errSave = true;
+              $scope.$apply();
+            }
+            else {
+              // handle Mongoose/Tingo bug when removing an item from the document collection, save does not work
+              // unless an existing item is modified.
+              if (modalParams.docArray.length) {
+                modalParams.docArray[0].last_updated = new Date();
               }
-              else {
-                var msg = configService.loctxt.expenseItem + configService.loctxt.success_deleted;
-                _autoClose(msg, id);
-              }
-            });
+              var msg = configService.loctxt.expenseItem + configService.loctxt.success_deleted;
+              _autoClose(msg, $scope.itemType._id.id);
+            }
+
           };
 
           // Cancel btn handler
@@ -294,7 +307,7 @@ define(['./module'], function (controllers) {
           function _autoClose(msg, val) {
             $scope.hide = true;
             $scope.actionMsg = msg;
-            $scope.$apply();
+            //$scope.$apply();
             timer = $timeout(function () {
               $modalInstance.close(val);
             }, configService.constants.autoCloseTime)
@@ -347,5 +360,39 @@ define(['./module'], function (controllers) {
 
             return codes;
           }
+
+          // locates the item in the document array. Once located, will call the callback method provided. Emulates the
+          // Mongoose FindOne method.
+          function _findItemInDoc(id, callback) {
+            var isNum = typeof(id) === 'number' || (!isNaN(parseFloat(id)) && isFinite(id)),
+                found = false,
+                item = null,
+                ix;
+
+            try {
+              for (ix = 0; ix < modalParams.docArray.length; ix++) {
+                if (isNum) {
+                  found = modalParams.docArray[ix]._id.id === id;
+                }
+                else {
+                  found = modalParams.docArray[ix].name === id;
+                }
+                if (found) {
+                  item = modalParams.docArray[ix];
+                  break;
+                }
+              }
+
+              if (callback) {
+                callback(null, item); //no error generated
+              }
+            }
+            catch (err) {
+              if (callback) {
+                callback("Find Item Error: " + err.message, null);
+              }
+            }
+          }
         }]);
 });
+

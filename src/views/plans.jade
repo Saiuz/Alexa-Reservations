@@ -43,7 +43,7 @@ include nav_common.jade
               span.btn.btn-warning.btn-sm
               i.glyphicon.glyphicon-refresh
           .col-md-8(ng-show="selectedPlan")
-            h3 {{selectedPlanItems.length}} {{txt.itemsFor}} {{selectedPlan}}
+            h3 {{selectedPlan.required_items.length}} {{txt.itemsFor}} {{selectedPlan.name}}
             table.table.table-bordered.table-hover.table-condensed
               thead
                 tr
@@ -52,8 +52,9 @@ include nav_common.jade
                   th Name
                   th Count
                   th {{txt.price}}
+                  th {{txt.perPerson}}
               tbody
-                tr(ng-repeat="i in selectedPlanItems")
+                tr(ng-repeat="i in selectedPlan.required_items")
                   td.text-center
                     i.glyphicon.glyphicon-edit(ng-click="editItem(i.name)" ng-if="!i.is_system")
                   td.text-center
@@ -63,6 +64,8 @@ include nav_common.jade
                   td(ng-if="!i.day_count") {{i.count}}
                   td(ng-if="i.price_lookup") {{txt.fromPriceList}}
                   td(ng-if="!i.price_lookup") {{i.price | currency}}
+                  td.text-center
+                    input(type="checkbox" ng-disabled="true" ng-model="i.per_person")
                 tr
                   td.text-center
                     button.btn.btn-info.btn-sm(ng-click="newItemShow()" tooltip="{{tips(1)}}")

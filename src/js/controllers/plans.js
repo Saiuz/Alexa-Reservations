@@ -36,7 +36,7 @@ define(['./module'], function (controllers) {
 
           $scope.planObjects = []; //holds all room plan models returned from the RoomPlan collection
           $scope.selectedPlanItems = []; // holds all expense items from the selected room plan
-          $scope.selectedPlan = '';
+          $scope.selectedPlan = null;
           $scope.ptypes = _buildTabs();
           $scope.curType = $scope.ptypes[0].title;
           $scope.showExistingItems = false;
@@ -45,7 +45,7 @@ define(['./module'], function (controllers) {
             $scope.showExistingItems = false;
             $scope.curType = planType;
             $scope.selectedPlanItems = [];
-            $scope.selectedPlan = '';
+            $scope.selectedPlan = null;
             currentBillCode = billCodes[planType];
             //_buildPlansInTypeList();
           };
@@ -61,55 +61,40 @@ define(['./module'], function (controllers) {
 
           // retrieve the expense items associated with a plan.
           $scope.setSelected = function (pname) {
-            $scope.selectedPlan = pname;
-            console.log(pname);
             var plan = _findPlan(pname);
+            $scope.selectedPlan = plan;
             if (plan) {
-              dashboard.getItemTypesInList(plan.required_items).then(function (items) {
-                $scope.selectedPlanItems = items;  // may be empty
-                $scope.showExistingItems = false;
-                _calculatePlanPrice();
-              }, function (err) {
-                console.log(err);
-                $scope.working = false;
-                $scope.errShow = true;
-                $scope.errMsg = err;
-              });
+              $scope.showExistingItems = false;
+              _calculatePlanPrice(true);
             }
           };
 
           // ** Crud methods for package plan items **
-          // Edit selected item
+          // Edit selected item. Find item in selectedPlan's required_items field and bring up edit form
           $scope.editItem = function (iname) {
-            var item = _findItem(iname),
-                plan = _findPlan($scope.selectedPlan),
-                dataObjI = {data: undefined, extraData: undefined, displayMode: 1},
-                model = modals.getModelEnum().itemType;
+            var dataObjI = {
+                  data: iname,
+                  docArray: $scope.selectedPlan.required_items,
+                  extraData: null,
+                  displayMode: 1
+                },
+                model = modals.getModelEnum().docArrayItem;
 
-            if (item && plan) {
-              dataObjI.data = item._id.id;
+            if ($scope.selectedPlan) {
               modals.update(model, dataObjI, function (result) {
-                dashboard.getItemTypesInList(plan.required_items).then(function (items) {
-                  $scope.selectedPlanItems = items;
-                  _calculateUpdatePlanPrice(); // update plan price
-                  plan.save(function (err) {
-                    if (err) {
-                      console.log(err);
-                      $scope.working = false;
-                      $scope.errShow = true;
-                      $scope.errMsg = err;
-                    }
-                    else {
-                      $scope.showExistingItems = false;
-                      $scope.$apply();
-                    }
-                  }); //save plan
-                }, function (err) {
-                  console.log(err);
-                  $scope.working = false;
-                  $scope.errShow = true;
-                  $scope.errMsg = err;
-                }); //getItemTypesInList
+                _calculatePlanPrice(); // update plan price
+                $scope.selectedPlan.save(function (err) {
+                  if (err) {
+                    console.log(err);
+                    $scope.working = false;
+                    $scope.errShow = true;
+                    $scope.errMsg = err;
+                  }
+                  else {
+                    $scope.showExistingItems = false;
+                    $scope.$apply();
+                  }
+                }); //save plan
               });
             }
           };
@@ -122,15 +107,41 @@ define(['./module'], function (controllers) {
 
           // Add an existing expense item to the plan
           $scope.addExistingItem = function (iname) {
-            var item = _findItemType(iname),
-                plan = _findPlan($scope.selectedPlan);
-            if (item && plan) {
+            var item = _findItemType(iname);
+
+            if (item && $scope.selectedPlan) {
               //add item to plan's required_items field
-              plan.required_items.push(item.name);
-              dashboard.getItemTypesInList(plan.required_items).then(function (items) {
-                $scope.selectedPlanItems = items;
-                _calculateUpdatePlanPrice(); // update plan price
-                plan.save(function (err) {
+              $scope.selectedPlan.required_items.push(item);     //TODO-Need to do something like aadding expenses to the reservation expense list!!!!!!!!
+              _calculatePlanPrice(); // update plan price
+              $scope.selectedPlan.save(function (err) {
+                if (err) {
+                  console.log(err);
+                  $scope.working = false;
+                  $scope.errShow = true;
+                  $scope.errMsg = err;
+                }
+                else {
+                  $scope.showExistingItems = false;
+                  $scope.$apply();
+                }
+              }); //save plan
+            }
+          };
+
+          // Adds a brand new item to the plan
+          $scope.addNewItem = function () {    //TODO-THIS WONT WORK need to have a seperate form for plan item that is created only in the plan required_items property. This method creates them in the ItemTypes list!!!
+            var dataObjI = {                   //TODO-This may be something I want to provide (common items) but need to think about this.
+                  data: undefined,
+                  docArray: $scope.selectedPlan.required_items,
+                  extraData: dashboard.getPackagePlanItemDefaultObj(currentBillCode),
+                  displayMode: 1
+                },
+                model = modals.getModelEnum().docArrayItem;
+
+            if ($scope.selectedPlan) {
+              modals.create(model, dataObjI, function (item) {
+                _calculatePlanPrice(); // update plan price
+                $scope.selectedPlan.save(function (err) {
                   if (err) {
                     console.log(err);
                     $scope.working = false;
@@ -142,106 +153,36 @@ define(['./module'], function (controllers) {
                     $scope.$apply();
                   }
                 }); //save plan
-              }, function (err) {
-                console.log(err);
-                $scope.working = false;
-                $scope.errShow = true;
-                $scope.errMsg = err;
-              }); //getItemTypesInList
-            }
-          };
-
-          // Adds a brand new item to the plan
-          $scope.addNewItem = function () {
-            var plan = _findPlan($scope.selectedPlan),
-                dataObjI = {
-                  data: undefined,
-                  extraData: dashboard.getPackagePlanItemDefaultObj(currentBillCode),
-                  displayMode: 1
-                },
-                model = modals.getModelEnum().itemType;
-
-            if (plan) {
-              modals.create(model, dataObjI, function (item) {
-                plan.required_items.push(item.name);
-                dashboard.getItemTypesInList(plan.required_items).then(function (items) {
-                  $scope.selectedPlanItems = items;
-                  _calculateUpdatePlanPrice(); // update plan price
-                  plan.save(function (err) {
-                    if (err) {
-                      console.log(err);
-                      $scope.working = false;
-                      $scope.errShow = true;
-                      $scope.errMsg = err;
-                    }
-                    else {
-                      $scope.showExistingItems = false;
-                      $scope.$apply();
-                    }
-                  }); //save plan
-                }, function (err) {
-                  console.log(err);
-                  $scope.working = false;
-                  $scope.errShow = true;
-                  $scope.errMsg = err;
-                }); //getItemTypesInList
               });
             }
           };
 
           // Remove an expense item from the plan and optionally delete it.
           $scope.removeItem = function (iname) {
-            var item = _findItem(iname),
-                plan = _findPlan($scope.selectedPlan),
-                deleteItem = false,
-                saveError = false,
-                ix;
-            if (item && plan) {
-              dashboard.getPlansUsingItem(iname).then(function (plans) {
-                deleteItem = plans.length === 1 && !item.is_system; // delete if not system item and it is only attached to 1 plan (the selected plan)
-                // Now remove the item from the selected plan. Find the item in the plan array first, remove it then save.
-                for (ix = 0; ix < plan.required_items.length; ix++) {
-                  if (plan.required_items[ix] === iname) {
-                    break;
-                  }
-                }
-                if (ix < plan.required_items.length) {
-                  plan.required_items.splice(ix, 1);
-                  // Now update selected plan item list before continuing
-                  dashboard.getItemTypesInList(plan.required_items).then(function (items) {
-                    $scope.selectedPlanItems = items;
-                    _calculateUpdatePlanPrice(); // update plan price
-                    plan.save(function (err) {
-                      if (err) {
-                        console.log(err); //todo-handle error better
-                        $scope.working = false;
-                        $scope.errShow = true;
-                        $scope.errMsg = err;
-                        saveError = true;
-                      }
-                      else {
-                        $scope.showExistingItems = false;
-                        // Now remove item if needed
-                        if (deleteItem && !saveError) {
-                          item.remove(function (err) {
-                            if (err) {
-                              console.log(err);
-                              $scope.working = false;
-                              $scope.errShow = true;
-                              $scope.errMsg = err;
-                            }
-                          }); //remove item
-                        }
-                      }
-                    }); //save plan
-                  }, function (err) {
+            var dataObjI = {
+                  data: iname,
+                  docArray: $scope.selectedPlan.required_items,
+                  extraData: null,
+                  displayMode: 1
+                },
+                model = modals.getModelEnum().docArrayItem;
+
+            if ($scope.selectedPlan) {
+              modals.delete(model, dataObjI, function (result) {
+                _calculatePlanPrice(); // update plan price
+                $scope.selectedPlan.save(function (err) {
+                  if (err) {
                     console.log(err);
                     $scope.working = false;
                     $scope.errShow = true;
                     $scope.errMsg = err;
-                  });
-                }
-              }); //get plans using item
+                  }
+                  else {
+                    $scope.showExistingItems = false;
+                    $scope.$apply();
+                  }
+                }); //save plan
+              });
             }
           };
 
@@ -260,7 +201,7 @@ define(['./module'], function (controllers) {
                     $scope.planObjects = plans;
                     $scope.selectedPlanItems = []; // the plan will have no items yet
                     $scope.setSelected(plan.name); //select the new plan
-                    _calculateUpdatePlanPrice(); // update prices
+                    _calculatePlanPrice(); // update prices
                     plan.save(function (err) {
                       if (err) {
                         console.log(err);
@@ -295,7 +236,7 @@ define(['./module'], function (controllers) {
 
             modals.update(model, dataObjI, function (plan) {
               // replace old plan with new edits in local list
-              $scope.planObjects.splice(localPlanIX,1,plan);
+              $scope.planObjects.splice(localPlanIX, 1, plan);
               $scope.setSelected(plan.name); //incase the name was changed
               _calculateUpdatePlanPrice(); // update prices
               plan.save(function (err) {
@@ -324,9 +265,9 @@ define(['./module'], function (controllers) {
                 localPlanIX = _findPlanInList(id),
                 planItems = $scope.planObjects[localPlanIX];
             modals.delete(model, dataObjI, function () {
-              $scope.planObjects.splice(localPlanIX,1); //remove item from local list
+              $scope.planObjects.splice(localPlanIX, 1); //remove item from local list
               $scope.selectedPlanItems = [];
-              $scope.selectedPlan = '';
+              $scope.selectedPlan = null;
               // now process items for removal
             });
           };
@@ -353,12 +294,7 @@ define(['./module'], function (controllers) {
                 });
           }
 
-          //refreshesh selected plan item list
-          function _refresh() {
-            $scope.setSelected($scope.selectedPlan);
-          }
-
-          // retrieve all existing package plan item types
+          // retrieve all common existing package plan item types that can be added to a plan
           function _getAllPlanItemTypes() {
             $scope.working = true;
             dashboard.getPackagePlanItemTypes().then(function (items) {
@@ -397,7 +333,6 @@ define(['./module'], function (controllers) {
 
             return pix;
           }
-
 
           // find specific item in selected plan's item list
           function _findItem(iname) {
@@ -484,63 +419,34 @@ define(['./module'], function (controllers) {
             return plans;
           }
 
-          // Calculate the Plan price and the single surcharge based on items, room prices and duration
-          function _calculatePlanPrice() {
-            var plan = _findPlan($scope.selectedPlan),
-                result = {
-                  plan: plan,
+          // Calculate the Plan price and the single surcharge based on items, room prices and duration and then
+          // update the selected plan's pp_price and single_surcharge fields if noUpdate is false.
+          function _calculatePlanPrice(doNotUpdate) {
+            var result = {
                   planPrice: 0,
                   singleSurcharge: 0,
-                  dblSum: plan.double_room_price * plan.duration,
-                  snglSum: plan.single_room_price * plan.duration,
+                  dblSum: 0,
+                  snglSum: 0,
                   itmSum: 0
                 };
 
-            $scope.selectedPlanItems.forEach(function (itm) {
-              var iprice = itm.price_lookup ? configService.constants.get(itm.price_lookup) : itm.price;
-              result.itmSum += iprice * (itm.day_count ? plan.duration : itm.count);
-            });
-            result.planPrice = convert.roundp(result.dblSum + result.itmSum, 2);
-            result.singleSurcharge = convert.roundp((result.snglSum + result.itmSum) - result.planPrice, 2);
+            if ($scope.selectedPlan) {
+              result.dblSum = $scope.selectedPlan.double_room_price * $scope.selectedPlan.duration;
+              result.snglSum = $scope.selectedPlan.single_room_price * $scope.selectedPlan.duration;
+              $scope.selectedPlan.required_items.forEach(function (itm) {
+                var iprice = itm.price_lookup ? configService.constants.get(itm.price_lookup) : itm.price;
+                result.itmSum += iprice * (itm.day_count ? $scope.selectedPlan.duration : itm.count);
+              });
+              result.planPrice = convert.roundp(result.dblSum + result.itmSum, 2);
+              result.singleSurcharge = convert.roundp((result.snglSum + result.itmSum) - result.planPrice, 2);
+
+              if (!doNotUpdate) {
+                $scope.selectedPlan.pp_price = result.planPrice;
+                $scope.selectedPlan.single_surcharge = result.singleSurcharge;
+              }
+            }
             console.log(result);
             return result;
-          }
-
-          // Calculates the plan price and single surcharge and then updates the Plan model to reflect the change but
-          // does not save the plan object
-          function _calculateUpdatePlanPrice() {
-            var calcs = _calculatePlanPrice();
-
-            if (calcs.plan) {
-              calcs.plan.pp_price = calcs.planPrice;
-              calcs.plan.single_surcharge = calcs.singleSurcharge;
-            }
-          }
-
-          // Calculates the plan price and single surcharge and then updates the Plan model to reflect the change and saves it.
-          function _calculateUpdatePlanPriceSave(callback) {
-            var calcs = _calculatePlanPrice(),
-                lastprice, lastsprice;
-
-            if (calcs.plan) {
-              lastprice = calcs.plan.pp_price;
-              lastsprice = calcs.plan.single_surcharge;
-              calcs.plan.pp_price = calcs.planPrice;
-              calcs.plan.single_surcharge = calcs.singleSurcharge;
-              calcs.plan.save(function (err) {
-                if (err) {
-                  calcs.plan.pp_price = lastprice;
-                  calcs.plan.single_surcharge = lastsprice;
-                  console.log(err); //todo-handle error better
-                  $scope.working = false;
-                  $scope.errShow = true;
-                  $scope.errMsg = err;
-                }
-                else if (callback) {
-                  callback();
-                }
-              });
-            }
           }
         }]);
 });

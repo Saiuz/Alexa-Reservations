@@ -16,4 +16,4 @@ include nav_common.jade
             ax-reservation-list(list-mode="departure" list-date="theNextDate" selected-reservation="selected.reservation" res-count="selected.ab2Cnt")
     .col-md-8
       ax-reservation-details(ng-show="selected.reservation.number" reservation="selected.reservation")
-      ax-room-plan(date-in-week="theDate" selected-reservation="selected.reservation" blank-click-function="newResOrCal" selected-event="selectedEvent")
+      ax-room-plan(date-in-week="theDate" selected-reservation="selected.reservation" blank-click-function="newResOrCal" event-click-function="eventSelected")
