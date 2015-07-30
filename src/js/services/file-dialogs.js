@@ -27,11 +27,14 @@ define(['./module'], function (services) {
       callDialog(dialog, callback);
     };
 
-    dialogs.openFile = function(callback, multiple, acceptTypes) {
+    dialogs.openFile = function(callback, workingDir, multiple, acceptTypes) {
       var dialog = document.createElement('input');
       dialog.type = 'file';
-      if (multiple === true) {
+      if (multiple) {
         dialog.multiple = 'multiple';
+      }
+      if (workingDir) {
+        dialog.nwworkingdir = workingDir;
       }
       if (angular.isArray(acceptTypes)) {
         dialog.accept = acceptTypes.join(',');

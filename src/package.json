@@ -2,7 +2,7 @@
   "main": "index.html",
   "name": "Alexa",
   "description": "Hotel Reservation Manager for a German Kur Hotel. Desktop application developed using AngularJS and web technologies. Powered by node-webkit",
-  "version": "0.2.0",
+  "version": "0.1.2",
   "main": "index.html",
   "author":{
       "name": "Bob Vogel",
@@ -30,7 +30,8 @@
     "tungus": "~0.0.2",
     "mongoose": "~3.8.7",
     "csv": "~0.4.1",
-    "archiver": "~0.14.2"
+    "archiver": "~0.14.2",
+    "byline": "~4.2.1"
   },
   "scripts":{
     "postinstall" : "node ../etc/scripts/postinstall.js"

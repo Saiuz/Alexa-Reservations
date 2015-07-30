@@ -107,7 +107,7 @@ define(['./module'], function (controllers) {
               $scope.path = fpath;
               $scope.working = true;
               $scope.$apply();
-              importExport.exportToCSV(fpath, model.value).then(function (cnt) {
+              importExport.exportToFile(fpath, model.value, model.fileType).then(function (cnt) {
                 $scope.working = false;
                 $scope.records = cnt;
                 $scope.complete = true;
@@ -121,7 +121,7 @@ define(['./module'], function (controllers) {
                 $scope.showErr = true;
                 $scope.errMsg = err;
               });
-            },importExport.getDefaultExportFilePath(mode,model.model_name,true), ['csv']);
+            },importExport.getDefaultExportFilePath(mode,model.model_name,model.fileType), [model.fileType]);
           };
 
           // Starts the generation and export of the tax report

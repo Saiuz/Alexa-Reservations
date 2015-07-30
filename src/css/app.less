@@ -80,6 +80,7 @@ body {
   background-color: @state-info-bg;
 }
 @zp-cell-box: 16px; //NOTE: if this changes, line 36 of ax-room-plan.html needs to be changed also
+@zp-cell-box-print: 32px; //NOTE: if this changes, line 36 of ax-room-plan.html needs to be changed also
 @zp-font-size: ceil((@font-size-base * 0.6));
 @zp-res-color: #ffff99;
 @zp-ez-color: #fff1bc;
@@ -403,10 +404,10 @@ body {
     margin: 25mm;
     margin-top: 45mm;
   }
-  html, body {
-    width: 185mm;
-    height: 252mm;
-  }
+  //html, body {
+    width:  185mm;//257mm;
+    height:  252mm; //170mm;
+  //}
   .no-print {
     display: none;
   }
@@ -425,7 +426,67 @@ body {
     margin-top: 0px;
     margin-left: 40px;
   }
+  .zp-container {
+    padding: 1px;
+    -webkit-transform: rotate(-90deg);
+    //max-height: inherit;
+    //max-width: inherit;
+  }
+  .table-zp {
+    //table-layout: fixed;
+    width: 100%;
+    max-width: 100%;
+    height: 100%;
+    margin: 0px;
+    // Cells
+    > thead,
+    > tbody,
+    > tfoot {
+      > tr {
+        > th,
+        > td {
+          padding: 1px;
+          height: @zp-cell-box;
+          max-width: @zp-cell-box-print;
+          min-width: @zp-cell-box-print;
+          margin: 0;
+          border: 1px solid @table-border-color;
+          font-size: @zp-font-size;
+        }
+      }
+    }
 
+    // modify room plan headings
+    > thead > tr > th {
+      vertical-align: middle;
+      text-align: center;
+    }
+    > tbody > tr >
+    td:first-child,
+    td:last-child {
+      vertical-align: middle;
+      text-align: center;
+      font-weight: bold;
+      width: 50px;
+    }
+    > tbody > tr > td > div {
+      white-space: nowrap;
+      width: inherit;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    > tbody > tr > td.zp-endButt {
+      border-right-style: double;
+      border-right-width: thick;
+      border-right-color: rgb(255,163,71);
+    }
+    > thead > tr > th > div {
+      white-space: nowrap;
+      width: inherit;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+  }
   iframe#printf {
     visibility:visible;
 //    @page {

@@ -13,6 +13,9 @@ define(['./module'], function (directives) {
 
       var linker = function (scope, element, attrs) {
 
+        var width = attrs.width ? Number(attrs.width) : 450;
+        var height = attrs.height ? Number(attrs.height) : 600;
+
         element.bind('click', function(evt) {
           evt.preventDefault();
           _printElement(attrs.printElementId);
@@ -23,11 +26,11 @@ define(['./module'], function (directives) {
           _printWithPopupWindow($("#" + elem).html());
         }
 
-        // Kludge worked out by experiment. Requires a4print.html.
+        // Kludge worked out by experiment. Requires a4printPortrait.html.
         function _printWithPopupWindow(data) {
-          var pwin = gui.Window.open('templates/a4print.html', {
-            "width": 450,
-            "height": 600,
+          var pwin = gui.Window.open('templates/a4printPortrait.html', {
+            "width": width,
+            "height": height,
             "position": 'center',
             "new-instance": false,
             "focus": true,
@@ -73,7 +76,9 @@ define(['./module'], function (directives) {
         restrict: 'A',
         link: linker,
         scope: {
-          printElementId: '@'
+          printElementId: '@',
+          width: '@',
+          height: '@'
         }
       };
     }]);

@@ -87,7 +87,7 @@ define(['./module'], function (controllers) {
                   $scope.path = fpath;
                   $scope.working = true;
                   $scope.$apply();
-                  importExport.importFromCSV(fpath, model.value).then(function (cnt) {
+                  importExport.importFromFile(fpath, model.value, model.fileType).then(function (cnt) {
                     $scope.working = false;
                     $scope.success = configService.loctxt.importEnded + ' - ' + cnt + ' ' + configService.loctxt.dataItemsWritten;
                     $scope.records = cnt;
@@ -103,7 +103,7 @@ define(['./module'], function (controllers) {
                     $scope.showErr = true;
                     $scope.errMsg = err;
                   });
-                }, importExport.getDefaultImportDirectory(), ['csv']);
+                }, importExport.getDefaultImportDirectory(model), false, [model.fileType]);
               }
               else {
                 $state.go('home');

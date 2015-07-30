@@ -39,6 +39,8 @@ define(['./module'], function (controllers) {
              $scope.eiProperties.push(value);
           });
 
+          $scope.eventSources = [];
+
           var roomplans = [];
 /*          var res = new Reservation();
           dashboard.getRoomPlanList().then(function(list){

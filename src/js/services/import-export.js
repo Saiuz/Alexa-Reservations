@@ -1,11 +1,10 @@
 /**
- * Import / export service. This service will import Zipped and unzipped csv files into the database .
+ * Import / export service. This service will import Zipped and unzipped csv and JSON files into the database .
  * NOTE: on import, the existing database files are locked against exclusive access by another app. I tried to
  * disconnect the db, then expand the zip archive then reconnect but it still didn't seem to release the files.
  * Therefore, i changed the unzip command to add a new file with the suffix _1. I then modified the db service
  * to look for these files before connecting to the db. If it finds them, it deletes to old file and renames the
  * _1.
- * TODO-need to complete the individual import and export methods for Guests and Firms and the tax export method.
  */
 define(['./module'], function (services) {
   'use strict';
@@ -22,6 +21,8 @@ define(['./module'], function (services) {
               sys = require('sys'),
               exec = require('child_process').exec,
               csv = require('csv'),
+              byLine = require('byline'),
+              that = this,
               validModels = [Guest, Firm, Room, RoomPlan, Resource, Event, Itemtype]; //models available for import/export
 
           // This replaces the existing database files with the files in the referenced zip archive.
@@ -200,6 +201,141 @@ define(['./module'], function (services) {
             return deferred.promise;
           };
 
+          // imports a JSON file into the specified Mongoose Model. It will make a Zip backup before importing.
+          // Parameters: inPath - full path to the JSON file that will be imported.
+          //             model - an integer representing the Mongoose model to import to. This value can be obtained
+          //
+          this.importFromJSON = function (inPath, model) {
+            var deferred = $q.defer(),
+                invalidModel = false,
+                recCnt = 0,
+                vmodels = this.getAvailableModels(),
+                mgModel, srcPathArr, destPath, input, byline, transformer, qryFld, qry;
+
+            switch (model) {
+              case 0: //Guest
+                qryFld = 'unique_name';
+                break;
+              case 1: //Firm
+                qryFld = 'firm_name';
+                break;
+              case 2: //Room
+                qryFld = 'number';
+                break;
+              case 3: //RoomPlan
+                qryFld = 'name';
+                break;
+              case 4: //Resource
+                qryFld = 'name';
+                break;
+              case 5: //Event
+                qryFld = 'title,start_date';
+                break;
+              case 6: //ItemType
+                qryFld = 'name,category';
+                break;
+              default:
+                invalidModel = true;
+                break;
+            }
+
+            if (invalidModel) {
+              deferred.reject(model + ' is not a valid database model.');
+            }
+            else {
+              mgModel = validModels[model]; //specify model
+              // first archive file
+              srcPathArr = [path.join(appConstants.dbPath, vmodels[model].model_name)];
+              destPath = this.getDefaultExportFilePath('db',vmodels[model].model_name,false);
+
+              _zipFiles(srcPathArr,destPath).then(function (result) {
+                // Now add records to the model collection
+                input = fs.createReadStream(inPath);
+                input.setEncoding('utf8');
+                input.on('error', function (err) {
+                  deferred.reject('Input Error: ' + err);
+                });
+
+                // set up the byLine stream
+                byline = byLine.createStream(input);;
+                byline.on('error', function (err) {
+                  deferred.reject('{Line Reader Error: ' + err);
+                });
+
+                // Set up transformer:
+                // Clean up empty fields in the objects and store record in db. The CSV export will have all fields
+                // present even if they are null or empty. It is more efficient to store the record in the DB by
+                // removing any empty fields
+                transformer = csv.transform(function (record, callback) {
+                  var newRec;
+                  try {
+                    newRec= JSON.parse(record);
+                  }
+                  catch (err) {
+                    console.log(err);
+                    deferred.reject('JSON Read Error: ' + err);
+                  }
+
+                  qry = _buildQry(qryFld, newRec);
+
+                  //Save record
+                  mgModel.findOneAndUpdate(qry, newRec, {upsert: true}, function (err, doc) {
+                    if (err) {
+                      console.log(err);
+                      deferred.reject('Find-Update Error: ' + err);
+                    }
+                    else {
+                      recCnt++;
+                      callback(null); //record stops here
+                    }
+                  });
+                });
+
+                // we will resolve promise when the process completes
+                transformer.on('finish', function () {
+                  deferred.resolve(recCnt); //return the record count
+                });
+                transformer.on('error', function (err) {
+                  deferred.reject('Transformer Error: ' + err);
+                });
+
+                // Now start the import
+                byline.pipe(transformer);
+
+              }, function (err) {  // error for zip
+                deferred.reject(err);
+              });
+            }
+
+            return deferred.promise;
+          };
+
+          this.importFromFile = function (inPath, model, fileType) {
+            var deferred = $q.defer();
+
+            fileType = fileType.toLowerCase();
+            if (fileType !== 'csv' && fileType !== 'json') {
+              deferred.reject('Import Error: Invalid file type - ' + fileType);
+            }
+            else {
+              if (fileType === 'csv') {
+                that.importFromCSV(inPath, model).then(function (result) {
+                  deferred.resolve(result)
+                }, function (err) {
+                  deferred.reject(err)
+                });
+              }
+              else {
+                that.importFromJSON(inPath, model).then(function (result) {
+                  deferred.resolve(result)
+                }, function (err) {
+                  deferred.reject(err)
+                });
+              }
+            }
+            return deferred.promise;
+          };
+
           // exports the specified Mongoose model to a CSV file.
           // Parameters: outPath - the full path to the output file.
           //             model - an integer representing the Mongoose model to import to. This value can be obtained
@@ -224,8 +360,10 @@ define(['./module'], function (services) {
                   mprops.push(p);
                 }
               });
+
               // now set up the csv and file items for piping
               outStream = fs.createWriteStream(outPath);
+              outStream.write('\uFEFF'); //write the BOM so that Excel (Windows) can properly read file
               outStream.on('close', function (){
                 deferred.resolve(recCnt);
               });
@@ -255,6 +393,78 @@ define(['./module'], function (services) {
             return deferred.promise;
           };
 
+          // exports the specified Mongoose model collection to a JSON file. Each record is a separate line in the file.
+          // Parameters: outPath - the full path to the output file.
+          //             model - an integer representing the Mongoose model to import to. This value can be obtained
+          //
+          this.exportToJSON  = function (outPath, model) {
+            var deferred = $q.defer(),
+                recCnt = 0,
+                mprops = [],
+                invalidModel, mgModel, outStream, stringifier, transformer;
+
+            // initialize variables based on model selected
+            invalidModel = (model < 0 || model >= validModels.length); //check for error
+            if (invalidModel) {
+              deferred.reject(model + ' is not a valid database model.');
+            }
+            else {
+              mgModel = validModels[model]; //specify model
+
+              // now set up the csv and file items for piping
+              outStream = fs.createWriteStream(outPath);
+              outStream.on('close', function (){
+                deferred.resolve(recCnt);
+              });
+              outStream.on('error', function (err) {
+                deferred.reject('Output Error: ' + err);
+              });
+
+              // convert to JSON and remove the __v and _id properties
+              transformer = csv.transform(function (record, callback){
+                _removeSpecialProperties(record);
+                var newRecord = JSON.stringify(record) + '\r\n';
+                recCnt++;
+                callback(null, newRecord);
+              }, {parallel: 10});
+              transformer.on('error', function (err) {
+                deferred.reject('Transformer Error: ' + err);
+              });
+
+              // Now start exporting - use .lean() to return simple JSON object not model.
+              mgModel.find().lean().stream().pipe(transformer).pipe(outStream);
+            }
+
+            return deferred.promise;
+          };
+
+          // Exports file as CSV or JSON depending on value of fileType parameter.
+          this.exportToFile = function (outPath, model, fileType) {
+            var deferred = $q.defer();
+
+            fileType = fileType.toLowerCase();
+            if (fileType !== 'csv' && fileType !== 'json') {
+              deferred.reject('Export Error: Invalid file type - ' + fileType);
+            }
+            else {
+              if (fileType === 'csv') {
+                that.exportToCSV(outPath, model).then(function (result) {
+                  deferred.resolve(result)
+                }, function (err) {
+                  deferred.reject(err)
+                });
+              }
+              else {
+                that.exportToJSON(outPath, model).then(function (result) {
+                  deferred.resolve(result)
+                }, function (err) {
+                  deferred.reject(err)
+                });
+              }
+            }
+            return deferred.promise;
+          };
+
           this.exportTaxes = function (outPath, startDate, endDate) {
             var deferred = $q.defer(),
                 taxProps = [],
@@ -275,6 +485,7 @@ define(['./module'], function (services) {
 
             // now set up the csv and file items for piping
             outStream = fs.createWriteStream(outPath);
+            outStream.write('\uFEFF'); //write the BOM so that Excel (Windows) can properly read file
             outStream.on('close', function (){
               deferred.resolve(recCnt);
             });
@@ -338,10 +549,10 @@ define(['./module'], function (services) {
                    + $filter('date')(endDate, 'yyMMdd') + '_steuern.csv'
           };
 
-          this.getDefaultExportFilePath = function (mode, model, isCsv) {
+          this.getDefaultExportFilePath = function (mode, model, fileType) {
             var prefix = appConstants.defExportPath + '\\' + $filter('date')(new Date(), 'yyyy_MM_dd_HHmmss') + '_',
                 dbPrefix = appConstants.dbPath + '\\' + $filter('date')(new Date(), 'yyyy_MM_dd_HHmmss') + '_',
-                ftype = isCsv ? '.csv' : '.zip',
+                ftype = fileType ? '.' + fileType : '.zip',
                 path;
 
             mode = (mode || 'all').toLowerCase();
@@ -355,13 +566,13 @@ define(['./module'], function (services) {
                 path = dbPrefix + model + ftype;
                 break;
               default:
-                path = prefix + model + '.csv';
+                path = prefix + model + ftype;
             }
 
             return path;
           };
 
-          this.getDefaultImportDirectory = function () {
+          this.getDefaultImportDirectory = function (model) {
             return appConstants.defExportPath;
           };
 
@@ -369,14 +580,14 @@ define(['./module'], function (services) {
           // Guest, Firm, Room, RoomPlan, Resource, Event, ItemType
           this.getAvailableModels = function () {
             return [
-              {value: -1, text: '<' + configService.loctxt.select + '>', model_name: ''},
-              {value: 0, text: configService.loctxt.addressGuest, model_name: 'Guest'},
-              {value: 1, text: configService.loctxt.firm, model_name: 'Firm'},
-              {value: 2, text: configService.loctxt.room, model_name: 'Room'},
-              {value: 3, text: configService.loctxt.accommodationPlan, model_name: 'RoomPlan'},
-              {value: 4, text: configService.loctxt.resource, model_name: 'Resource'},
-              {value: 5, text: configService.loctxt.event, model_name: 'Event'},
-              {value: 6, text: configService.loctxt.expenseItem, model_name: 'ItemType'}
+              {value: -1, text: '<' + configService.loctxt.select + '>', model_name: '', fileType: ''},
+              {value: 0, text: configService.loctxt.addressGuest, model_name: 'Guest', fileType: 'csv'},
+              {value: 1, text: configService.loctxt.firm, model_name: 'Firm', fileType: 'csv'},
+              {value: 2, text: configService.loctxt.room, model_name: 'Room', fileType: 'json'},
+              {value: 3, text: configService.loctxt.accommodationPlan, model_name: 'RoomPlan', fileType: 'json'},
+              {value: 4, text: configService.loctxt.resource, model_name: 'Resource', fileType: 'json'},
+              {value: 5, text: configService.loctxt.event, model_name: 'Event', fileType: 'json'},
+              {value: 6, text: configService.loctxt.expenseItem, model_name: 'ItemType', fileType: 'json'}
             ];
           };
 
@@ -408,6 +619,26 @@ define(['./module'], function (services) {
             }
 
             return deferred.promise;
+          }
+
+          // Removes _id and __v fields from record. Traverses complex documents within the record
+          function _removeSpecialProperties(obj) {
+            for (var prop in obj) {
+              if (obj.hasOwnProperty(prop)) {
+                if (prop === '__v') {delete obj[prop]}
+                if (prop === '_id') {delete obj[prop]}
+                if (Array.isArray(obj[prop])) {
+                  obj[prop].forEach(function (element) {
+                    if (typeof(element) === 'object') {
+                      _removeSpecialProperties(element);
+                    }
+                  });
+                }
+                else if (typeof(obj[prop]) === "object") {
+                  _removeSpecialProperties(obj[prop]);
+                }
+              }
+            }
           }
 
           function _buildQry (qryFields, record) {
