@@ -29,7 +29,8 @@ define(['./module'], function (services) {
     else { //assume mac
       tmpPath = process.env.TMPDIR;
       basePath = process.env.HOME + '/Library/Application Support/' + appName.replace(' ', '-');
-      dbPath = basePath + '\\data';
+      dbPath = basePath + '/data';
+      dbConnStr = 'tingodb://'+ dbPath;
       defExportPath = process.env.HOME + '/Desktop';
       execPath = process.env.PWD;
       zipCmdfn = ''; //currently don't have an unzip option for the mac

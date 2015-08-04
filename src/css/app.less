@@ -404,10 +404,10 @@ body {
     margin: 25mm;
     margin-top: 45mm;
   }
-  //html, body {
+  html, body {
     width:  185mm;//257mm;
     height:  252mm; //170mm;
-  //}
+  }
   .no-print {
     display: none;
   }
@@ -428,9 +428,53 @@ body {
   }
   .zp-container {
     padding: 1px;
+    -webkit-print-color-adjust: exact;
     -webkit-transform: rotate(-90deg);
     //max-height: inherit;
     //max-width: inherit;
+  }
+  .zp-resColor {
+    background-color: @zp-res-color;
+    background-image: url("./src/images/pattern.png");
+  }
+  .zp-endColor {
+    background-color: lighten(spin(@zp-res-color, -10), 5%);
+  }
+  .zp-divColor {
+    background-color: @zp-div-color;
+  }
+  .zp-weekColor {
+    background-color: @state-success-bg; //rgb(197,217,241);
+  }
+  .zp-dayColor {
+    background-color: @state-info-bg; //rgb(97,151,217);
+  }
+  .zp-selColor {
+    background-color: @zp-sel-color;
+  }
+  .zp-ppColor {
+    background-color: @zp-pp-color;
+  }
+  .zp-EZ-Econ {
+    background-color: @zp-ez-color;
+  }
+  .zp-EZ-Std {
+    background-color: darken(spin(@zp-ez-color, -10),5%);
+  }
+  .zp-EZ-Komf {
+    background-color: darken(spin(@zp-ez-color, -10),10%);
+  }
+  .zp-DZ-Econ {
+    background-color: @zp-dz-color;
+  }
+  .zp-DZ-Komf {
+    background-color: darken(spin(@zp-dz-color, -10), 10%);
+  }
+  .zp-SU {
+    background-color: @zp-su-color;
+  }
+  .zp-SU-BK {
+    background-color: darken(spin(@zp-su-color, -10), 10%);
   }
   .table-zp {
     //table-layout: fixed;
