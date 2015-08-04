@@ -9,7 +9,7 @@ cache/
 
 /cache
 /releases
-/src/css/app.css
+app.css
 7za.exe
 nbproject
 lib/
@@ -58,3 +58,5 @@ Icon
 Network Trash Folder
 Temporary Items
 .apdisk
+
+src/css/app.css
