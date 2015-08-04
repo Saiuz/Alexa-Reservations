@@ -9,6 +9,7 @@ cache/
 
 /cache
 /releases
+/src/css/app.css
 7za.exe
 nbproject
 lib/
