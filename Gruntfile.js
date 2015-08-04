@@ -1,4 +1,4 @@
-var nwVer = '0.12.0'; //'0.10.5';  //NOTE: tried 0.11.6 & 0.12.0 but it broke the print functionality
+var nwVer = '0.12.2'; //'0.10.5';  //NOTE: tried 0.11.6 & 0.12.0 but it broke the print functionality
 
 var isWin32 = /^win/.test(process.platform) || nwVer === '0.10.5';
 var isWin64 = (/^win/.test(process.platform) && nwVer !== '0.10.5') && /^x64/.test(process.arch);
@@ -29,9 +29,9 @@ var nwExec = "";
 if (!isMac32 && !isMac64)
     nwExec = "cd cache/" + nwVer + "/" + os + " && nw ../../../src";
 else
-    //nwExec = "cd cache/" + nwVer + "/" + os + " && open -n -a node-webkit ../../../src";
-    //nwExec = appDir + "/cache/" + nwVer + "/" + os + "/node-webkit.app/Contents/MacOS/node-webkit  /src/package.json";
-    nwExec = appDir + "/cache/" + nwVer + "/" + os + "/node-webkit.app/Contents/MacOS/node-webkit " + appDir + "/src";
+    //nwExec = "cd cache/" + nwVer + "/" + os + " && open -n -a nw ../../../src";
+    //nwExec = appDir + "/cache/" + nwVer + "/" + os + "/nwt.app/Contents/MacOS/node-webkit  /src/package.json";
+    nwExec = appDir + "/cache/" + nwVer + "/" + os + "/nw.app/Contents/MacOS/nw " + appDir + "/src";
 
 
 console.log("OS: " + os);
@@ -44,7 +44,7 @@ module.exports = function(grunt) {
         less: {
             './src/css/app.css': ['./src/css/app.less']
         },
-        nodewebkit: {
+        nwjs: {
             options: {
                 version: nwVer,
                 build_dir: './releases',
@@ -89,14 +89,14 @@ module.exports = function(grunt) {
     });
 
     grunt.loadNpmTasks('grunt-contrib-less');
-    grunt.loadNpmTasks('grunt-node-webkit-builder');
+    grunt.loadNpmTasks('grunt-nw-builder');
     grunt.loadNpmTasks('grunt-contrib-clean');
     grunt.loadNpmTasks('grunt-shell');
 
     grunt.registerTask('default', ['less', 'shell:run']);
     grunt.registerTask('run', ['default']);
-    grunt.registerTask('install', ['shell:install', 'nodewebkit']);
-    grunt.registerTask('build', ['less', 'nodewebkit']);
+    grunt.registerTask('install', ['shell:install', 'nwjs']);
+    grunt.registerTask('build', ['less', 'nwjs']);
 
 
 };
