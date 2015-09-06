@@ -42,6 +42,18 @@ define(['./module'], function (controllers) {
               console.log(msg);
             }
           });
+          var devBarShortcut = new gui.Shortcut({
+            key : "Ctrl+Shift+D",
+            active : function() {
+              console.log("Global desktop keyboard shortcut: " + this.key + " active.");
+              win.showDevTools();
+
+            },
+            failed : function(msg) {
+              // :(, fail to register the |key| or couldn't parse the |key|.
+              console.log(msg);
+            }
+          });
           var zoomOutShortcut = new gui.Shortcut({
             key : "Ctrl+Shift+O",
             active : function() {
@@ -69,6 +81,7 @@ define(['./module'], function (controllers) {
             }
           });
           gui.App.registerGlobalHotKey(refreshShortcut);
+          gui.App.registerGlobalHotKey(devBarShortcut);
           gui.App.registerGlobalHotKey(zoomOutShortcut);
           gui.App.registerGlobalHotKey(zoomInShortcut);
 

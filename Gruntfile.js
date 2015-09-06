@@ -1,4 +1,4 @@
-var nwVer = '0.12.2';
+var nwVer = '0.12.3';
 
 var isWin32 = /^win/.test(process.platform) || nwVer === '0.10.5';
 var isWin64 = (/^win/.test(process.platform) && nwVer !== '0.10.5') && /^x64/.test(process.arch);
@@ -54,12 +54,22 @@ module.exports = function(grunt) {
                 //linux64: isLinux64,
                 keep_nw: false,
                 zip: false,
-                mac_icns:'./src/images/angular-desktop-app.icns'
+                mac_icns:'./src/images/AlexaLogo2014.icns'
             },
             src: ['./src/**/*']
         },
         clean: ["./releases/**/*"],
         shell: {
+            innobuild32: {
+                command: function () {
+                    return '"C:\\Program Files (x86)\\Inno Setup 5\\iscc" InnoScript32.iss'
+                },
+                options: {
+                    stdout: true,
+                    stderr: true,
+                    stdin: true
+                }
+            },
             install: {
                 command: function() {
                     return 'bower cache clean && bower install && cd src && npm install';
@@ -80,7 +90,6 @@ module.exports = function(grunt) {
                     stdin: true,
                     maxBuffer: Infinity
                 }
-
             }
         }
 

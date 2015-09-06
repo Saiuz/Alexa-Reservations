@@ -11,7 +11,7 @@ requirejs.config({
         'angular-ui-router': '../lib/angular-ui-router/release/angular-ui-router',
         'angular-i18n': '../lib/angular-i18n/angular-locale_de-de',
         'text': '../lib/requirejs-text/text',
-        '_': '../lib/lodash/dist/lodash',
+        '_': '../lib/lodash/lodash',
         '$': '../lib/jquery/dist/jquery',
         'angular-bootstrap': '../lib/angular-bootstrap/ui-bootstrap-tpls',
         'angular-xeditable': '../lib/angular-xeditable/dist/js/xeditable'

@@ -6,7 +6,7 @@ define(['./module', '_'], function (views, _) {
     var jade = require('jade'),
         fs = require('fs'),
         path = require('path');
-
+//TODO- try and replace '_' lodash methods
     fs.readdir(path.resolve('./views'), function(err, files)   {
         console.log("Found %d files", files.length);
         _.each(files, function(f) {

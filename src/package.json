@@ -1,6 +1,6 @@
 {
   "main": "index.html",
-  "name": "Alexa",
+  "name": "AlexaReservierungen",
   "description": "Hotel Reservation Manager for a German Kur Hotel. Desktop application developed using AngularJS and web technologies. Powered by node-webkit",
   "version": "0.1.2",
   "main": "index.html",
@@ -17,20 +17,20 @@
       "url": "https://github.com/jgrenon"
     }],
   "window": {
-    "toolbar": true,
+    "toolbar": false,
     "width": 1200,
     "height": 960,
-    "icon":"./images/logo.png"
+    "icon":"./images/AlexaLogo2014.jpg"
   },
   "dependencies": {
-    "jade": "~0.35.0",
+    "jade": "~1.11.0",
     "querystring": "~0.2.0",
-    "moment": "~2.4.0",
-    "shortid": "~2.0.0",
+    "moment": "~2.10.6",
+    "shortid": "~2.2.2",
     "tungus": "~0.0.2",
     "mongoose": "~3.8.7",
     "csv": "~0.4.1",
-    "archiver": "~0.14.2",
+    "archiver": "~0.15.0",
     "byline": "~4.2.1"
   },
   "scripts":{
