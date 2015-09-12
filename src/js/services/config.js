@@ -7,7 +7,8 @@ define(['./module'], function (services) {
 
   // returns object with aplication specific constants
   services.service('appConstants', [function () {
-    var appName = 'Alexa Reservierungen',
+    var pjson = require('./package.json'),
+        appName = 'Alexa Reservierungen',
         appTitle = 'Hotel Alexa Reservierungssystem',
         tmpPath, dbPath, dbConnStr, defExportPath, zipCmdfn, execPath, basePath;
 
@@ -39,7 +40,7 @@ define(['./module'], function (services) {
     return {
       appName: appName,
       appTitle: appTitle,
-      version: '0.1.2',
+      version: pjson.version, //from package json
       tmpPath: tmpPath,
       basePath: basePath,
       dbPath: dbPath,

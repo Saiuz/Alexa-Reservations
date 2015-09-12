@@ -1,8 +1,8 @@
 {
   "main": "index.html",
   "name": "AlexaReservierungen",
-  "description": "Hotel Reservation Manager for a German Kur Hotel. Desktop application developed using AngularJS and web technologies. Powered by node-webkit",
-  "version": "0.1.2",
+  "description": "Hotel Reservation Manager for a German Kur Hotel. Desktop application developed using AngularJS. Powered by NW.js",
+  "version": "0.2.0",
   "main": "index.html",
   "author":{
       "name": "Bob Vogel",
@@ -16,8 +16,12 @@
       "name": "Joel Grenon",
       "url": "https://github.com/jgrenon"
     }],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/vogelrh/Alexa-Reservations"
+  },
   "window": {
-    "toolbar": false,
+    "toolbar": true,
     "width": 1200,
     "height": 960,
     "icon":"./images/AlexaLogo2014.jpg"

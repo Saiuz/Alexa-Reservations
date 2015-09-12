@@ -272,9 +272,10 @@ define(['./module'], function (controllers) {
             });
           };
 
-          $scope.tips = function (key) {
-            return "Ho Bill";
-          };
+          //$scope.tips = function (key) {
+          //  return "Ho Bill";
+          //};
+
           _getAllPlans(); //first time kick things off
 
           // *** Private methods
