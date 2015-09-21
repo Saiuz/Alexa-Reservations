@@ -9,6 +9,7 @@ define(['./module'], function (services) {
   services.service('appConstants', [function () {
     var pjson = require('./package.json'),
         appName = 'Alexa Reservierungen',
+        dataSubPath = 'data2',
         appTitle = 'Hotel Alexa Reservierungssystem',
         tmpPath, dbPath, dbConnStr, defExportPath, zipCmdfn, execPath, basePath;
 
@@ -16,7 +17,7 @@ define(['./module'], function (services) {
     if (/^win/.test(process.platform)) {
       tmpPath = process.env.TEMP;
       basePath = process.env.APPDATA + '\\' + appName.replace(' ', '-');
-      dbPath = basePath + '\\data';
+      dbPath = basePath + '\\' + dataSubPath;
       dbConnStr = 'tingodb://'+ dbPath;
       defExportPath = process.env.HOMEDRIVE + process.env.HOMEPATH + '\\Desktop';
       execPath = process.execPath.replace('nw.exe','');
@@ -30,7 +31,7 @@ define(['./module'], function (services) {
     else { //assume mac
       tmpPath = process.env.TMPDIR;
       basePath = process.env.HOME + '/Library/Application Support/' + appName.replace(' ', '-');
-      dbPath = basePath + '/data';
+      dbPath = basePath + '/' + dataSubPath;
       dbConnStr = 'tingodb://'+ dbPath;
       defExportPath = process.env.HOME + '/Desktop';
       execPath = process.env.PWD;
@@ -78,7 +79,7 @@ define(['./module'], function (services) {
     this.constants = {
       autoCloseTime: 2000,
       billNumberID: 'billNo', //used by Counters collection to identify the bill number counter
-      billNoSeed: 1000, // value used to seed the counter if the entry doesn;t exist
+      billNoSeed: 10000, // value used to seed the counter if the entry doesn;t exist
       expensesChangedEvent: 'EXP_EVENT1',  // event names
       reservationChangedEvent: 'RES_EVENT1',
       roomPlanClickEvent: 'ZPLAN_EVENT1',

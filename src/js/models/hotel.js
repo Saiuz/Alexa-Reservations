@@ -344,7 +344,7 @@ define(['./module'], function (model) {
         country: String,
         telephone: String,
         comments: String,
-        unique_name: {type: String} //NOTE this field should not be exposed as an editable field on a UI form. It is generated on save.
+        unique_name: {type: String, unique: true} //NOTE this field should not be exposed as an editable field on a UI form. It is generated on save.
     });
     // Virtual fields
     schema.virtual('name').get(function() {
