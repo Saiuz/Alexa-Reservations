@@ -1371,9 +1371,15 @@ define(['./module'], function (controllers) {
                     else {
                       console.log("Itemtype collection contains %d records", count);
                     }
-                    // last action in app.js
-                    $rootScope.$broadcast(configService.constants.appReadyEvent, {});
-                    console.log("app.js complete");
+                    Guest.count(function (err, count) { //don't add records just count to build indices
+                      console.log('Guest collection contains %d records', count);
+                      Firm.count(function (err, count) {
+                        console.log('Firm collection contains %d records', count);
+                        // last action in app.js
+                        $rootScope.$broadcast(configService.constants.appReadyEvent, {});
+                        console.log("app.js complete");
+                      });
+                    });
                   });
                 });
               });

@@ -50,7 +50,7 @@ define(['./module'], function (controllers) {
                       $scope.working = false;
                       $scope.complete = true;
                       $scope.showHome = false;
-                      $scope.$apply();
+                      //$scope.$apply();
                       setTimeout(function () {
                         $state.go('home');
                       }, 4000);
@@ -112,7 +112,7 @@ define(['./module'], function (controllers) {
                 $scope.records = cnt;
                 $scope.complete = true;
                 $scope.showHome = false;
-                $scope.$apply();
+                //$scope.$apply();
                 setTimeout(function () {
                   $state.go('home');
                 }, 4000);
@@ -136,7 +136,7 @@ define(['./module'], function (controllers) {
                 $scope.records = cnt;
                 $scope.complete = true;
                 $scope.showHome = false;
-                $scope.$apply();
+                //$scope.$apply();
                 setTimeout(function () {
                   $state.go('home');
                 }, 4000);
