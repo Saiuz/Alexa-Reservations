@@ -197,53 +197,53 @@ define(['./module'], function (controllers) {
                 Room.create({
                   number: 2,
                   room_type: 'Einzelzimmer',
-                  room_class: 'Economy',
-                  price: 57
+                  room_class: 'Standart',
+                  price: 64
                 }, {
                   number: 3,
                   room_type: 'Einzelzimmer',
                   room_class: 'Komfort',
-                  price: 66
+                  price: 69
                 }, {
                   number: 4,
                   room_type: 'Einzelzimmer',
                   room_class: 'Standart',
-                  price: 61
+                  price: 64
                 }, {
                   number: 5,
                   room_type: 'Einzelzimmer',
                   room_class: 'Economy',
-                  price: 57
+                  price: 58
                 }, {
                   number: 6,
                   room_type: 'Einzelzimmer',
                   room_class: 'Komfort',
-                  price: 66
+                  price: 69
                 }, {
                   number: 7,
                   room_type: 'Einzelzimmer',
                   room_class: 'Komfort',
-                  price: 66
+                  price: 69
                 }, {
                   number: 9,
                   room_type: 'Doppelzimmer',
-                  room_class: 'Economy',
+                  room_class: 'Standart',
                   price: 94
                 }, {
                   number: 10,
                   room_type: 'Einzelzimmer',
                   room_class: 'Economy',
-                  price: 57
+                  price: 58
                 }, {
                   number: 12,
                   room_type: 'Einzelzimmer',
                   room_class: 'Komfort',
-                  price: 66
+                  price: 69
                 }, {
                   number: 15,
                   room_type: 'Einzelzimmer',
                   room_class: 'Komfort',
-                  price: 66
+                  price: 69
                 }, {
                   number: 18,
                   room_type: 'Doppelzimmer',
@@ -258,42 +258,42 @@ define(['./module'], function (controllers) {
                   number: 20,
                   room_type: 'Einzelzimmer',
                   room_class: 'Economy',
-                  price: 57
+                  price: 58
                 }, {
                   number: 21,
                   room_type: 'Suite',
-                  room_class: '',
-                  price: 125
+                  room_class: 'Komfort',
+                  price: 130
                 }, {
                   number: 26,
                   room_type: 'Suite',
-                  room_class: '',
-                  price: 125
+                  room_class: 'Komfort',
+                  price: 140
                 }, {
                   number: 27,
                   room_type: 'Suite',
                   room_class: 'Balkon',
-                  price: 130
+                  price: 140
                 }, {
                   number: 31,
                   room_type: 'Einzelzimmer',
                   room_class: 'Standart',
-                  price: 61
+                  price: 64
                 }, {
                   number: 32,
                   room_type: 'Einzelzimmer',
                   room_class: 'Standart',
-                  price: 61
+                  price: 64
                 }, {
                   number: 33,
                   room_type: 'Einzelzimmer',
                   room_class: 'Standart',
-                  price: 61
+                  price: 64
                 }, {
                   number: 34,
                   room_type: 'Einzelzimmer',
                   room_class: 'Standart',
-                  price: 61
+                  price: 64
                 }, {
                   number: 35,
                   room_type: 'Doppelzimmer',
@@ -303,23 +303,23 @@ define(['./module'], function (controllers) {
                   number: 41,
                   room_type: 'Einzelzimmer',
                   room_class: 'Standart',
-                  price: 61
+                  price: 64
                 }, {
                   number: 42,
                   room_type: 'Einzelzimmer',
                   room_class: 'Standart',
-                  price: 61
+                  price: 64
                 }, {
                   number: 43,
                   room_type: 'Einzelzimmer',
                   room_class: 'Standart',
-                  price: 61
+                  price: 64
                 }, {
                   number: 44,
                   room_type: 'Einzelzimmer',
                   room_class: 'Standart',
                   display_order: 1,
-                  price: 61
+                  price: 64
                 }, {
                   number: 45,
                   room_type: 'Doppelzimmer',
@@ -344,12 +344,12 @@ define(['./module'], function (controllers) {
                   number: 51,
                   room_type: 'Einzelzimmer',
                   room_class: 'Standart',
-                  price: 61
+                  price: 64
                 }, {
                   number: 52,
                   room_type: 'Einzelzimmer',
                   room_class: 'Standart',
-                  price: 61
+                  price: 64
                 }, {
                   number: 53,
                   room_type: 'Doppelzimmer',
@@ -359,17 +359,17 @@ define(['./module'], function (controllers) {
                   number: 54,
                   room_type: 'Einzelzimmer',
                   room_class: 'Standart',
-                  price: 61
+                  price: 64
                 }, {
                   number: 55,
                   room_type: 'Einzelzimmer',
                   room_class: 'Standart',
-                  price: 61
+                  price: 64
                 }, {
                   number: 56,
                   room_type: 'Einzelzimmer',
                   room_class: 'Standart',
-                  price: 61
+                  price: 64
                 }, {
                   number: 57,
                   room_type: 'Einzelzimmer',

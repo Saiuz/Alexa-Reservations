@@ -629,10 +629,11 @@ define(['./module'], function (services) {
             });
         return deferred.promise;
       },
-      // Retrieve Room number type and class for all rooms
+      // Retrieve Room number type and class for all rooms, orders by room number
       getRoomListInfo: function() {
         var deferred = $q.defer();
         Room.find()
+            .sort({number: 1})
             .select('number room_type room_class display_abbr')
             .exec(function (err, rooms) {
               if (err) {

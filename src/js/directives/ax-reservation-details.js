@@ -82,6 +82,31 @@ define(['./module'], function (directives) {
         return (item.number == scope.room && item.guest === scope.guest);
       };
 
+      // Delete button click. Delete reservation if it is not checked in.
+      // If it is a business group reservation, make sure the user wants to delete
+      // the complete reservation not just the current user...
+      scope.deleteRes = function() {
+        var dataObj = {data: scope.reservation.number, extraData: undefined},
+            model = modals.getModelEnum().reservation;
+
+        if (!datetime.isDate(scope.rvm.res.checked_in)) {
+          if (scope.rvm.isGroup && !scope.rvm.oneBill) {
+            modals.yesNoShow(configService.loctxt.wantToDeleteRes,function (result) {
+              if (result){
+                modals.delete(model,dataObj,function(result) {
+                  scope.reservation = undefined;
+                });
+              }
+            },'','','danger');
+          }
+          else {
+            modals.delete(model,dataObj,function(result) {
+              scope.reservation = undefined;
+            });
+          }
+        }
+      };
+
       // Edit button click. Bring up modal form in edit mode;
       scope.edit = function () {
         var dataObj = {data: scope.reservation.number, extraData: undefined},

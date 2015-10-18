@@ -4,7 +4,7 @@
 ;
 
 #define MyAppName "AlexaReservierungen"
-#define MyAppVersion "0.2.0"
+#define MyAppVersion "0.2.1"
 #define MyAppPublisher "Vogel Software Consulting LLC"
 #define MyAppURL "https://github.com/vogelrh/Alexa-Reservations"
 #define MyAppExeName "Alexa.exe"
