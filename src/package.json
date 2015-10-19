@@ -21,10 +21,10 @@
     "url": "https://github.com/vogelrh/Alexa-Reservations"
   },
   "window": {
-    "toolbar": true,
+    "toolbar": false,
     "width": 1200,
     "height": 960,
-    "icon":"./images/AlexaLogo2014.jpg"
+    "icon":"./images/AlexaLogo2014.png"
   },
   "dependencies": {
     "jade": "~1.11.0",

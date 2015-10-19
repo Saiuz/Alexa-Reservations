@@ -1,6 +1,8 @@
 ; Inno script to create an installer for Windows 32
 ; **NOTE**: This script contains absolute file paths. Be sure to change the definition of "MyBaseDir" to point to the
 ; local code repository.
+; **NOTE2**: If the compilation apports with a message about a file in use by another process, turn off the antivirus
+; software during compilation.
 ;
 
 #define MyAppName "AlexaReservierungen"
@@ -24,7 +26,7 @@ AppSupportURL={#MyAppURL}
 AppUpdatesURL={#MyAppURL}
 DefaultDirName={pf}\{#MyAppName}
 DefaultGroupName=Alexa Reservierungen
-OutputDir={MyBaseDir}\releases\inno32
+OutputDir="{MyBaseDir}\releases\inno32"
 OutputBaseFilename=Alexa_Reservierungen_setup_{#MyAppVersion}
 Compression=lzma
 SolidCompression=yes
@@ -50,8 +52,8 @@ Source: "{MyBaseDir}\..\src\*"; DestDir: "{app}"; Flags: ignoreversion recursesu
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 
 [Icons]
-Name: "{group}\{#MyAppName}"; Filename: "{app}\images\Alexa-Logo-2014.ico"
-Name: "{commondesktop}\{#MyAppName}"; Filename: "{app}\images\Alexa-Logo-2014.ico"; Tasks: desktopicon
+Name: "{group}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; IconFilename: "{app}\images\AlexaLogo2014.ico"
+Name: "{commondesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; IconFilename: "{app}\images\AlexaLogo2014.ico"; Tasks: desktopicon
 
 [Run]
 Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, '&', '&&')}}"; Flags: nowait postinstall skipifsilent
