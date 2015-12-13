@@ -370,6 +370,7 @@ define(['./module'], function (services) {
       'wantToCheckout': 'Das Ende der Reservierung ist in der Zunkunft. Jetzt wirklich auschecken? Der Endtermin für die Reservierung <b>wird nicht</b> geändert!',
       'wantToDeleteItem': 'Bestätigen Artikel Löschen?',
       'wantToDeleteRes': 'Dies ist eine Geschäftsgruppe Reservierung. Wenn Sie die Buchung löschen Sie alle Zimmer mit der Reservierung verbunden sind zu entfernen. Sie können die Reservierung zu bearbeiten und den Raum für diese Gäste entfernen. Sind Sie sicher, dass Sie möchten, um die vollständige Reservierung zu löschen?',
+      'wantToDeleteCheckedIn': 'Diese Reservierung wird eingecheckt. Sind Sie sicher, Sie wollen, um sie zu löschen?',
       'withFirm': 'Mit Firma',
       'withoutFirm': 'Ohne Firma',
       'yes': 'Ja',

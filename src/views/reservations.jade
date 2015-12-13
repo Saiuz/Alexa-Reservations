@@ -48,6 +48,7 @@ include nav_common.jade
                 td {{r.type}}
                 td
                   i.glyphicon.glyphicon-remove(ng-if="r.canCancel" ng-click="cancel(r.resNum)")
+                  i.glyphicon.glyphicon-remove(ng-if="r.canCancelIf" ng-click="cancelIf(r.resNum)")
         .alert.alert-danger(ng-show="errShow")
           h3 Error!
           span {{errMsg}}

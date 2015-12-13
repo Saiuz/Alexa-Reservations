@@ -138,12 +138,13 @@ define(['./module'], function (model) {
           if (plan.is_plan) {
             that.planPrice = that.res.occupants === 1 ? plan.pp_price + plan.single_surcharge : plan.pp_price;
           }
+
           // If there is an existing room and plan.one_room then we need to update the room occupancy and perhaps
           // price.
           if (plan.one_room && that.res.rooms.length) {
             that.res.rooms[0].guest_count = that.res.occupants;
             that.res.rooms[0].price = plan.is_plan ? that.planPrice : that.res.rooms[0].price;
-            that.res.rooms[0].guest2 = that.res.occupants === 1 ? '' : that.res.rooms[0].guest2
+            that.res.rooms[0].guest2 = that.res.occupants === 1 ? '' : that.res.guest2.name;
           }
 
           var rdates = that.cleanResDates();
@@ -321,6 +322,22 @@ define(['./module'], function (model) {
             that.res.rooms[0].guest = that.res.guest.name;
           }
         }
+      };
+
+      // Can be called by UI to update guest information
+      this.updateGuestDataFromDb = function () {
+        var deferred = $q.defer();
+        if (that.res.guest) {
+          dashboard.getGuestById(that.res.guest.id).then(function (guest){
+            var g = {dname: guest.unique_name, name: guest.name, id: guest._id, firm:guest.firm, partner: guest.partner};
+            that.guestSelectionChanged(g);
+            deferred.resolve();
+          }, function (err) {deferred.reject(err)})
+        }
+        else { // just return without doing anything of no guest
+          deferred.resolve();
+        }
+        return deferred.promise;
       };
 
       // called by UI when a new guest is selected from the select-guest directive. Performs a potential update of the

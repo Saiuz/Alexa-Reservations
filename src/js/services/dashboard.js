@@ -377,7 +377,8 @@ define(['./module'], function (services) {
                 canCheckIn: !room.isCheckedIn && datetime.dateCompare(rec.start_date, new Date()) === 0,
                 lateCheckIn: !room.isCheckedIn && datetime.dateCompare(rec.start_date, new Date()) < 0,
                 lateCheckOut: !room.isCheckedOut && datetime.dateCompare(new Date(), rec.end_date) > 0,
-                canCancel: !rec.checked_in
+                canCancel: !rec.checked_in,
+                canCancelIf: rec.checked_in && !rec.checked_out
               };
             };
 
