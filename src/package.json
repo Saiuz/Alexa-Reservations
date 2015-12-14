@@ -2,7 +2,7 @@
   "main": "index.html",
   "name": "AlexaReservierungen",
   "description": "Hotel Reservation Manager for a German Kur Hotel. Desktop application developed using AngularJS. Powered by NW.js",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "main": "index.html",
   "author":{
       "name": "Bob Vogel",

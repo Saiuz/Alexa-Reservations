@@ -327,7 +327,7 @@ define(['./module'], function (model) {
       // Can be called by UI to update guest information
       this.updateGuestDataFromDb = function () {
         var deferred = $q.defer();
-        if (that.res.guest) {
+        if (that.res.guest && that.res.guest.id) {
           dashboard.getGuestById(that.res.guest.id).then(function (guest){
             var g = {dname: guest.unique_name, name: guest.name, id: guest._id, firm:guest.firm, partner: guest.partner};
             that.guestSelectionChanged(g);
@@ -2065,6 +2065,7 @@ define(['./module'], function (model) {
         exp.day_count = true;
         exp.edit_name = false;
         exp.low_tax_rate = true;
+        exp.taxable_price = taxable_price;
         exp.display_string = configService.loctxt.roomDisplayString;
         exp.display_order = 1;
 
