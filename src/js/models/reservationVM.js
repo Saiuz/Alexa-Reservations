@@ -1328,7 +1328,7 @@ define(['./module'], function (model) {
             lstPlan = lastPlanCode ? that.getPlanInReservation(lastPlanCode) : null,
             lastRequiredItems = _getPlanRequiredItemNames(lstPlan),
             roommate = configService.loctxt.roommate,
-            rchanges;
+            rnum, rchanges;
 
         //Update the count property of items based on the number of nights of the reservation
         // also, check to see if this reservation is a plan with a fixed duration, if so make sure
@@ -1400,7 +1400,8 @@ define(['./module'], function (model) {
           lastRequiredItems.push(configService.loctxt.breakfastInc);
           lastRequiredItems.push(configService.loctxt.cityTax);
           _removeExistingExpenseItemsByCategory(category, lastRequiredItems);
-          _addRequiredExpenses(planRequiredItems, curPlan);
+          rnum = curPlan.one_bill && curPlan.one_room ? that.res.rooms[0].room_number : null;
+          _addRequiredExpenses(planRequiredItems, curPlan, rnum);
           _updateResourceExpenses(); // updated any resource expenses if needed
           changesMade = true;
         }
@@ -1472,12 +1473,22 @@ define(['./module'], function (model) {
               _updateExpenseRoomProperty(chng.s.oldval, 'room', chng.s.newval);
             }
 
-            if (chng.g) { //guest name changed for room
-              _updateExpenseProperty('guest', chng.g.oldval, chng.g.newval);
+            if (chng.g1) { //guest name changed for room, change all expense items associated with room for one bill res
+              if (plan.one_bill) {
+                _updateExpenseRoomProperty(chng.r, 'guest', chng.g1.newval);
+              }
+              else {
+                _updateExpenseProperty('guest', chng.g1.oldval, chng.g1.newval);
+              }
             }
 
             if (chng.g2) { //second guest name changed for room
-              _updateExpenseProperty('guest2', chng.g2.oldval, chng.g2.newval);
+              if (plan.one_bill) {
+                _updateExpenseRoomProperty(chng.r, 'guest2', chng.g2.newval);
+              }
+              else {
+                _updateExpenseProperty('guest2', chng.g2.oldval, chng.g2.newval);
+              }
             }
 
             if (chng.c) { //room occupancy count changed
@@ -1498,9 +1509,10 @@ define(['./module'], function (model) {
 
             if (chng.p) {   //room price changed. We do not handle price logic if business res.
               rmitem = _getRoomExpenseItem(chng.r);
+              room = that.getRoomInReservation(chng.r);
               if (rmitem) { //adjust taxable_price if plan includes bfast
                 if (plan.includes_breakfast) {
-                  rmitem.taxable_price = chng.p.newval - configService.constants.breakfast;
+                  rmitem.taxable_price = chng.p.newval - configService.constants.breakfast * room.guest_count;
                   rmitem.taxable_price = rmitem.taxable_price > 0 ? rmitem.taxable_price : 0;
                 }
                 else {
@@ -1963,7 +1975,6 @@ define(['./module'], function (model) {
         // First find if breakfast is part of the room plan. We need to get the price being charged.
         // The logic is extended for any other item that are "baked in" to the room price.
         var includedInPrice = 0,
-            single = dbEnums.getRoomTypeEnum()[0],
             singleRoom = roomNum ? that.getRoomInReservation(roomNum) : null;
 
         // first  get the price of any item other than breakfast that is included in room price but has a different

@@ -135,7 +135,8 @@
                                 plan-price="{{rvm.planPrice}}" firm-price="{{rvm.firmPrice}}"
                                 guest-count="{{rvm.res.occupants}}"
                                 read-only="{{read}}" second-guest="{{rvm.secondGuest}}"
-                                edit-guest="{{rvm.isTour}}"></ax-room-select>
+                                edit-guest="{{rvm.isTour || rvm.isPrivateGroup}}">
+                </ax-room-select>
             </div>
         </div>
         <div class="form-group">
