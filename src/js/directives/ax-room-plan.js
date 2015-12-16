@@ -213,7 +213,7 @@ define(['./module'], function (directives) {
           // use timeout kluge to map events to the table elements after it renders.
           $timeout(function () {
             if (element) {
-              var zpsel = element.find(".zpSel"); //broke out find, was getting occasional error on mousedown that "undefined is not a function"
+              var zpsel = $(element).find(".zpSel"); //broke out find, was getting occasional error on mousedown that "undefined is not a function"
                   $(zpsel).mousedown(function () {
                     if (selRoom < 0) {
                       var sr = $(this).attr("cdat");
@@ -248,7 +248,7 @@ define(['./module'], function (directives) {
                 $(this).width(pw);
               });
             }
-          }, 500);
+          }, 700);
         }
 
         function _buildMonthHeader(start, end, cols) {

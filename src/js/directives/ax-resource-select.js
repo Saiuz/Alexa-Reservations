@@ -84,12 +84,14 @@ define(['./module'], function (directives) {
       // method fired when user selects a resource. If the showRooms flag is false then we imediately add the
       // resource selected. Otherwise we show the form for the user to select the room.
       scope.onResourceSelect = function() {
-        scope.resourcePrice =  Number(scope.resourceSelect.price);
-        if (scope.showRooms) {
-          scope.showfrm = true;
-        }
-        else {
-          scope.addResource(); //add it
+        if (scope.resourceSelect) { // can fire without resourceSelect being defined yet
+          scope.resourcePrice = Number(scope.resourceSelect.price);
+          if (scope.showRooms) {
+            scope.showfrm = true;
+          }
+          else {
+            scope.addResource(); //add it
+          }
         }
       };
 
