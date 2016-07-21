@@ -18,6 +18,7 @@ define(['./module'], function (services) {
           var fs = require('fs'),
               path = require('path'),
               archiver = require('archiver'),
+              decomp = require('decompress'),
               sys = require('sys'),
               exec = require('child_process').exec,
               csv = require('csv'),
@@ -31,27 +32,21 @@ define(['./module'], function (services) {
           // Note: The archiver module used to zip the data can;t unzip. For that we need to
           // call an external program to do it. For windows we use the command line version of 7-zip.
           this.importAll = function (fpath) {
-            var deferred = $q.defer(),
-                zcmd = appConstants.zipCommand(fpath);
-
-            function puts(err, stdout, stderr) {
-              db.dbReconnect(); // Reconnect no matter what.
-              if (err) {
-                console.log(err + '\n' + stdout);
-                deferred.reject(err + '\n' + stdout);
-              }
-              else {
-                console.log(stdout);
-                deferred.resolve(stdout);
-              }
-            }
+            var deferred = $q.defer();
 
             // First archive existing files in place, then restore by overwriting
             this.exportAll(this.getDefaultExportFilePath('db')).then(function () {
-              db.dbDisconnect(function () {  //once closed, extract
-                exec(zcmd, puts);
+              db.dbDisconnect(function () {  //once closed, extract files
+                decomp(fpath,appConstants.dbPath).then(function(f) {
+                  db.dbReconnect(); // Reconnect no matter what.
+                  console.log('Done. Extracted db files: ' + f.length);
+                  deferred.resolve(f.length);
+                }, function(err) {
+                  deferred.reject('Error: ' + err);
+                });
               });
             }, function (err) {
+              db.dbReconnect(); // Reconnect no matter what.
               deferred.reject(err);
             });
 
@@ -471,17 +466,21 @@ define(['./module'], function (services) {
                 recCnt = 0,
                 outStream, stringifier, transformer;
 
-             //Get the properties for the taxItem schema for the CSV column headings removing _id and __v
-            // then add reservation_number, start_date, end_date to start of object
-            // ToDo-will need to translate these properties to German at some point and map them in transformer
-             TaxItem.eachPath(function (p) {
-               if (p !== '_id' && p !=='__v') {
-                 taxProps.push(p);
-               }
-             });
-            taxProps.unshift('end_date');
-            taxProps.unshift('start_date');
-            taxProps.unshift('reservation_number');
+             //Translate the properties from the tax item to German for German headings In the CSV file
+            taxProps.push('Reservierung');
+            taxProps.push('Von');
+            taxProps.push('Bis');
+            taxProps.push('Rechnung');
+            taxProps.push('Zimmer');
+            taxProps.push('Gast');
+            taxProps.push('Netto 7');
+            taxProps.push('Taxe 7');
+            taxProps.push('Brutto 7');
+            taxProps.push('Netto 19');
+            taxProps.push('Taxe 19');
+            taxProps.push('Brutto 19');
+            taxProps.push('Kurtaxe Total');
+            taxProps.push('Rechnung Total');
 
             // now set up the csv and file items for piping
             outStream = fs.createWriteStream(outPath);
@@ -501,23 +500,48 @@ define(['./module'], function (services) {
               console.log('STRINGIFY FINISHED');
             });
 
-            // Transform the record. Extact the taxes array and create a cvs entry for each object in the array.
-            //NOTE: There was an issue with the transformer not sending EOF to next stream. I added the setTimeout
-            // and set the parallel option to 1 and it seemed to fixe the problem. Got the idea from :
-            //https://github.com/wdavidw/node-stream-transform/issues/4
+            // function to find bill number
+            var findBill = function (record, guest, rm) {
+              var bnum = 0;
+              if (record.bill_numbers.length > 1) {
+                record.bill_numbers.forEach(function (b) {
+                  if (b.guest === guest && b.room_number === rm) {
+                    bnum = b.billNo;
+                  }
+                });
+              }
+                else if (record.bill_numbers.length === 1) {
+                bnum = record.bill_numbers[0].billNo;
+              }
+              return bnum;
+            };
+            // Transform the record. Extract the taxes array and create a cvs entry for each object in the array.
+            // In order to handle creating multiple records, we need to push each record first then call callback
+            // with no args.
             transformer = csv.transform(function (record, callback){  //pull out tax info from reservation
               if (record.taxes && record.taxes.length) {
+                var cnt = 0;
                 record.taxes.forEach(function (tobj) {
-                  delete tobj.__v;
-                  delete tobj._id;
-                  tobj.reservation_number = record.reservation_number;
-                  tobj.start_date = $filter('date')(record.start_date,'shortDate');
-                  tobj.end_date = $filter('date')(record.end_date,'shortDate');
-                  setTimeout(function() {
-                    callback(null, tobj);
-                  },100);
+                  var trec = {};
+                  trec[taxProps[0]] = record.reservation_number;
+                  trec[taxProps[1]] = $filter('date')(record.start_date,'shortDate');
+                  trec[taxProps[2]] = $filter('date')(record.end_date,'shortDate');
+                  trec[taxProps[3]] = findBill(record, tobj.guest, tobj.room_number);
+                  trec[taxProps[4]] = tobj.room_number;
+                  trec[taxProps[5]] = tobj.guest;
+                  trec[taxProps[6]] = tobj.net7;
+                  trec[taxProps[7]] = tobj.tax7;
+                  trec[taxProps[8]] = tobj.sum7;
+                  trec[taxProps[9]] = tobj.net19;
+                  trec[taxProps[10]] = tobj.tax19;
+                  trec[taxProps[11]] = tobj.sum19;
+                  trec[taxProps[12]] = tobj.kurtax_total;
+                  trec[taxProps[13]] = tobj.bill_total;
+                  transformer.push(trec);
+                  cnt++;
                   recCnt++;
                 });
+                callback();
               }
               else { // we shouldn't get here but create an empty record for the reservation
                 callback(null, {
@@ -526,7 +550,7 @@ define(['./module'], function (services) {
                   end_date:  $filter('date')(record.end_date,'shortDate')
                 });
               }
-            }, {parallel: 1});
+            }, {parallel: 10});
             transformer.on('error', function (err) {
               deferred.reject('Transformer Error:' + err);
             });
@@ -544,9 +568,88 @@ define(['./module'], function (services) {
             return deferred.promise;
           };
 
+          this.exportMailingList = function (outPath) {
+            var deferred = $q.defer(),
+                props = [],
+                recCnt = 0,
+                outStream, stringifier, transformer;
+
+            // build heading columns
+            props.push('Gast');
+            props.push('Addresse');
+            props.push('Platz');
+            props.push('Ort');
+            props.push('Land');
+
+            // now set up the csv and file items for piping
+            outStream = fs.createWriteStream(outPath);
+            outStream.write('\uFEFF'); //write the BOM so that Excel (Windows) can properly read file
+            outStream.on('close', function (){
+              deferred.resolve(recCnt);
+            });
+            outStream.on('error', function (err) {
+              deferred.reject('Output Error: ' + err);
+            });
+
+            stringifier = csv.stringify({header: true, columns: props, rowDelimiter: 'windows'});
+            stringifier.on('error', function (err) {
+              deferred.reject('Sringify Error: ' + err);
+            });
+            stringifier.on('finished', function (err) {
+              console.log('STRINGIFY FINISHED');
+            });
+
+            // Transform the record. Extract the name and address info.
+            transformer = csv.transform(function (record, callback){
+              var arec = {},
+                  name, addr;
+              
+              if (record.salutation) {
+                name = record.salutation + " " + record.first_name + " " + record.last_name;
+              } else {
+                name =  record.first_name + " " + record.last_name;
+              }
+              
+              if (record.address2) {
+                addr = record.address1 + ' ' + record.addres2;
+              } else {
+                addr = record.address1;
+              }
+              
+              arec[props[0]] = name;
+              arec[props[1]] = addr;
+              arec[props[2]] = record.post_code;
+              arec[props[3]] = record.city;
+              arec[props[4]] = record.country;
+              recCnt++;
+              callback(null, arec);
+            }, {parallel: 10});
+            
+            transformer.on('error', function (err) {
+              deferred.reject('Transformer Error:' + err);
+            });
+            transformer.on('finish',function() {console.log('TRANSFORMER FINISHED ' + recCnt + ' records')});
+
+            // Query addresses-find all addresses that do not have a firm.
+            Guest.find({firm: {$exists: false}})
+                .sort({last_name: 1})
+                .lean()
+                .stream()
+                .pipe(transformer)
+                .pipe(stringifier)
+                .pipe(outStream);
+
+            return deferred.promise;
+          };
+
           this.getDefaultTaxFilePath = function(startDate, endDate) {
            return  appConstants.defExportPath + '\\' + $filter('date')(startDate, 'yyMMdd') + '_'
                    + $filter('date')(endDate, 'yyMMdd') + '_steuern.csv'
+          };
+
+          this.getDefaultMailingListPath = function() {
+            return  appConstants.defExportPath + '\\' + $filter('date')(new Date(), 'yyyy_MM_dd_HHmmss') + '_'
+                + '_Adressenliste.csv'
           };
 
           this.getDefaultExportFilePath = function (mode, model, fileType) {

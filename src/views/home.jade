@@ -1,19 +1,14 @@
-
 include nav_common.jade
-
 .container-fluid
   .row
     .col-md-4
       tabset(justified="true")
         tab(heading="{{selected.anCnt}} Ankunft: {{theDateDisplay}}" select="clearSelected()")
-          .tab-content-box
             ax-reservation-list(list-mode="arrival" list-date="theDate" selected-reservation="selected.reservation" res-count="selected.anCnt")
         tab(heading="{{selected.ab1Cnt}} Abfahrt: {{theDateDisplay}}" select="clearSelected()")
-          .tab-content-box
             ax-reservation-list(list-mode="departure" list-date="theDate" selected-reservation="selected.reservation" res-count="selected.ab1Cnt")
         tab(heading="{{selected.ab2Cnt}} Abfahrt: {{theNextDateDisplay}}" select="clearSelected()")
-          .tab-content-box
             ax-reservation-list(list-mode="departure" list-date="theNextDate" selected-reservation="selected.reservation" res-count="selected.ab2Cnt")
     .col-md-8
       ax-reservation-details(ng-show="selected.reservation.number" reservation="selected.reservation")
-      ax-room-plan(date-in-week="theDate" selected-reservation="selected.reservation" blank-click-function="newResOrCal" event-click-function="eventSelected")
+      ax-room-plan(date-in-week="theDate" selected-reservation="selected.reservation" blank-click-function="newResOrCal" event-click-function="eventSelected" week-span="weekSpan")

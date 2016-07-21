@@ -631,8 +631,8 @@ define(['./module'], function (model) {
         }
         else { //All individual bill reservations, look only at room
           room = that.getRoomInReservation(roomNum);
-          if (room) {
-            return (room.isCheckedIn && !room.isCheckedOut);
+          if (room) { //Handle case where a single room res is checked in but the room property is not set
+            return ((room.isCheckedIn && !room.isCheckedOut) || (that.oneRoom && that.res.checked_in));
           }
           else {
             return false;
@@ -714,7 +714,84 @@ define(['./module'], function (model) {
       this.getErrorObj = function (firstErr) {
         return new utility.errObj(firstErr);
       };
-
+      
+      // Function that returns true if the person specified in the room has
+      // a kurtax expense item associated with them.
+      this.guestInRoomHasKurtax = function (guest, roomNo) {
+        return (_getExpenseItem(configService.loctxt.cityTax, roomNo, guest)  != null);
+      };
+      
+      // Function adds a Kurtax item for the guest in the specified room.
+      // Adds a kurtax item if it doesn't already exist.
+      this.addKurtaxForGuestInRoom = function (guest, roomNo) {
+        var deferred = $q.defer();
+        if (!roomNo || !guest) {
+          deferred.reject(configService.loctxt.expenseItemErr1)
+        }
+        else {
+          if (_getExpenseItem(configService.loctxt.cityTax, roomNo, guest)) {
+            deferred.resolve();
+          }
+          else {
+            var exp = new Itemtype();
+            exp.name = configService.loctxt.cityTax;
+            exp.room = roomNo;
+            exp.guest = guest;
+            exp.category = dbEnums.getItemTypeEnum()[0];
+            exp.bill_code = configService.constants.bcKurTax;
+            exp.bus_pauschale = true;
+            exp.per_person = true;
+            exp.day_count = true;
+            exp.no_delete = true;
+            exp.fix_price = true;
+            exp.one_per = true;
+            exp.no_display = false;
+            exp.low_tax_rate = true;
+            exp.display_string = configService.loctxt.addedKurtaxDisplayString;
+            exp.display_order = 3;
+            exp.date_added = datetime.dateOnly(new Date()); //date only ignore time
+            exp.last_updated = datetime.dateOnly(new Date()); //date only ignore time
+            exp.addThisToDocArray(that.res.expenses, configService.constants.cityTax, that.res.nights);
+            that.res.save(function (err) {
+              if (err) {
+                deferred.reject(err);
+              }
+              else {
+                deferred.resolve();
+              }
+            });
+          }
+        }
+        return deferred.promise;
+      };
+      
+      // Removes a kurtax item if it exists.
+      this.removeKurtaxForGuestInRoom = function (guest, roomNo) {
+        var deferred = $q.defer();
+        var exp; 
+        if (!roomNo || !guest) {
+          deferred.reject(configService.loctxt.expenseItemErr1)
+        }
+        else {
+          exp = _getExpenseItem(configService.loctxt.cityTax, roomNo, guest);
+          if (!exp) {
+            deferred.resolve();
+          }
+          else {
+            that.res.expenses.id(exp._id).remove();
+            that.res.save(function (err) {
+              if (err) {
+                deferred.reject(err);
+              }
+              else {
+                deferred.resolve();
+              }
+            });
+          }
+        }
+        return deferred.promise;
+      };
+      
       // method to add an expense item and saves the reservation - called by the expense item directive
       // Business Logic: If plan has one_bill true and the room has two guests then add this item for both
       // guests if the item is of type per_person. For example, adding a "Full Pension" item, the assumption is that
@@ -1064,7 +1141,7 @@ define(['./module'], function (model) {
           roomItem.total += hiddenTotal;
         }
         // now pop the room item at the top of the details array
-        if (roomItem && roomBin.length === 1 && roomBin[0].count === 1) {
+        if (roomItem && roomBin.length === 1 && (roomBin[0].count === 1 || that.isPackage)) {
           calcResult.detail.unshift(roomItem);
         }
         else if (roomItem && roomBin.length > 0) { // pop individual room items onto top of details array
@@ -1139,6 +1216,17 @@ define(['./module'], function (model) {
 
       // ******* private methods  and constructor initialization *******
 
+      // retrieves a specific expense item based on name gues and room
+      function _getExpenseItem(name, roomNo, guest) {
+        var exp = null;
+        that.res.expenses.forEach(function (e) {
+          if (e.name === name && e.room === roomNo && e.guest === guest) {
+            exp = e;
+          }
+        });
+        return exp;
+      }
+        
       // Aggregates all items with the "bus_pauschale" flag set into one item with the total value the sum of all items
       function _aggregatePauschaleItems(sourceArr, pText) {
         var paschale = {text: pText, total: 0},
@@ -1400,7 +1488,7 @@ define(['./module'], function (model) {
           lastRequiredItems.push(configService.loctxt.breakfastInc);
           lastRequiredItems.push(configService.loctxt.cityTax);
           _removeExistingExpenseItemsByCategory(category, lastRequiredItems);
-          rnum = curPlan.one_bill && curPlan.one_room ? that.res.rooms[0].room_number : null;
+          rnum = curPlan.one_bill && curPlan.one_room ? that.res.rooms[0].number : null;
           _addRequiredExpenses(planRequiredItems, curPlan, rnum);
           _updateResourceExpenses(); // updated any resource expenses if needed
           changesMade = true;
@@ -2027,7 +2115,7 @@ define(['./module'], function (model) {
         var price,
             count,
             extraDays = 0,
-            isSingleRoom = (room.room_type === dbEnums.getRoomTypeEnum()[0]),
+            isSingleRoom = (room.guest_count == 1),
             taxable_price = 0,
             roomDiff,
             roomItems;

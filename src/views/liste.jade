@@ -4,7 +4,7 @@ include nav_common.jade
     .col-md-12
       tabset(justified="true")
         tab(heading="Addresse" select="selected('Addresse')")
-          .tab-content-box
+          .table-content-box
             ax-guest-firm-list(is-active="tabsActive.Addresse" mode="Addresse")
 
         tab(heading="Firma" select="selected('Firma')")
@@ -34,3 +34,12 @@ include nav_common.jade
                   .panel-heading Ressourcen - Parkplatz
                   .panel-body
                     ax-resources-list(is-active="tabsActive.Andere")
+             .row
+               .col-md-6
+                 .panel.panel-default
+                   .panel-heading
+                     span Jetzt: {{currWeeks}}
+                   .panel-body
+                     .btn-group
+                       label.btn.btn-primary.btn-small(ng-model="rmPlanWks" ng-change="weekSpanChanged(1)" btn-radio="1") {{txt.weekPlan3}}
+                       label.btn.btn-primary.btn-small(ng-model="rmPlanWks" ng-change="weekSpanChanged(2)" btn-radio="2") {{txt.weekPlan5}}

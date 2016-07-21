@@ -10,8 +10,8 @@
  */
 define(['./module'], function (directives) {
   'use strict';
-  directives.directive('axStandardBill', ['$filter', 'configService',
-    function ($filter, configService) {
+  directives.directive('axStandardBill', ['$filter', 'configService', 'convert',
+    function ($filter, configService, convert) {
       var linker = function (scope, element, attrs) {
         console.log("axStandardBill linker fired");
         //define which items appear in which section of the bill_dec32
@@ -40,7 +40,7 @@ define(['./module'], function (directives) {
             console.log("axStandardBill watch fired with all parameters " + newvals[1]);
             haveAttributes = true;
             scope.rvm = newvals[0]; // same as reservationVM just less typing
-            scope.ktax = configService.constants.get("cityTax") * scope.rvm.res.nights;
+            scope.ktax = convert.roundp(configService.constants.get("cityTax") * scope.rvm.res.nights, 2);
             room = scope.rvm.res.rooms[0].number;
             scope.guest = scope.rvm.res.guest.name; //Todo may want to get name without salutation or change res to store name without salutation.
             rmObj = scope.rvm.generatePlanRoomString(room, scope.guest);

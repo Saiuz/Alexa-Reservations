@@ -7,6 +7,9 @@ include nav_common.jade
           .form-group(ng-if="showAll")
             label.control-label.col-xs-3 {{txt.dbExport}}
             .col-xs-3
+          .form-group(ng-if="showAddress")
+              label.control-label.col-xs-3 {{txt.dbAddress}}
+              .col-xs-3
           .form-group(ng-show="showTax")
             label.control-label.col-xs-3 {{txt.selectDatesTax}}
           .form-group(ng-show="showTax")

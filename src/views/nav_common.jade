@@ -1,12 +1,14 @@
 // Common App header and navigation html
-.app-page-header.inline
-  img(src="./images/AlexaLogo2014.png", alt="{{appTitle}}" height="40" width="97")
-  .pull-right
-    h3 {{pageHeading}}
+//.app-page-header.inline
+//  img(src="./images/AlexaLogo2014.png", alt="{{appTitle}}" height="25" width="60")
+//  .pull-right
+//    h3 {{pageHeading}}
   //.app-logo.pull-left {{appTitle}}
 .navbar.navbar-fixed-bottom.navbar-inverse(role="navigation")
   .navbar-header
-    .navbar-brand: a(href="http://www.haus-alexa.de" target="_blank")  {{appBrand}}
+    .navbar-brand
+      //a(href="http://www.haus-alexa.de" target="_blank") {{appBrand}}
+      img(src="./images/AlexaLogo2014.png", alt="{{appTitle}}" height="20" width="60")
   ul.nav.navbar-nav
     li(ng-class="{active: (url.indexOf('/home') > -1)}")
       a(href="#/home/0/0/0") Zimmer Plan

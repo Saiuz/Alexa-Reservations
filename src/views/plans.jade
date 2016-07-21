@@ -6,7 +6,7 @@ include nav_common.jade
       tabset(type="pills")
         tab(ng-repeat="p in ptypes" heading="{{p.type}}" active="p.active" select="planTypeSelected(p.type)")
       hr.tight
-      .table-content-box
+      .plan-content-box
         .col-md-12
           table.table.table-bordered.table-hover.table-condensed
             thead

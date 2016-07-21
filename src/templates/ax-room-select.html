@@ -26,7 +26,7 @@
                                 ng-options="r.display_name for r in roomList | filter:filterAlreadySelected"></select>
                     </td>
                 </tr>
-                <tr ng-show="roomSelect.number  && !oneRoomB">
+                <tr ng-show="roomSelect.number  && (!oneRoomB || (roomSelect.max_occupants == 2 && roomData.guest_count === 1 && planPrice))">
                     <th ng-if="!secondGuestB">{{txt.guest}}&nbsp;&nbsp; <span ng-if="roomData.showOneCnt"><input type="checkbox" ng-model="roomData.oneInDZ" ng-change="onOneInDZ()" /> {{txt.onlyOneInRoom}}</span></th>
                     <th ng-if="secondGuestB">{{txt.guests}}&nbsp;&nbsp; <span ng-if="roomData.showOneCnt"><input type="checkbox" ng-model="roomData.oneInDZ" ng-change="onOneInDZ()" /> {{txt.onlyOneInRoom}}</span></th>
                 </tr>
@@ -54,7 +54,7 @@
                 </tr>
                 <tr ng-show="roomSelect.number">
                     <td>
-                        <input class="col-xs-4" type="text" ng-model="roomData.price" ax-de-number/>&nbsp;
+                        <input class="col-xs-4" type="text" ng-readonly="planPrice" ng-model="roomData.price" ax-de-number/>&nbsp;
                         <button ng-click="addRoom()">{{txt.add}}</button>
                     </td>
                 </tr>

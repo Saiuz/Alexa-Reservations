@@ -34,7 +34,7 @@ define(['./module'], function (controllers) {
         'ReservationVM',
         function ($scope, $modalInstance, modalParams, configService, ReservationVM) {
 
-          var gui = require('nw.gui');
+          //var gui = require('nw.gui');
 
           $scope.txt = configService.loctxt;
           $scope.busPauschale = false;

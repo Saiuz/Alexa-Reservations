@@ -9,11 +9,11 @@
 define(['./module'], function (directives) {
   'use strict';
   directives.directive('axPrint', [function () {
-      var gui = require('nw.gui');
+      //var gui = require('nw.gui');
 
       var linker = function (scope, element, attrs) {
 
-        var width = attrs.width ? Number(attrs.width) : 450;
+        var width = attrs.width ? Number(attrs.width) : 850;
         var height = attrs.height ? Number(attrs.height) : 600;
 
         element.bind('click', function(evt) {
@@ -28,20 +28,19 @@ define(['./module'], function (directives) {
 
         // Kludge worked out by experiment. Requires a4printPortrait.html.
         function _printWithPopupWindow(data) {
-          var pwin = gui.Window.open('templates/a4printPortrait.html', {
+          nw.Window.open('templates/a4printPortrait.html', {
             "width": width,
             "height": height,
             "position": 'center',
-            "new-instance": false,
-            "focus": true,
-            "toolbar": false,
-            "menu": false
-          });
-          // Once the blank document is loaded, write the contents to print.
-          pwin.on('loaded',function(){
-            console.log("Print window loaded", Date.now());
-            var parea = pwin.window.document.getElementById("pContent");
-            parea.innerHTML = data;
+            //"new-instance": false,
+            "focus": true
+          }, function(pwin) {
+            // Once the blank document is loaded, write the contents to print.
+            pwin.on('loaded',function(){
+              console.log("Print window loaded", Date.now());
+              var parea = pwin.window.document.getElementById("pContent");
+              parea.innerHTML = data;
+            });
           });
         }
 

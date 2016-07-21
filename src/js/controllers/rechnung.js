@@ -17,6 +17,8 @@ define(['./module'], function (controllers) {
         'datetime',
         'modals',
         function ($scope, $state, $rootScope, $stateParams, ReservationVM, dashboard, configService, datetime, modals) {
+          var currRoom;
+
           $scope.appTitle = $rootScope.appTitle;
           $scope.appBrand = $rootScope.appBrand;
           $scope.url = $state.current.url;
@@ -34,7 +36,7 @@ define(['./module'], function (controllers) {
           //$scope.selectedReservation = {};
           $scope.resCount = 0;
           $scope.resCount2 = 0;
-          $scope.pTitle = configService.loctxt.selectReservation;
+          $scope.pTitle = configService.loctxt.bills + ' - ' + configService.loctxt.selectReservation;
 
           $scope.$watch('selected.reservation', function (newval) {
             if (!newval || !newval.number) {  //We expect an object with (res) number, room and guest properties
@@ -61,6 +63,16 @@ define(['./module'], function (controllers) {
                 $scope.pGroupRes = resVM.isPrivateGroup;
                 $scope.err="";
                 $scope.hasErr = false;
+                currRoom = resVM.getRoomInReservation(newval.room);
+                $scope.showSecond = resVM.isBusiness && currRoom.guest_count === 2; //etc
+                $scope.busstdRes = resVM.isBusiness && $scope.showSecond && resVM.guestInRoomHasKurtax($scope.guest, $scope.room);
+                if ($scope.busstdRes) {
+                  $scope.busRes = false;
+                  $scope.secondPrivate = $scope.busstdRes;
+                }
+                else {
+                  $scope.secondPrivate = false;
+                }
               }
             },
             function (err) {
@@ -95,8 +107,26 @@ define(['./module'], function (controllers) {
             }
           };
 
-          $scope.togglePauschale = function () {
-            $scope.busPauschale = !$scope.busPauschale;
+          // converts this person's bill from a business to a private bill. Adds kurtax.
+          // or reverts a private bill back to a business bill and removes kurtax.
+          $scope.toggleSecond = function () {
+            if ($scope.secondPrivate) {
+              $scope.rvm.addKurtaxForGuestInRoom($scope.guest, $scope.room).then( function () {
+                $scope.busRes = false;
+                $scope.busstdRes = true;
+              }, function(err) {
+                $scope.err = err;
+                $scope.hasErr = true;
+              });
+             } else {
+              $scope.rvm.removeKurtaxForGuestInRoom($scope.guest, $scope.room).then( function () {
+              $scope.busRes = true;
+              $scope.busstdRes = false;
+              }, function(err) {
+                $scope.err = err;
+                $scope.hasErr = true;
+              });
+            }
           };
           // Checkout the reservation or the individuals part of the reservation.
           // todo- currently just sets the checkout flag.

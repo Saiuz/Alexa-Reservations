@@ -283,6 +283,9 @@ define(['./module'], function (controllers) {
               if (modalParams.docArray.length) {
                 modalParams.docArray[0].last_updated = new Date();
               }
+              else {
+                modalParams.docArray = undefined;
+              }
               var msg = configService.loctxt.expenseItem + configService.loctxt.success_deleted;
               _autoClose(msg, $scope.itemType._id.id);
             }

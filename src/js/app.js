@@ -55,6 +55,11 @@ define("app", [
                     click: 'export-tax'
                   },
                   {
+                    label: 'Addressliste',
+                    tooltip: 'Gaste Postadressen',
+                    click: 'export-address'
+                  },  
+                  {
                     label: 'Einzeldaten',
                     tooltip: 'Gäste Addresse Liste, Firma, usw.',
                     click: 'export-one'

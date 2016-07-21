@@ -19,9 +19,9 @@ define(['./module'], function (controllers) {
         function ($scope, $rootScope, db, Firm, Guest, Reservation, Resource,
                   Room, Itemtype, RoomPlan, AppConstants, configService, datetime,
                   $state) {
-          var gui = require('nw.gui');
+          //var gui = nw.guirequire('nw.gui');
           var zoomPercent = 100,
-              win = gui.Window.get(),
+              win = nw.Window.get(),
               taskCnt = 0,
               MAX_TASKS = 5;
 
@@ -30,7 +30,7 @@ define(['./module'], function (controllers) {
           configService.set('planDate', datetime.dateOnly(new Date()));
 
           // add global keyboard shortcuts
-          var refreshShortcut = new gui.Shortcut({
+          var refreshShortcut = new nw.Shortcut({
             key : "Ctrl+Shift+R",
             active : function() {
               console.log("Global desktop keyboard shortcut: " + this.key + " active.");
@@ -42,7 +42,7 @@ define(['./module'], function (controllers) {
               console.log(msg);
             }
           });
-          var devBarShortcut = new gui.Shortcut({
+          var devBarShortcut = new nw.Shortcut({
             key : "Ctrl+Shift+D",
             active : function() {
               console.log("Global desktop keyboard shortcut: " + this.key + " active.");
@@ -54,7 +54,7 @@ define(['./module'], function (controllers) {
               console.log(msg);
             }
           });
-          var zoomOutShortcut = new gui.Shortcut({
+          var zoomOutShortcut = new nw.Shortcut({
             key : "Ctrl+Shift+O",
             active : function() {
               console.log("Global desktop keyboard shortcut: " + this.key + " active.");
@@ -67,7 +67,7 @@ define(['./module'], function (controllers) {
               console.log(msg);
             }
           });
-          var zoomInShortcut = new gui.Shortcut({
+          var zoomInShortcut = new nw.Shortcut({
             key : "Ctrl+Shift+I",
             active : function() {
               console.log("Global desktop keyboard shortcut: " + this.key + " active.");
@@ -80,16 +80,20 @@ define(['./module'], function (controllers) {
               console.log(msg);
             }
           });
-          gui.App.registerGlobalHotKey(refreshShortcut);
-          gui.App.registerGlobalHotKey(devBarShortcut);
-          gui.App.registerGlobalHotKey(zoomOutShortcut);
-          gui.App.registerGlobalHotKey(zoomInShortcut);
+          nw.App.registerGlobalHotKey(refreshShortcut);
+          nw.App.registerGlobalHotKey(devBarShortcut);
+          nw.App.registerGlobalHotKey(zoomOutShortcut);
+          nw.App.registerGlobalHotKey(zoomInShortcut);
 
           //$tooltipProvider.options({});
 
           // Listen for specific menu events and respond by navigating to a particular state.
           $scope.$on('export-tax', function (e, menu, item) {
             $state.go('export_tax');
+          });
+          
+          $scope.$on('export-address', function (e, menu, item) {
+            $state.go('export_address');
           });
 
           $scope.$on('export-one', function (e, menu, item) {

@@ -36,6 +36,9 @@ define(['./module'], function (directives) {
         // read the listDate attribute to determine the dashboard method to call. Expected
         // values are arrival, departure, upcomming (departure within 2 days of date).
         if (newval && newval.number > 0) {
+          scope.err = '';
+          scope.errSave = false;
+          scope.errLoad = false;
           ReservationVM.getReservationVM(newval.number, true).then(function (resVM) {
             var title, rm;
             scope.rvm = resVM;
@@ -55,6 +58,7 @@ define(['./module'], function (directives) {
             rm = findRoom(newval.room);
             scope.canCheckIn = resVM.canCheckIn(scope.room);
             scope.canCheckOut = resVM.canCheckOut(scope.room);
+            scope.canDelete = !datetime.isDate(resVM.res.checked_out) && !datetime.isDate(resVM.res.checked_in);
             title = (resVM.res.firm ? resVM.res.firm : configService.loctxt.cure) + ' (' + rm.guest + (rm.guest2 ? ' / ' + rm.guest2 : '') + ')';
             scope.title = resVM.oneBill ? resVM.res.title : title
           }, function (err) {
@@ -71,6 +75,7 @@ define(['./module'], function (directives) {
         scope.rvm.checkIn(roomNum).then(function () {
           scope.canCheckOut = true;
           scope.canCheckIn = false;
+          scope.canDelete = false;
           $rootScope.$broadcast(configService.constants.reservationChangedEvent, {data: scope.rvm.res.reservation_number});
         },function (err) {
           scope.err = err;

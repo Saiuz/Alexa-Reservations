@@ -38,6 +38,7 @@ define(['./module'], function (controllers) {
           $scope.showAll = (mode === 'all');
           $scope.showOne = (mode === 'one');
           $scope.showTax = (mode === 'tax');
+          $scope.showAddress = (mode === 'address');
           $scope.txt = configService.loctxt;
           switch (mode) {
             case 'all':
@@ -61,6 +62,28 @@ define(['./module'], function (controllers) {
                     });
                   },importExport.getDefaultExportFilePath(), ['zip']);
               break;
+
+            case 'address':
+              $scope.showAddress = true;
+              fileDialogs.saveAs(function (fpath) {
+                $scope.path = fpath;
+                $scope.working = true;
+                $scope.$apply();
+                importExport.exportMailingList(fpath).then(function () {
+                  $scope.working = false;
+                  $scope.complete = true;
+                  $scope.showHome = false;
+                  //$scope.$apply();
+                  setTimeout(function () {
+                    $state.go('home');
+                  }, 4000);
+                }, function (err) {
+                  $scope.working = false;
+                  $scope.showErr = true;
+                  $scope.errMsg = err;
+                });
+              },importExport.getDefaultMailingListPath(), ['csv']);
+              break;    
 
             case 'one':
               $scope.showOne = true;

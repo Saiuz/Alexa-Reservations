@@ -1,4 +1,4 @@
-var nwVer = '0.12.3';
+var nwVer =  '0.15.4'; //'0.12.3';
 
 var isWin32 = /^win/.test(process.platform) || nwVer === '0.10.5';
 var isWin64 = (/^win/.test(process.platform) && nwVer !== '0.10.5') && /^x64/.test(process.arch);

@@ -3,34 +3,15 @@ define(['./module', '_'], function (services, _) {
 
   services.service('nwService', ['$rootScope', '$q', function ($rootScope, $q) {
 
-    // Expose gui and main window
-    var gui = this.gui = require("nw.gui");
+    // Expose the main window and a create menu function
+    //var gui = this.gui = require("nw.gui");
 
-    this.window = this.gui.Window.get();
+    this.window = nw.Window.get();
 
-    /**
-     * Create a context or window menu.
-     * @param menuStructure The actual structure of the menu. This is a shortcut to avoid calling all append methods after creation.
-     * Just provide an object with the following supported properties:
-     * {
-         *  root:{
-         *      type: "context|menubar",
-         *      items:[{
-         *          label: "My Menu Label",
-         *          type: "normal|separator|checkbox",
-         *          enabled: true|false,
-         *          tooltip: "This is my tooltip",
-         *          icon: "path-to-icon"
-         *          items:[{recursive}]
-         *      }]
-         *  }
-         * }
-     * @returns {gui.Menu}
-     */
     this.createMenu = function (menuStructure) {
 
       // Create the top menu
-      var menu = new gui.Menu(menuStructure.root);
+      var menu = new nw.Menu(menuStructure.root);
 
       // Create sub-menu items if they're provided
       if (menuStructure.root && menuStructure.root.items) {
@@ -136,13 +117,13 @@ define(['./module', '_'], function (services, _) {
 
         // Create a sub-menu if items are provided
         if (i.items) {
-          i.submenu = new gui.Menu();
+          i.submenu = new nw.Menu();
           createMenuItems(i.submenu, i.items);
         }
 
         // Append the menu item to the provided menu
         console.log("appending item %s to menu", i.label);
-        menu.append(new gui.MenuItem(i));
+        menu.append(new nw.MenuItem(i));
       });
 
     }

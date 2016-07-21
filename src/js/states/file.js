@@ -15,6 +15,12 @@ define(['./module'], function (states) {
             controller: 'ExportCtrl'
         });
 
+        $stateProvider.state('export_address', {
+            url: '/export/address',
+            template: viewProvider.renderView('export'),
+            controller: 'ExportCtrl'
+        });
+
         $stateProvider.state('export_one', {
             url: '/export/one',
             template: viewProvider.renderView('export'),

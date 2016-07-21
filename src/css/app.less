@@ -6,12 +6,23 @@ body {
   margin:10px;
 }
 
+.navbar {
+  max-height: 30px;
+  min-height: 30px;
+}
+
 .navbar-brand {
+  height: 30px;
+  padding: 5px 5px;
   img {
-    height:25px;
+    height:20px;
   }
 }
 
+.navbar-nav > li > a {
+  padding-top: 5px;
+  padding-bottom: 5px;
+}
 .page-header {
 
   img {
@@ -115,10 +126,15 @@ body {
 
   // modify room plan headings
   > thead > tr > th {
-      vertical-align: middle;
-      text-align: center;
+    vertical-align: middle;
+    text-align: center;
   }
-  > tbody > tr >
+  > thead > tr > th.zp-wkDiv {
+    vertical-align: middle;
+    text-align: center;
+    border-right: 2px double black;
+  }
+   > tbody > tr >
     td:first-child,
     td:last-child {
     vertical-align: middle;
@@ -137,6 +153,12 @@ body {
     border-right-width: thick;
     border-right-color: rgb(255,163,71);
   }
+  > tbody > tr > th.zp-wkDiv {
+    border-right: 2px double black;
+  }
+  > tbody > tr > td.zp-wkDiv {
+    border-right: 2px double black;
+  }
   > thead > tr > th > div {
     white-space: nowrap;
     width: inherit;
@@ -147,11 +169,8 @@ body {
 .zpSel {} //used as jquery selector
 .zpRes {} //ditto
 .zpDate {} //ditto
-.zp-container {
-  padding: 1px;
-  overflow-x: auto;
-  overflow-y: auto;
-  max-height: 700px;
+.zp-wkDiv {
+  border-right: 2px double;
 }
 .zp-resColor {
   background-color: @zp-res-color;
@@ -195,25 +214,6 @@ body {
 .zp-SU-BK {
    background-color: darken(spin(@zp-su-color, -10), 10%);
  }
-.tab-content-box {
-  border-left: 1px solid #dddddd;
-  border-right: 1px solid #dddddd;
-  border-bottom: 1px solid #dddddd;
-  border-bottom-left-radius: 4px;
-  border-bottom-right-radius: 4px;
-  border-top: 0px;
-  padding: 5px;
-  height: 715px;
-  overflow-y: auto;
-}
-.table-content-box {
-  margin-top: 3px;
-  border: 1px solid #dddddd;
-  border-radius: 4px;
-  padding: 5px;
-  height: 660px;
-  overflow-y: auto;
-}
 .m-box {
   border: 1px solid #dddddd;
   border-radius: 4px;
@@ -221,13 +221,6 @@ body {
   margin-bottom: 5px;
 }
 //for bill
-.bill-container {
-  margin-left: auto;
-  margin-right: auto;
-  width: 550px;
-  max-height: 700px;
-  overflow-y: auto;
-}
 .bill-page-1 {
 
 }
@@ -385,6 +378,184 @@ body {
     }
   }
 }
+
+.lr-border {
+  border-left: 1px solid #dddddd;
+  border-right: 1px solid #dddddd;
+}
+
+// resolution dependent containers-default for window set at 900px height Viewport= 880
+.tab-content-box {
+  border-left: 1px solid #dddddd;
+  border-right: 1px solid #dddddd;
+  border-bottom: 1px solid #dddddd;
+  border-bottom-left-radius: 4px;
+  border-bottom-right-radius: 4px;
+  border-top: 0px;
+  padding: 5px;
+  height: 765px;
+  overflow-y: auto;
+}
+.zp-container {
+  padding: 1px;
+  overflow-x: auto;
+  overflow-y: auto;
+  max-height: 710px;
+}
+.charges-container {
+  padding: 1px;
+  height: 730px;
+  overflow-y: auto;
+}
+.bill-container {
+  margin-left: auto;
+  margin-right: auto;
+  width: 550px;
+  max-height: 705px;
+  overflow-y: auto;
+}
+.table-content-box {
+  margin-top: 3px;
+  border: 1px solid #dddddd;
+  border-radius: 4px;
+  padding: 5px;
+  height: 785px;
+  overflow-y: auto;
+}
+.reservations-content-box {
+  margin-top: 3px;
+  border: 1px solid #dddddd;
+  border-radius: 4px;
+  padding: 5px;
+  height: 685px;
+  overflow-y: auto;
+}
+.plan-content-box {
+  margin-top: 3px;
+  border: 1px solid #dddddd;
+  border-radius: 4px;
+  padding: 5px;
+  height: 730px;
+  overflow-y: auto;
+}
+//for smaller height monitors
+@media screen and (max-height: 670px ) { //768
+  .panel-body {
+    padding: 5px;
+  }
+  .tab-content-box {
+    border-left: 1px solid #dddddd;
+    border-right: 1px solid #dddddd;
+    border-bottom: 1px solid #dddddd;
+    border-bottom-left-radius: 4px;
+    border-bottom-right-radius: 4px;
+    border-top: 0px;
+    padding: 5px;
+    height: 560px;
+    overflow-y: auto;
+  }
+  .zp-container {
+    padding: 1px;
+    overflow-x: auto;
+    overflow-y: auto;
+    height: 525px;
+  }
+   .charges-container {
+    padding: 1px;
+    height: 525px;
+    overflow-y: auto;
+  }
+  .bill-container {
+    margin-left: auto;
+    margin-right: auto;
+    width: 550px;
+    height: 515px;
+    overflow-y: auto;
+  }
+  .table-content-box {
+    margin-top: 3px;
+    border: 1px solid #dddddd;
+    border-radius: 4px;
+    padding: 5px;
+    height: 580px;
+    overflow-y: auto;
+  }
+  .reservations-content-box {
+    margin-top: 3px;
+    border: 1px solid #dddddd;
+    border-radius: 4px;
+    padding: 5px;
+    height: 475px;
+    overflow-y: auto;
+  }
+  .plan-content-box {
+    margin-top: 3px;
+    border: 1px solid #dddddd;
+    border-radius: 4px;
+    padding: 5px;
+    height: 520px;
+    overflow-y: auto;
+  }
+}
+@media screen and (min-height: 670px) and (max-height: 820px ) { //900
+  .panel-body {
+    padding: 5px;
+  }
+  .tab-content-box {
+    border-left: 1px solid #dddddd;
+    border-right: 1px solid #dddddd;
+    border-bottom: 1px solid #dddddd;
+    border-bottom-left-radius: 4px;
+    border-bottom-right-radius: 4px;
+    border-top: 0px;
+    padding: 5px;
+    height: 692px;
+    overflow-y: auto;
+  }
+  .zp-container {
+    padding: 1px;
+    overflow-x: auto;
+    overflow-y: auto;
+    max-height: 657px;
+  }
+  .charges-container {
+    padding: 1px;
+    height: 657px;
+    overflow-y: auto;
+  }
+  .bill-container {
+    margin-left: auto;
+    margin-right: auto;
+    width: 550px;
+    max-height: 647px;
+    overflow-y: auto;
+  }
+  .table-content-box {
+    margin-top: 3px;
+    border: 1px solid #dddddd;
+    border-radius: 4px;
+    padding: 5px;
+    height: 712px;
+    overflow-y: auto;
+  }
+  .reservations-content-box {
+    margin-top: 3px;
+    border: 1px solid #dddddd;
+    border-radius: 4px;
+    padding: 5px;
+    height: 607px;
+    overflow-y: auto;
+  }
+  .plan-content-box {
+    margin-top: 3px;
+    border: 1px solid #dddddd;
+    border-radius: 4px;
+    padding: 5px;
+    height: 652px;
+    overflow-y: auto;
+  }
+}
+
 //for printing directive ax-print
 @media screen {
  frame#printf {
@@ -397,16 +568,25 @@ body {
    visibility: visible;
  }
 }
-
+//NOTE: *** Edited src/lib/bootstrap/less/print.less, commented out background: transparent !important; at
+// top of file. If Bootstrap is updated or reinstalled, then this must be repeated for proper printing.
 @media print {
   @page {
     size: A4;
-    margin: 25mm;
-    margin-top: 45mm;
+    margin: 0mm;
+    //margin-top: 45mm;
+    margin-bottom: 0mm;
   }
   html, body {
-    width:  185mm;//257mm;
-    height:  252mm; //170mm;
+    //border:  dotted black 2px;
+    -webkit-print-color-adjust: exact;
+    margin-top: 0;
+    margin-right: 0;
+    margin-left: 0;
+    margin-bottom: 0;
+    padding: 0;
+    //width: 100%;// 185mm;//257mm;
+    //height: 100%;//  252mm; //170mm;
   }
   .no-print {
     display: none;
@@ -415,9 +595,17 @@ body {
     font-size: 12pt;
     width: 550px;
   }
-
+  .bill-page-1 {
+    border: solid black 2px;
+      margin: 10mm;
+      margin-top: 45mm;
+      margin-bottom: 0mm;
+  }
   .bill-page-2 {
     page-break-before: always;
+    margin: 10mm;
+    margin-top: 45mm;
+    margin-bottom: 0mm;
   }
   .bill-next-page-header {
     visibility:visible;
@@ -426,16 +614,37 @@ body {
     margin-top: 0px;
     margin-left: 40px;
   }
+  #rm-plan-print {
+    margin: 0px;
+  }
   .zp-container {
+    //border:  double black 2px;
+    //width: 185mm;
+    height: 252mm;
     padding: 1px;
+    margin-left: 0;
+    margin-right: 0;
+    margin-top: 20mm;
     -webkit-print-color-adjust: exact;
-    -webkit-transform: rotate(-90deg);
-    //max-height: inherit;
-    //max-width: inherit;
+    //-webkit-transform: rotate(-90deg);
+    align-items: center;
+    overflow-x: hidden;
+    overflow-y: hidden;
+    //max-height: 100%;
+    max-height: inherit;
+    max-width: inherit;
+    @page {
+      size: A4;
+      //margin: 10mm;
+      margin-top: 5mm;
+      margin-left: 5mm;
+      margin-right: 5mm;
+      margin-bottom: 0mm;
+    }
   }
   .zp-resColor {
     background-color: @zp-res-color;
-    background: @zp-res-color url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAQAAAAECAYAAACp8Z5+AAAAG0lEQVQIW2NkYGD4z8DAwMgABXAGNgGwSgwVAFbmAgXxvZSoAAAAAElFTkSuQmCC) repeat;
+    //background: @zp-res-color url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAQAAAAECAYAAACp8Z5+AAAAG0lEQVQIW2NkYGD4z8DAwMgABXAGNgGwSgwVAFbmAgXxvZSoAAAAAElFTkSuQmCC) repeat;
   }
   .zp-endColor {
     background-color: lighten(spin(@zp-res-color, -10), 5%);
@@ -496,6 +705,7 @@ body {
           margin: 0;
           border: 1px solid @table-border-color;
           font-size: @zp-font-size;
+          -webkit-print-color-adjust: exact;
         }
       }
     }
@@ -504,6 +714,7 @@ body {
     > thead > tr > th {
       vertical-align: middle;
       text-align: center;
+      -webkit-print-color-adjust: exact;
     }
     > tbody > tr >
     td:first-child,
@@ -518,11 +729,13 @@ body {
       width: inherit;
       overflow: hidden;
       text-overflow: ellipsis;
+      -webkit-print-color-adjust: exact;
     }
     > tbody > tr > td.zp-endButt {
       border-right-style: double;
       border-right-width: thick;
       border-right-color: rgb(255,163,71);
+      -webkit-print-color-adjust: exact;
     }
     > thead > tr > th > div {
       white-space: nowrap;

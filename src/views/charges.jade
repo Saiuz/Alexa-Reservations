@@ -25,7 +25,7 @@ include nav_common.jade
               i.glyphicon.glyphicon-arrow-right(ng-show="showCharges")
         .panel-body
           .col-md-12
-            div.table-bordered(ng-show="showCharges")
+            div.table-bordered.charges-container(ng-show="showCharges")
               .btn-group.btn-group-justified(data-toggle="buttons" ng-if="roomGuest2 && gRooms.length === 0")
                 label.btn.btn-default(ng-class="{active: guest === roomGuest1}" ng-click="changeGuest(roomGuest1)")
                   span {{roomGuest1}}
@@ -36,7 +36,7 @@ include nav_common.jade
                   span {{txt.roomAbrv}} {{rm.room}} - {{rm.guest}}
               tabset(justified="true")
                 tab(heading="Plan")
-                  .form-horizontal
+                  .form-horizontal.lr-border
                     .form-group.left
                       label.control-label.col-xs-4 {{txt.roomPlan}}:
                       .col-xs-8

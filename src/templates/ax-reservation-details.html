@@ -87,7 +87,7 @@
             <button class="btn btn-warning" ng-if="canCheckIn" type="button" ng-click="checkin(room)">{{txt.checkin}}</button>
             <a class="btn btn-default" href="#/charges/{{rvm.res.reservation_number}}/{{room}}/{{guest}}"
                ng-if="canCheckOut">{{txt.toCharges}} &nbsp;<i class="glyphicon glyphicon-arrow-right"></i></a>
-            <button class="btn btn-danger" ng-if="canCheckIn" type="button" ng-click="deleteRes()">{{txt.delete}}</button>
+            <button class="btn btn-danger" ng-if="canDelete" type="button" ng-click="deleteRes()">{{txt.delete}}</button>
             <button class="btn btn-default" type="button" ng-click="clearSelected()"><i
                     class="glyphicon glyphicon-eye-close"></i></button>
         </div>
