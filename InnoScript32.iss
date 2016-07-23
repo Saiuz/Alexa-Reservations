@@ -40,6 +40,14 @@ Name: "english"; MessagesFile: "compiler:Default.isl"
 [Tasks]
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
 
+;Remove old files - for NW.js 0.15, the locale files must be in subdirectory - clean up other files
+;before install
+[InstallDelete]
+Type: files; Name: "{app}\*.pak"
+Type: files; Name: "{app}\pdf.dll"
+;Type: filesandordirs; Name: "{app}\node_modules"
+;Type: filesandordirs; Name: "{app}\lib"
+
 [Files]
 Source: "{MyBaseDir}\..\cache\0.15.4\win32\chromedriver.exe"; DestDir: "{app}"; Flags: ignoreversion
 Source: "{MyBaseDir}\..\cache\0.15.4\win32\nw.exe"; DestDir: "{app}"; DestName: "Alexa.exe"; Flags: ignoreversion

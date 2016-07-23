@@ -42,7 +42,7 @@ define("app", [
         type: 'menubar',
         items: [
           {
-            label: 'Alexa Reservierung',
+            label: 'Alexa Reservierungen',
             items: [
               {
                 label: 'Exportieren',
