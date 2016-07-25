@@ -178,7 +178,7 @@ define(['./module'], function (directives) {
         // function to retrieve items to build calendar, calls _updateCalendar which does the heavy lifting
         function _buildCalendar(paintOnly) {
           var startCal, endCal, cols;
-
+          scope.isLoading = true;
           if (scope.dates) {
             startCal = datetime.dateOnly(scope.dates.weekStart, -7 * wSpan);
             endCal = datetime.dateOnly(scope.dates.weekEnd, 7 * wSpan);
@@ -194,6 +194,7 @@ define(['./module'], function (directives) {
                     results.events = events;
                     resResults = results; //cache last query.
                     _updateCalendar(resResults, startCal, endCal, cols);
+                    scope.isLoading = false
                   }
                 }, function (err) {
                   scope.hasErr = true;

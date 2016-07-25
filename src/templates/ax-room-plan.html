@@ -18,7 +18,8 @@
         <ax-week-buttons picked-date='theDate'/>
     </div>
     <div class="panel-body">
-        <div id="rm-plan-print">
+        <div class="zp-main" id="rm-plan-print">
+            <div ng-show="isLoading" class="zp-loading"><img src="images/startup.gif" alt="loading..."></div>
             <div class="zp-container">
                 <table class="table-zp" ng-if="!hasErr">
                     <thead>

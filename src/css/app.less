@@ -10,6 +10,15 @@ body {
   margin-top: 5px;
 }
 
+//class used to position loading gif prior to app start
+.before-load {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  margin-right: -50%;
+  transform: translate(-50%, -50%)
+}
+
 .navbar {
   max-height: 30px;
   min-height: 30px;
@@ -84,6 +93,11 @@ body {
   overflow:hidden;
 }
 
+// for reservation-details directive
+.res-detail-rooms {
+  overflow-y: auto;
+  max-height: 100px;
+}
 //adds strikethrough decoration to text.
 .text-delete {
   text-decoration: line-through;
@@ -400,11 +414,26 @@ body {
   height: 765px;
   overflow-y: auto;
 }
+.zp-main {
+  position: relative;
+}
 .zp-container {
+  position: relative;
+  z-index: 1;
   padding: 1px;
   overflow-x: auto;
   overflow-y: auto;
   max-height: 710px;
+}
+.zp-loading {
+  position: absolute;
+  z-index: 2;
+  top: 50;
+  left: 60;
+  background: transparent;
+}
+.zp-loading img {
+  opacity: 0.5;
 }
 .charges-container {
   padding: 1px;
