@@ -26,7 +26,7 @@ define(['./module'], function (controllers) {
           $scope.showCharges = false;
           $scope.showHiddenExpenses = false;
           $scope.planText = '***';
-          $scope.pTitle = configService.loctxt.selectReservation;
+          $scope.pTitle = configService.loctxt.charges + ' - ' + configService.loctxt.selectReservation;
 
           // for reservation-list directive
           $scope.selected = {

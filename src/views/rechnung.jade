@@ -1,15 +1,11 @@
-
 include nav_common.jade
-
 .container
   .row
     .col-md-4
       tabset(justified="true")
         tab(heading="{{txt.currentReservations}}" select="clearSelected()")
-          .tab-content-box
             ax-reservation-list(list-mode="c" selected-reservation="selected.reservation" res-count="resCount")
         tab(heading="{{txt.recent}}" select="clearSelected()")
-          .tab-content-box
             ax-reservation-list(list-mode="r" selected-reservation="selected.reservation" res-count="resCount2")
     .col-md-8
       .panel.panel-default
@@ -22,12 +18,15 @@ include nav_common.jade
               span &nbsp;{{txt.toCharges}}
             a.btn.btn-info.btn-small(href="" ng-if="showCharges && canCheckOut" ng-click="checkout()") {{txt.checkout}}
             a.btn.btn-warning.btn-small(href="" ng-if="showCharges" ax-print print-element-id="printBill") {{txt.print}}
-          div.input-group-lg(ng-show="busRes && showCharges")
-            input(type="checkbox" ng-model="busPauschale")
-            span &nbsp;{{txt.busPauschale}}
           div.input-group-lg(ng-show="(stdRes || pGroupRes) && showCharges")
             input(type="checkbox" ng-model="resDetails")
             span &nbsp;{{txt.miscellaneousDetails}}
+          div.input-group-lg(ng-show="busRes && showCharges && !secondPrivate")
+            input(type="checkbox" ng-model="busPauschale")
+            span &nbsp;{{txt.busPauschale}}
+          div.input-group-lg(ng-show="showSecond")
+            input(type="checkbox" ng-model="secondPrivate" ng-change="toggleSecond()")
+            span &nbsp;{{txt.guestIsPrivate}}
         .panel-body
           .col-md-12
             .alert.alert-danger(ng-show="showCharges && hasErr")
@@ -35,6 +34,7 @@ include nav_common.jade
               span {{err}}
             .bill-container(ng-show="showCharges && !hasErr")
               ax-standard-bill(ng-if="stdRes" reservation-vm="rvm" details="resDetails")
+              ax-standardb-bill(ng-if="busstdRes" reservation-vm="rvm" room="{{room}}" guest="{{guest}}" details="resDetails")
               ax-business-bill(ng-if="busRes" reservation-vm="rvm" room="{{room}}" guest="{{guest}}" pauschale="busPauschale")
               ax-kur-bill(ng-if="kurRes" reservation-vm="rvm" room="{{room}}" guest="{{guest}}")
               ax-tour-bill(ng-if="tourRes" reservation-vm="rvm")

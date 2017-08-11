@@ -48,7 +48,7 @@ define(['./module'], function (directives) {
         var item = _findItem(id);
 
         if (item) {
-          item.room_price = num ? convert.deNumberToDecimal(num, true) :  0;
+          item.price = num ? convert.deNumberToDecimal(num, true) :  0;
           item.save(function (err) {
             if (err && num) {
               scope.txtPrice['_' + id] = '*error*';
@@ -80,7 +80,9 @@ define(['./module'], function (directives) {
       
       // Retrieve the items for the specified tab category
       function _getRooms() {
-        Room.find().exec(function (err, rlist) {
+        Room.find()
+            .sort({number: 1})
+            .exec(function (err, rlist) {
           if (err) {
             scope.hasErr = true;
             scope.errMsg = err;
@@ -99,7 +101,7 @@ define(['./module'], function (directives) {
         var txObj = {};
         ilist.forEach(function (i) {  //convert all numeric values to text
           if (i.price) {
-            txObj['_' + i._id.id] = $filter('number')(i.room_price, 2);
+            txObj['_' + i._id.id] = $filter('number')(i.price, 2);
           }
         });
         return txObj;

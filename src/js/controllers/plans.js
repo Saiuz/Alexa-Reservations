@@ -83,7 +83,7 @@ define(['./module'], function (controllers) {
             if ($scope.selectedPlan) {
               modals.update(model, dataObjI, function (result) {
                 _calculatePlanPrice(); // update plan price
-                $scope.selectedPlan.save(function (err) {
+                 $scope.selectedPlan.save(function (err) {
                   if (err) {
                     console.log(err);
                     $scope.working = false;
@@ -129,8 +129,8 @@ define(['./module'], function (controllers) {
           };
 
           // Adds a brand new item to the plan
-          $scope.addNewItem = function () {    //TODO-THIS WONT WORK need to have a seperate form for plan item that is created only in the plan required_items property. This method creates them in the ItemTypes list!!!
-            var dataObjI = {                   //TODO-This may be something I want to provide (common items) but need to think about this.
+          $scope.addNewItem = function () {
+            var dataObjI = {
                   data: undefined,
                   docArray: $scope.selectedPlan.required_items,
                   extraData: dashboard.getPackagePlanItemDefaultObj(currentBillCode),
@@ -272,9 +272,10 @@ define(['./module'], function (controllers) {
             });
           };
 
-          $scope.tips = function (key) {
-            return "Ho Bill";
-          };
+          //$scope.tips = function (key) {
+          //  return "Ho Bill";
+          //};
+
           _getAllPlans(); //first time kick things off
 
           // *** Private methods

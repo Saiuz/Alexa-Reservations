@@ -15,7 +15,7 @@ define(['./module'], function (controllers) {
         'appConstants',
         function ($scope, $state, $rootScope, configService, importExport, fileDialogs, modals, appConstants) {
           console.log("Import controller fired");
-          var gui = require('nw.gui');
+          //var gui = require('nw.gui');
 
           $scope.appTitle = $rootScope.appTitle;
           $scope.appBrand = $rootScope.appBrand;
@@ -41,7 +41,7 @@ define(['./module'], function (controllers) {
               $scope.showAll = true;
               modals.yesNoShow(configService.loctxt.importWarning, function (result) {
                 if (result) {
-                  var win = gui.Window.get();
+                  var win = nw.Window.get();
                   fileDialogs.openFile(function (fpath) {
                         $scope.path = fpath;
                         $scope.working = true;
@@ -82,7 +82,7 @@ define(['./module'], function (controllers) {
 
             modals.yesNoShow(warningText, function (result) {
               if (result) {
-                var win = gui.Window.get();
+                var win = nw.Window.get();
                 fileDialogs.openFile(function (fpath) {
                   $scope.path = fpath;
                   $scope.working = true;

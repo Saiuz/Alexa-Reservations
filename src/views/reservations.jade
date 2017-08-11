@@ -8,7 +8,7 @@ include nav_common.jade
       hr.tight
       tabset(type="pills")
         tab(ng-repeat="m in months" heading="{{m.month}}" active="m.active" disabled="m.disabled" select="monthSelected(m.mm)")
-      .table-content-box
+      .reservations-content-box
         div(ng-show="!working") {{reservations.length}} Reserverungen in {{months[selectedMonth].month}} {{selectedYear}}
         div(ng-show="working")
           span.btn.btn-warning.btn-sm
@@ -48,6 +48,7 @@ include nav_common.jade
                 td {{r.type}}
                 td
                   i.glyphicon.glyphicon-remove(ng-if="r.canCancel" ng-click="cancel(r.resNum)")
+                  i.glyphicon.glyphicon-remove(ng-if="r.canCancelIf" ng-click="cancelIf(r.resNum)")
         .alert.alert-danger(ng-show="errShow")
           h3 Error!
           span {{errMsg}}

@@ -206,13 +206,30 @@ define(['./module'], function (controllers) {
                   ignoreIndex = -1; // no watched variables changed
                   // check to see if the plan that is selected is compatible with the current occupancy. If not
                   // then reset the occupants. Allow 1 occupant in a double room
+                  // If the plan is a standard reservation or Kur reservation and the occupancy changes and the
+                  // single only, double only flags are set we need to remove the guests from the reservation
+                  // we may not collect the correct information for the second person so remove all guests from the
+                  // reservation.
+                  
                   if ($scope.rvm.single_only && $scope.rvm.res.occupants === 2) {
                     $scope.rvm.res.occupants = 1;
-                    return;
+                    oldvars[3] = 1;
+                    break;
                   }
-
-                  $scope.rvm.occupantsChanged().then(function (cnt) {
-                  });
+                  //else if ($scope.rvm.single_only || $scope.rvm.double_only) {
+                  //  $scope.rvm.res.guest = null;
+                  //  $scope.rvm.res.guest2 = null;
+                  //}
+                  if ($scope.rvm.oneBill && $scope.rvm.oneRoom) {
+                    $scope.rvm.updateGuestDataFromDb().then(function () {
+                      $scope.rvm.occupantsChanged().then(function (cnt) {
+                      });
+                    });
+                  }
+                  else {
+                    $scope.rvm.occupantsChanged().then(function (cnt) {
+                    });
+                  }
                   break;
 
                 case 4:

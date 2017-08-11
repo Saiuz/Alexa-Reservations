@@ -1,4 +1,4 @@
-<div ng-if="reservations.length > 0">
+<div class="tab-content-box" ng-if="reservations.length > 0">
     <dl class="dl-horizontal">
         <dt ng-repeat-start="res in reservations" ng-class="{'text-delete': res.isCheckedOut}">
             <span class="text-success glyphicon glyphicon-check" ng-show="res.id === selectedResId"></span>

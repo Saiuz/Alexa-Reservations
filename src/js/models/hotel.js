@@ -18,7 +18,7 @@ define(['./module'], function (model) {
   var roomClassAbbrEnum=['Econ', 'Std', 'Komf', 'BK', ''];
   // enums used in Reservation Schema
   var resStatusEnum = ['Sicher', 'Vorreservation'];
-  var resSourceEnum = ['HRS Group', 'Phone', 'Booking.Com'];
+  var resSourceEnum = ['Telefon', 'DIRS21','HRS Group', 'Booking.Com', 'Andere'];
   var resInsuranceEnum = ['','VDAK', 'AOK & Andere', 'Privat'];
   var resTypeEnum = ['Std.', 'Bus.', 'Kur', 'Gruppe'];
   // enum for Resource Schema
@@ -326,7 +326,7 @@ define(['./module'], function (model) {
   });
 
   // Guest Schema
-  model.factory('Guest', function(db, dbEnums) {
+  model.factory('Guest', function(db, dbEnums, $filter) {
 
     var schema = new db.db.Schema({
         first_name: { type: String},
@@ -344,7 +344,7 @@ define(['./module'], function (model) {
         country: String,
         telephone: String,
         comments: String,
-        unique_name: {type: String} //NOTE this field should not be exposed as an editable field on a UI form. It is generated on save.
+        unique_name: {type: String, unique: true} //NOTE this field should not be exposed as an editable field on a UI form. It is generated on save.
     });
     // Virtual fields
     schema.virtual('name').get(function() {
@@ -423,7 +423,8 @@ define(['./module'], function (model) {
       }
       else {
         return {
-          'Name': this.name, 'Partner': this.partner_name, 'Geburtstag': this.birthday, 'Addresse 1': this.address1, 'Addresse 2': this.address2,
+          'Name': this.name, 'Partner': this.partner_name, 'Geburtstag': $filter('date')( this.birthday, 'shortDate'),
+          'Addresse 1': this.address1, 'Addresse 2': this.address2,
           'PLZ': this.post_code, 'Ort': this.city, 'Land': this.country, 'Telefon': this.telephone, 'Email': this.email,
           'Bemerkung': this.comments
         };

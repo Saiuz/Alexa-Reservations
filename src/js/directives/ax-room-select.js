@@ -242,17 +242,19 @@ define(['./module'], function (directives) {
       };
 
       scope.onRoomSelect = function () {
-        var p = Number(scope.planPrice);
-        var f = Number(scope.firmPrice);
-        scope.roomData.price = f > 0 ? f : p > 0 ? p : scope.roomSelect.price;   //firmPrice then planPrice then room price
-        scope.roomData.priceTxt = $filter('number')(scope.roomData.price,2);
-        scope.roomData.name = lastDeleted.guest ? lastDeleted.guest :  scope.guestLookup === 'true' ? '' : scope.name;
-        scope.roomData.name2 = lastDeleted.guest2 ? lastDeleted.guest2 :  scope.guestLookup === 'true' ? '' : scope.name2;
-        scope.roomData.oneInDZ = false;
-        scope.roomData.showOneCnt = scope.roomSelect.max_occupants > 1;
-        scope.roomData.guest_count = scope.roomSelect.max_occupants > Number(scope.guestCount) ? Number(scope.guestCount) : scope.roomSelect.max_occupants;
-        // display second guest name if asked for and selected room is not a single
-        scope.secondGuestB = scope.secondGuest === 'true' && scope.roomSelect.room_type !== dbEnums.getRoomTypeEnum()[0];
+        if (scope.roomSelect) { //This method can fire when the room list is changed after form is initialized without roomSelect defined
+          var p = Number(scope.planPrice);
+          var f = Number(scope.firmPrice);
+          scope.roomData.price = f > 0 ? f : p > 0 ? p : scope.roomSelect.price;   //firmPrice then planPrice then room price
+          scope.roomData.priceTxt = $filter('number')(scope.roomData.price, 2);
+          scope.roomData.name = lastDeleted.guest ? lastDeleted.guest : scope.guestLookup === 'true' ? '' : scope.name;
+          scope.roomData.name2 = lastDeleted.guest2 ? lastDeleted.guest2 : scope.guestLookup === 'true' ? '' : scope.name2 ? scope.name2 : scope.roomData.max_occupants > 1 ? configService.loctxt.roommate : '';
+          scope.roomData.oneInDZ = false;
+          scope.roomData.showOneCnt = scope.roomSelect.max_occupants > 1;
+          scope.roomData.guest_count = scope.roomSelect.max_occupants > Number(scope.guestCount) ? Number(scope.guestCount) : scope.roomSelect.max_occupants;
+          // display second guest name if asked for and selected room is not a single
+          scope.secondGuestB = scope.secondGuest === 'true' && scope.roomSelect.room_type !== dbEnums.getRoomTypeEnum()[0];
+        }
       };
 
       //start room swap activity for selected room

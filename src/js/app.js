@@ -33,8 +33,9 @@ define("app", [
     'ui.router',
     'ngLocale',
     'xeditable'
-  ]).run(function ($state, nwService, appConstants, $rootScope, editableOptions) {
-
+  ]).config(function($compileProvider){ //perform app configuration steps
+    $compileProvider.aHrefSanitizationWhitelist(/^\s*(https?|ftp|mailto|chrome-extension):/); //needed for NW.js 0.15.4
+  }).run(function ($state, nwService, appConstants, $rootScope, editableOptions) {
     // Create the menubar
     $rootScope.menubar = nwService.createMenu({
       root: {
@@ -42,7 +43,7 @@ define("app", [
         type: 'menubar',
         items: [
           {
-            label: 'Alexa Reservierung',
+            label: 'Alexa Reservierungen',
             items: [
               {
                 label: 'Exportieren',
@@ -54,6 +55,11 @@ define("app", [
                     tooltip: 'Mehrwertsteuer, Kurtaxe usw.',
                     click: 'export-tax'
                   },
+                  {
+                    label: 'Addressliste',
+                    tooltip: 'Gaste Postadressen',
+                    click: 'export-address'
+                  },  
                   {
                     label: 'Einzeldaten',
                     tooltip: 'Gäste Addresse Liste, Firma, usw.',

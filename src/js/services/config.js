@@ -7,7 +7,9 @@ define(['./module'], function (services) {
 
   // returns object with aplication specific constants
   services.service('appConstants', [function () {
-    var appName = 'Alexa Reservierungen',
+    var pjson = require('./package.json'),
+        appName = 'Alexa Reservierungen',
+        dataSubPath = 'data2',
         appTitle = 'Hotel Alexa Reservierungssystem',
         tmpPath, dbPath, dbConnStr, defExportPath, zipCmdfn, execPath, basePath;
 
@@ -15,7 +17,7 @@ define(['./module'], function (services) {
     if (/^win/.test(process.platform)) {
       tmpPath = process.env.TEMP;
       basePath = process.env.APPDATA + '\\' + appName.replace(' ', '-');
-      dbPath = basePath + '\\data';
+      dbPath = basePath + '\\' + dataSubPath;
       dbConnStr = 'tingodb://'+ dbPath;
       defExportPath = process.env.HOMEDRIVE + process.env.HOMEPATH + '\\Desktop';
       execPath = process.execPath.replace('nw.exe','');
@@ -29,7 +31,7 @@ define(['./module'], function (services) {
     else { //assume mac
       tmpPath = process.env.TMPDIR;
       basePath = process.env.HOME + '/Library/Application Support/' + appName.replace(' ', '-');
-      dbPath = basePath + '/data';
+      dbPath = basePath + '/' + dataSubPath;
       dbConnStr = 'tingodb://'+ dbPath;
       defExportPath = process.env.HOME + '/Desktop';
       execPath = process.env.PWD;
@@ -39,7 +41,7 @@ define(['./module'], function (services) {
     return {
       appName: appName,
       appTitle: appTitle,
-      version: '0.1.2',
+      version: pjson.version, //from package json
       tmpPath: tmpPath,
       basePath: basePath,
       dbPath: dbPath,
@@ -77,7 +79,7 @@ define(['./module'], function (services) {
     this.constants = {
       autoCloseTime: 2000,
       billNumberID: 'billNo', //used by Counters collection to identify the bill number counter
-      billNoSeed: 1000, // value used to seed the counter if the entry doesn;t exist
+      billNoSeed: 10000, // value used to seed the counter if the entry doesn;t exist
       expensesChangedEvent: 'EXP_EVENT1',  // event names
       reservationChangedEvent: 'RES_EVENT1',
       roomPlanClickEvent: 'ZPLAN_EVENT1',
@@ -130,6 +132,7 @@ define(['./module'], function (services) {
       'addedExtraDaysDisplayString': '%count% Tag|Tage Extra',
       'aggregatePersonDisplayString': '%text% für %count% Personen',
       'aggregateRoomDisplayString': '%text% (%count% Zimmer - %guestCnt% Gäste)',
+      'all': 'Alle',
       'advancedSettings': 'Erweiterte Einstellungen',
       'appRestart': 'Das Programm wird in 5 Sekunden neu starten',
       'arrive': 'Ankunft',
@@ -171,8 +174,9 @@ define(['./module'], function (services) {
       'day': 'Tag',
       'days': 'Tage',
       'daysTimes': 'Tage / Mal',
-      'dbImport': 'Import der kompletten Datenbank',
-      'dbExport': 'Export der kompletten Datenbank',
+      'dbImport': 'Importieren der kompletten Datenbank',
+      'dbExport': 'Exportieren der kompletten Datenbank',
+      'dbAddress': 'Exportieren die Addressenliste',
       'delete': 'Löschen',
       'description': 'Beschreibung',
       'dine': 'Speisen',
@@ -225,6 +229,7 @@ define(['./module'], function (services) {
       'guest2': 'Gast 2',
       'guests': 'Gäste',
       'guestCount': 'Gäste Anzahl',
+      'guestIsPrivate': 'Dieser Gast ist privat',
       'guest_titleCreate': 'Gast Informationen Erstellen',
       'guest_titleDelete': 'Gast Informationen Löschen',
       'guest_titleUpdate': 'Gast Informationen Bearbeiten',
@@ -356,17 +361,21 @@ define(['./module'], function (services) {
       'until': 'Bis',
       'update': 'Aktualisieren',
       'ustRate': 'UST Steuersatz',
-      'val_invalidPlan': 'You must select a Room Plan',
-      'val_invalidGuest': 'Missing or invalid Guest',
-      'val_invalidFirm': 'Missing or invalid Firm',
-      'val_invalidRoom': 'At least one room is required',
-      'val_invalidDates': 'Missing or invalid Reservation dates',
-      'val_invalidInsurance': 'An insurance plan must be selected',
-      'val_invalidPlanInsurance': 'The Kur package plan requires "Privat" insurance',
-      'val_guestCountMismatch': 'The number of guests in the reservation does not match the number of guests in the rooms.',
+      'val_invalidPlan': 'Sie müssen einen Zimmerplan wählen',
+      'val_invalidGuest': 'Fehlende oder ungültige Gast',
+      'val_invalidFirm': 'Fehlende oder ungültige Firma',
+      'val_invalidRoom': 'Mindestens ein Zimmer ist erforderlich',
+      'val_invalidDates': 'Fehlende oder ungültige Reservierungsdaten',
+      'val_invalidInsurance': 'Eine Versicherung muss ausgewählt werden',
+      'val_invalidPlanInsurance': 'Das Kur Plan erfordert "Private" Versicherung',
+      'val_guestCountMismatch': 'Die Zahl der Gäste bei der Reservierung nicht die Anzahl der Gäste in den Zimmern entsprechen.',
       'wantToEdit': 'Diese Reservierung ist geschlossen. Sind Sie sicher, dass Sie sie bearbeiten möchten.?',
       'wantToCheckout': 'Das Ende der Reservierung ist in der Zunkunft. Jetzt wirklich auschecken? Der Endtermin für die Reservierung <b>wird nicht</b> geändert!',
       'wantToDeleteItem': 'Bestätigen Artikel Löschen?',
+      'wantToDeleteRes': 'Dies ist eine Geschäftsgruppe Reservierung. Wenn Sie die Buchung löschen Sie alle Zimmer mit der Reservierung verbunden sind zu entfernen. Sie können die Reservierung zu bearbeiten und den Raum für diese Gäste entfernen. Sind Sie sicher, dass Sie möchten, um die vollständige Reservierung zu löschen?',
+      'wantToDeleteCheckedIn': 'Diese Reservierung wird eingecheckt. Sind Sie sicher, Sie wollen, um sie zu löschen?',
+      'weekPlan3': 'Drei Wochen Zimmerplan',
+      'weekPlan5': 'Fünf Wochen Zimmerplan',
       'withFirm': 'Mit Firma',
       'withoutFirm': 'Ohne Firma',
       'yes': 'Ja',

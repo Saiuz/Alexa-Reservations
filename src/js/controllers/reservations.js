@@ -68,13 +68,24 @@ define(['./module'], function (controllers) {
             });
           };
 
-          // Edit active reservations, if a reservation is late checkin, redirect to home page, if late checkout,
-          // redirect to rechnung
+          // Delete a reservation that is not checked in
           $scope.cancel= function (resNum) {
             var model = modals.getModelEnum().reservation,
                 dataObj = {data: resNum};
             modals.delete(model,dataObj,function(result) {
               _getData();
+            });
+          };
+          // Delete a reservation checked in but not checked out, ask if we want to delete
+          $scope.cancelIf= function (resNum) {
+            var model = modals.getModelEnum().reservation,
+                dataObj = {data: resNum};
+            modals.yesNoShow(configService.loctxt.wantToDeleteCheckedIn,function (result) {
+              if (result) {
+                modals.delete(model, dataObj, function (result) {
+                  _getData();
+                });
+              }
             });
           };
 

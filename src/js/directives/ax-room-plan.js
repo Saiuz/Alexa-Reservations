@@ -21,7 +21,7 @@
  *    dateInWeek: the target date for the calendar. The calendar is centered around the week that contains this date.
  *    selectedReservation: receives the 'link; object associated with an existing reservation (or calendar event)
  *    blankClickFunction: a function that is called when a calendar selection is made.
- *    weekSpan: the number of weeks either side of the target week. It defaults to 2, for a total of 5 weeks.
+ *    weekSpan: the number of weeks either side of the target week. It defaults to 2, for a total of 5 weeks. 
  */
 define(['./module'], function (directives) {
   'use strict';
@@ -29,7 +29,7 @@ define(['./module'], function (directives) {
     function (dashboard, $rootScope, configService, datetime, $timeout, $filter) {
 
       var linker = function (scope, element, attrs) {
-        var wSpan = attrs.weekSpan ? Number(attrs.weekSpan) : 2,
+        var wSpan, // = attrs.weekSpan ? Number(attrs.weekSpan) : 2,
             sundayStart = attrs.startSunday === 'true',
             startDate = attrs.startDate ? Date.parse(attrs.startDate) : new Date(),
             rooms = [],
@@ -48,6 +48,7 @@ define(['./module'], function (directives) {
         //scope.dateInWeek;
         scope.hasErr = false;
         scope.errMsg = '';
+        scope.roomFilter = 0;
 
         //scope.dateInWeek = new Date();
 
@@ -97,28 +98,21 @@ define(['./module'], function (directives) {
             }
         });
 
-        scope.$watch('theDate', function (newval, oldval) {
+        scope.$watchCollection('[theDate,weekSpan]', function (newvals, oldvals) {
           // respond to change in calendar.
-          console.log('*** ax-room-plan watch fired ' + newval + '|' + oldval);
-
-          if (newval) { //date selector directive value changed.
-            scope.dates = datetime.findWeek(newval, sundayStart);
-            scope.dateInWeek = newval;
+          console.log('*** ax-room-plan watch fired ' + newvals + '|' + oldvals );
+          if (newvals[1]) {
+            wSpan = newvals[1];
+          }
+          else {
+            wSpan = 1; //default if null or not specified
+          }
+          
+          if (newvals[0]) { //date selector directive value changed.
+            scope.dates = datetime.findWeek(newvals[0], sundayStart);
+            scope.dateInWeek = newvals[0];
             _buildCalendar(false);
-          } //todo- may want to revisit logic that modifies reservations at start and end of calendar period. This
-            //todo- this breaks the paint logic. Although it is nice and simple this way. Not sure it gains much.
-/*          if (newvals && oldvals && newvals[0] && newvals[1] && newvals[2]) { //wait for all properties to initialize
-            var nd = [datetime.daysSinceEpoch(newvals[0]), datetime.daysSinceEpoch(newvals[1]), datetime.daysSinceEpoch(newvals[2])];
-            var od = [datetime.daysSinceEpoch(oldvals[0]), datetime.daysSinceEpoch(oldvals[1]), datetime.daysSinceEpoch(oldvals[2])];
-            if (nd[0] === od[0]) {
-              return;
-            }
-            if (nd[0] && nd[1] && nd[2]) {
-              // get reservation info during the dates represented by the calendar display
-              var paintOnly = (resResults && od[1] && (nd[1] === od[1] && nd[2] === od[2]));
-              _buildCalendar(false);
-            }
-          }*/
+          }
         });
 
         // respond to a user clicking the "New Reservation" button
@@ -130,6 +124,16 @@ define(['./module'], function (directives) {
           };
           if (scope.blankClickFunction) {
             scope.blankClickFunction(cObj);
+          }
+        };
+
+        //Filter for room list to view either single rooms or doubles / suite rooms
+        scope.roomTypeFilter = function (item) {
+          if (scope.roomFilter != 1 && scope.roomFilter != 2) {
+            return true;
+          }
+          else {
+            return item.rOccupants === scope.roomFilter;
           }
         };
 
@@ -174,7 +178,7 @@ define(['./module'], function (directives) {
         // function to retrieve items to build calendar, calls _updateCalendar which does the heavy lifting
         function _buildCalendar(paintOnly) {
           var startCal, endCal, cols;
-
+          scope.isLoading = true;
           if (scope.dates) {
             startCal = datetime.dateOnly(scope.dates.weekStart, -7 * wSpan);
             endCal = datetime.dateOnly(scope.dates.weekEnd, 7 * wSpan);
@@ -190,6 +194,7 @@ define(['./module'], function (directives) {
                     results.events = events;
                     resResults = results; //cache last query.
                     _updateCalendar(resResults, startCal, endCal, cols);
+                    scope.isLoading = false
                   }
                 }, function (err) {
                   scope.hasErr = true;
@@ -213,7 +218,7 @@ define(['./module'], function (directives) {
           // use timeout kluge to map events to the table elements after it renders.
           $timeout(function () {
             if (element) {
-              var zpsel = element.find(".zpSel"); //broke out find, was getting occasional error on mousedown that "undefined is not a function"
+              var zpsel = $(element).find(".zpSel"); //broke out find, was getting occasional error on mousedown that "undefined is not a function"
                   $(zpsel).mousedown(function () {
                     if (selRoom < 0) {
                       var sr = $(this).attr("cdat");
@@ -248,7 +253,7 @@ define(['./module'], function (directives) {
                 $(this).width(pw);
               });
             }
-          }, 500);
+          }, 700);
         }
 
         function _buildMonthHeader(start, end, cols) {
@@ -299,7 +304,8 @@ define(['./module'], function (directives) {
               cDSE = datetime.daysSinceEpoch(start),
               startDSE = datetime.daysSinceEpoch(scope.dates.weekStart),
               endDSE = datetime.daysSinceEpoch(scope.dates.weekEnd),
-              dse = datetime.daysSinceEpoch(scope.dates.currentDate);
+              dse = datetime.daysSinceEpoch(scope.dates.currentDate),
+              wknd = sundayStart ? 5 : 0;
 
           for (var i = 0; i < cols; i++) {
             var dow = {
@@ -307,9 +313,12 @@ define(['./module'], function (directives) {
               date: datetime.dateOnly(start, i).getDate(),
               inWk: (cDSE >= startDSE && cDSE <= endDSE),
               isDay: (cDSE === dse),
+              isWknd: (std === wknd),
+              t: std,
               dse: cDSE
             };
             dnow.push(dow);
+            
             std = (std === 6) ? 0 : std + 1;
             cDSE++;
           }
@@ -331,6 +340,7 @@ define(['./module'], function (directives) {
                 bItem = {
                   room: room.number,
                   rclass: 'zp-' + room.display_abbr,
+                  rOccupants: room.max_occupants,
                   resItems: []
                 };
 
@@ -547,9 +557,13 @@ define(['./module'], function (directives) {
           }
         }
 
-        // Adds a blank column.
+        // Adds blank column(s). If blank falls on the end of the week then
+        // set the isWknd property.
         function _addBlanks(bcount, rArr, rnum, fDSE, dDSE) {
-          var i;
+          var i,
+              std = datetime.dseToDate(fDSE).getDay(),
+              wknd = sundayStart ? 5 : 0;
+
           for (i = 0; i < bcount; i++) {
             var blank = {
               resNum: 0,
@@ -560,10 +574,12 @@ define(['./module'], function (directives) {
               overLapCol: false,
               dayCol: fDSE === dDSE,
               isBlank: true,
+              isWknd: (std === wknd),
               dse: fDSE,
               room: rnum
             };
             rArr.push(blank);
+            std = (std === 6) ? 0 : std + 1;
             fDSE++;
           }
           return i;
@@ -592,6 +608,9 @@ define(['./module'], function (directives) {
 
         // Adds a reservation/resource item if not overlapEnd then add a checkout day
         function _addResItem(res, overlapEnd, rArr, edse) {
+          var std = res.end_date.getDay(),
+              wknd = sundayStart ? 6 : 0;
+
           var resItem = {
                 resNum: res.reservation_number,
                 text: res.resource_name ? configService.loctxt.roomAbrv + ' ' + res.room : res.title + ( !res.oneRoom ? ' - ' + res.guest + (res.guest2 ? ' / ' + res.guest2 : '') : ''),
@@ -616,6 +635,7 @@ define(['./module'], function (directives) {
                 endCol: true,
                 overLapCol: false,
                 isBlank: true,
+                isWknd: (std === wknd),
                 dse: res.end_dse,
                 room: res.room
               },
@@ -663,7 +683,7 @@ define(['./module'], function (directives) {
           eventClickFunction: '=',
           blankClickFunction: '=',
           startDate: '@',
-          weekSpan: '@', // number of weeks each side of 'active' week
+          weekSpan: '=', // number of weeks each side of 'active' week
           weeksStartSunday: '@' //boolean, defaults to false - Monday start
         }
       };

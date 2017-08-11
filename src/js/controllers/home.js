@@ -20,6 +20,11 @@ define(['./module'], function (controllers) {
           $scope.url = $state.current.url;
           $scope.pageHeading = "Zimmer Plan "; // + $scope.theDate.getDate() + '.' + ($scope.theDate.getMonth() + 1) + '.' + $scope.theDate.getFullYear()
 
+          // Get the saved value for weekSpan from the local storage, if nothing default to +-1 week (3 total)
+          configService.get("RoomPlanWeeks", 1).then(function(val){
+            $scope.weekSpan = val;
+          });
+          
           // get the saved last date of the calendar but delay it till the end of the digest cycle so that
           // the calendar gets time to 'settle down'
           $timeout(function () {

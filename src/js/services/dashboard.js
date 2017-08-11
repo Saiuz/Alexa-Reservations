@@ -377,7 +377,8 @@ define(['./module'], function (services) {
                 canCheckIn: !room.isCheckedIn && datetime.dateCompare(rec.start_date, new Date()) === 0,
                 lateCheckIn: !room.isCheckedIn && datetime.dateCompare(rec.start_date, new Date()) < 0,
                 lateCheckOut: !room.isCheckedOut && datetime.dateCompare(new Date(), rec.end_date) > 0,
-                canCancel: !rec.checked_in
+                canCancel: !rec.checked_in,
+                canCancelIf: rec.checked_in && !rec.checked_out
               };
             };
 
@@ -629,10 +630,11 @@ define(['./module'], function (services) {
             });
         return deferred.promise;
       },
-      // Retrieve Room number type and class for all rooms
+      // Retrieve Room number type and class for all rooms, orders by room number
       getRoomListInfo: function() {
         var deferred = $q.defer();
         Room.find()
+            .sort({number: 1})
             .select('number room_type room_class display_abbr')
             .exec(function (err, rooms) {
               if (err) {

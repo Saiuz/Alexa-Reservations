@@ -3,7 +3,7 @@
     <a class="btn btn-default btn-sm" href="" ng-click="goDate(-7)"><span class="glyphicon glyphicon-backward"></span></a>
     <a class="btn btn-default btn-sm" href="" ng-click="goDate(-1)"><span class="glyphicon glyphicon-chevron-left"></span></a>
     <a class="btn btn-default btn-sm" href="" ng-click="goDate(0)"><span class="">{{txt.today}}</span></a>
-    <input type="text" ng-show="false" datepicker-popup="{{format}}"  ng-model="pickedDate" is-open="opened" datepicker-options="dateOptions" show-button-bar="false" />
+    <input type="text" ng-show="false" datepicker-popup="dd.MM.yyyy"  ng-model="pickedDate" is-open="opened" datepicker-options="{startingDay: 1}"  show-button-bar="false"  />
     <a class="btn btn-default btn-sm" href="" ng-click="goPick($event)"><span class="glyphicon glyphicon-calendar"></span></a>
     <a class="btn btn-default btn-sm" href="" ng-click="goDate(1)"><span class="glyphicon glyphicon-chevron-right"></span></a>
     <a class="btn btn-default btn-sm" href="" ng-click="goDate(7)"><span class="glyphicon glyphicon-forward"></span></a>

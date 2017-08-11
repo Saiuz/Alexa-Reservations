@@ -1,40 +1,45 @@
 {
   "main": "index.html",
-  "name": "Alexa",
-  "description": "Hotel Reservation Manager for a German Kur Hotel. Desktop application developed using AngularJS and web technologies. Powered by node-webkit",
-  "version": "0.1.2",
-  "main": "index.html",
-  "author":{
-      "name": "Bob Vogel",
-      "url": "https://github.com/vogelrh"
+  "name": "AlexaReservierungen",
+  "description": "Hotel Reservation Manager for a German Kur Hotel. Desktop application developed using AngularJS. Powered by NW.js",
+  "version": "0.3.0",
+  "author": {
+    "name": "Bob Vogel",
+    "url": "https://github.com/vogelrh"
   },
-  "contributors":[{
-        "name": "Tom Lawson",
-        "url" : "https://github.com/talss89"
+  "contributors": [
+    {
+      "name": "Tom Lawson",
+      "url": "https://github.com/talss89"
     },
     {
       "name": "Joel Grenon",
       "url": "https://github.com/jgrenon"
-    }],
+    }
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/vogelrh/Alexa-Reservations"
+  },
   "window": {
     "toolbar": true,
     "width": 1200,
-    "height": 960,
-    "icon":"./images/logo.png"
+    "height": 900,
+    "icon": "./images/AlexaLogo2014.png"
   },
   "dependencies": {
-    "jade": "~0.35.0",
-    "querystring": "~0.2.0",
-    "moment": "~2.4.0",
-    "shortid": "~2.0.0",
-    "tungus": "~0.0.2",
+    "archiver": "^1.0.0",
+    "byline": "~4.2.1",
+    "csv": "~1.1.0",
+    "decompress": "^4.0.0",
+    "jade": "~1.11.0",
+    "moment": "~2.10.6",
     "mongoose": "~3.8.7",
-    "csv": "~0.4.1",
-    "archiver": "~0.14.2",
-    "byline": "~4.2.1"
+    "querystring": "~0.2.0",
+    "shortid": "~2.2.2",
+    "tungus": "~0.0.2"
   },
-  "scripts":{
-    "postinstall" : "node ../etc/scripts/postinstall.js"
+  "scripts": {
+    "postinstall": "node ../etc/scripts/postinstall.js"
   }
-
 }

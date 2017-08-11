@@ -19,6 +19,7 @@ define([
   './ax-week-buttons',
   './ax-business-bill',
   './ax-standard-bill',
+  './ax-standardb-bill',
   './ax-bill-taxes',
   './ax-kur-bill',
   './ax-tour-bill',

@@ -3,14 +3,14 @@
   "description": "Alexa App Build System",
   "version": "1.3.0",
   "author": {
-    "name": "Tom Lawton",
-    "url": "https://github.com/talss89"
+    "name": "Bob Vogel",
+    "url": "https://github.com/vogelrh"
   },
   "dependencies": {},
   "devDependencies": {
     "grunt": "~0.4.5",
     "grunt-contrib-clean": "^0.6.0",
-    "grunt-contrib-less": "~0.11.4",
+    "grunt-contrib-less": "~1.0.1",
     "grunt-nw-builder": "~2.0.0",
     "grunt-shell": "~1.1.1"
   }

@@ -6,7 +6,7 @@ include nav_common.jade
       tabset(type="pills")
         tab(ng-repeat="p in ptypes" heading="{{p.type}}" active="p.active" select="planTypeSelected(p.type)")
       hr.tight
-      .table-content-box
+      .plan-content-box
         .col-md-12
           table.table.table-bordered.table-hover.table-condensed
             thead
@@ -68,7 +68,7 @@ include nav_common.jade
                     input(type="checkbox" ng-disabled="true" ng-model="i.per_person")
                 tr
                   td.text-center
-                    button.btn.btn-info.btn-sm(ng-click="newItemShow()" tooltip="{{tips(1)}}")
+                    button.btn.btn-info.btn-sm(ng-click="newItemShow()")
                       i.glyphicon.glyphicon-plus-sign
                   td
                     table.table.table-bordered.table-hover.table-condensed(ng-show="showExistingItems")

@@ -9,6 +9,9 @@ define(['./module'], function (directives) {
       var linker = function (scope, element, attrs) {
         console.log("axExpenseItemList linker fired");
 
+        var filterOnRm = false,
+            rNum = 0;
+
         // build the local select list from the expenseItemArray
         // filter the list by the itemType property. Note we must wait until
         // both properties have been set during the compile phase of the hosting page
@@ -30,12 +33,20 @@ define(['./module'], function (directives) {
             scope.col2Title = attrs.countTitle ? attrs.countTitle : configService.loctxt.times;
             scope.col3Title = attrs.priceTitle ? attrs.priceTitle : configService.loctxt.price;
             scope.rvm = newvals[0];
+            filterOnRm = scope.rvm.oneBill && !scope.rvm.oneRoom;
+            rNum = Number(newvals[2]);
             buildInitialList();
             scope.selected = scope.itemList.length > 0 ? scope.itemList[0] : {};
             scope.calculateTotals();
           }
         });
 
+        // filters items by {category: itemType, guest: guest, room: room, name: '!' + txt.breakfastInc}
+        scope.itemFilter = function (item) {
+          return item.category === scope.itemType
+                 && item.name !== configService.loctxt.breakfastInc
+                 && (filterOnRm ? (item.room === rNum) : (item.guest === scope.guest));
+        };
         // calculates the sum of all expense items in the category, may be filtered by user if required.
         // fires an event that something has changed on the root scope so that other directives can listen
         // for it and react accordingly.

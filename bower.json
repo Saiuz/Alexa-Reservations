@@ -7,18 +7,18 @@
     "lib"
   ],
   "dependencies": {
-    "angular": "~1.2.20",
-    "angular-i18n": "~1.2.3",
+    "angular": "~1.4.5",
+    "angular-i18n": "~1.4.6",
     "requirejs": "~2.1.9",
     "requirejs-domready": "~2.0.1",
     "requirejs-text": "~2.0.10",
-    "lodash": "~2.4.1",
-    "less": "~1.7.3",
+    "lodash": "~3.10.1",
+    "less": "~2.5.1",
     "jquery": "~2.1.1",
-    "angular-bootstrap": "~0.11.0",
-    "angular-ui-router": "~0.2.10",
+    "angular-bootstrap": "~0.13.4",
+    "angular-ui-router": "~0.2.15",
     "bootstrap": "~3.3.0",
-    "angular-xeditable": "~0.1.8",
+    "angular-xeditable": "~0.1.9",
     "angular-locale_de-de": "https://github.com/angular/bower-angular-i18n/blob/master/angular-locale_de-de.js"
   }
 }

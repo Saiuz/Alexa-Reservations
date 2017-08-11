@@ -18,7 +18,6 @@ define(['./module'], function (directives) {
 
         scope.txt = configService.loctxt;
         scope.opended = false;
-        scope.startingDay = sundayStart ? 0 : 1;
 
         scope.goPick = function ($event) {  // launches date picker pop-up
           $event.preventDefault();
@@ -27,6 +26,8 @@ define(['./module'], function (directives) {
 
         };
 
+        // NOTE: this is currently ignored, hard wired json object for datepicker-options. Could not get
+        // the starting day to work as shown in examples!
         scope.dateOptions = {
           formatYear: 'yy',
           startingDay: sundayStart ? 0 : 1

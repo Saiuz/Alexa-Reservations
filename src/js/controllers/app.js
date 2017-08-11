@@ -19,9 +19,9 @@ define(['./module'], function (controllers) {
         function ($scope, $rootScope, db, Firm, Guest, Reservation, Resource,
                   Room, Itemtype, RoomPlan, AppConstants, configService, datetime,
                   $state) {
-          var gui = require('nw.gui');
+          //var gui = nw.guirequire('nw.gui');
           var zoomPercent = 100,
-              win = gui.Window.get(),
+              win = nw.Window.get(),
               taskCnt = 0,
               MAX_TASKS = 5;
 
@@ -30,7 +30,7 @@ define(['./module'], function (controllers) {
           configService.set('planDate', datetime.dateOnly(new Date()));
 
           // add global keyboard shortcuts
-          var refreshShortcut = new gui.Shortcut({
+          var refreshShortcut = new nw.Shortcut({
             key : "Ctrl+Shift+R",
             active : function() {
               console.log("Global desktop keyboard shortcut: " + this.key + " active.");
@@ -42,7 +42,19 @@ define(['./module'], function (controllers) {
               console.log(msg);
             }
           });
-          var zoomOutShortcut = new gui.Shortcut({
+          var devBarShortcut = new nw.Shortcut({
+            key : "Ctrl+Shift+D",
+            active : function() {
+              console.log("Global desktop keyboard shortcut: " + this.key + " active.");
+              win.showDevTools();
+
+            },
+            failed : function(msg) {
+              // :(, fail to register the |key| or couldn't parse the |key|.
+              console.log(msg);
+            }
+          });
+          var zoomOutShortcut = new nw.Shortcut({
             key : "Ctrl+Shift+O",
             active : function() {
               console.log("Global desktop keyboard shortcut: " + this.key + " active.");
@@ -55,7 +67,7 @@ define(['./module'], function (controllers) {
               console.log(msg);
             }
           });
-          var zoomInShortcut = new gui.Shortcut({
+          var zoomInShortcut = new nw.Shortcut({
             key : "Ctrl+Shift+I",
             active : function() {
               console.log("Global desktop keyboard shortcut: " + this.key + " active.");
@@ -68,15 +80,20 @@ define(['./module'], function (controllers) {
               console.log(msg);
             }
           });
-          gui.App.registerGlobalHotKey(refreshShortcut);
-          gui.App.registerGlobalHotKey(zoomOutShortcut);
-          gui.App.registerGlobalHotKey(zoomInShortcut);
+          nw.App.registerGlobalHotKey(refreshShortcut);
+          nw.App.registerGlobalHotKey(devBarShortcut);
+          nw.App.registerGlobalHotKey(zoomOutShortcut);
+          nw.App.registerGlobalHotKey(zoomInShortcut);
 
           //$tooltipProvider.options({});
 
           // Listen for specific menu events and respond by navigating to a particular state.
           $scope.$on('export-tax', function (e, menu, item) {
             $state.go('export_tax');
+          });
+          
+          $scope.$on('export-address', function (e, menu, item) {
+            $state.go('export_address');
           });
 
           $scope.$on('export-one', function (e, menu, item) {
@@ -184,53 +201,53 @@ define(['./module'], function (controllers) {
                 Room.create({
                   number: 2,
                   room_type: 'Einzelzimmer',
-                  room_class: 'Economy',
-                  price: 57
+                  room_class: 'Standart',
+                  price: 64
                 }, {
                   number: 3,
                   room_type: 'Einzelzimmer',
                   room_class: 'Komfort',
-                  price: 66
+                  price: 69
                 }, {
                   number: 4,
                   room_type: 'Einzelzimmer',
                   room_class: 'Standart',
-                  price: 61
+                  price: 64
                 }, {
                   number: 5,
                   room_type: 'Einzelzimmer',
                   room_class: 'Economy',
-                  price: 57
+                  price: 58
                 }, {
                   number: 6,
                   room_type: 'Einzelzimmer',
                   room_class: 'Komfort',
-                  price: 66
+                  price: 69
                 }, {
                   number: 7,
                   room_type: 'Einzelzimmer',
                   room_class: 'Komfort',
-                  price: 66
+                  price: 69
                 }, {
                   number: 9,
                   room_type: 'Doppelzimmer',
-                  room_class: 'Economy',
+                  room_class: 'Standart',
                   price: 94
                 }, {
                   number: 10,
                   room_type: 'Einzelzimmer',
                   room_class: 'Economy',
-                  price: 57
+                  price: 58
                 }, {
                   number: 12,
                   room_type: 'Einzelzimmer',
                   room_class: 'Komfort',
-                  price: 66
+                  price: 69
                 }, {
                   number: 15,
                   room_type: 'Einzelzimmer',
                   room_class: 'Komfort',
-                  price: 66
+                  price: 69
                 }, {
                   number: 18,
                   room_type: 'Doppelzimmer',
@@ -245,42 +262,42 @@ define(['./module'], function (controllers) {
                   number: 20,
                   room_type: 'Einzelzimmer',
                   room_class: 'Economy',
-                  price: 57
+                  price: 58
                 }, {
                   number: 21,
                   room_type: 'Suite',
-                  room_class: '',
-                  price: 125
+                  room_class: 'Komfort',
+                  price: 130
                 }, {
                   number: 26,
                   room_type: 'Suite',
-                  room_class: '',
-                  price: 125
+                  room_class: 'Komfort',
+                  price: 140
                 }, {
                   number: 27,
                   room_type: 'Suite',
                   room_class: 'Balkon',
-                  price: 130
+                  price: 140
                 }, {
                   number: 31,
                   room_type: 'Einzelzimmer',
                   room_class: 'Standart',
-                  price: 61
+                  price: 64
                 }, {
                   number: 32,
                   room_type: 'Einzelzimmer',
                   room_class: 'Standart',
-                  price: 61
+                  price: 64
                 }, {
                   number: 33,
                   room_type: 'Einzelzimmer',
                   room_class: 'Standart',
-                  price: 61
+                  price: 64
                 }, {
                   number: 34,
                   room_type: 'Einzelzimmer',
                   room_class: 'Standart',
-                  price: 61
+                  price: 64
                 }, {
                   number: 35,
                   room_type: 'Doppelzimmer',
@@ -290,23 +307,23 @@ define(['./module'], function (controllers) {
                   number: 41,
                   room_type: 'Einzelzimmer',
                   room_class: 'Standart',
-                  price: 61
+                  price: 64
                 }, {
                   number: 42,
                   room_type: 'Einzelzimmer',
                   room_class: 'Standart',
-                  price: 61
+                  price: 64
                 }, {
                   number: 43,
                   room_type: 'Einzelzimmer',
                   room_class: 'Standart',
-                  price: 61
+                  price: 64
                 }, {
                   number: 44,
                   room_type: 'Einzelzimmer',
                   room_class: 'Standart',
                   display_order: 1,
-                  price: 61
+                  price: 64
                 }, {
                   number: 45,
                   room_type: 'Doppelzimmer',
@@ -331,12 +348,12 @@ define(['./module'], function (controllers) {
                   number: 51,
                   room_type: 'Einzelzimmer',
                   room_class: 'Standart',
-                  price: 61
+                  price: 64
                 }, {
                   number: 52,
                   room_type: 'Einzelzimmer',
                   room_class: 'Standart',
-                  price: 61
+                  price: 64
                 }, {
                   number: 53,
                   room_type: 'Doppelzimmer',
@@ -346,17 +363,17 @@ define(['./module'], function (controllers) {
                   number: 54,
                   room_type: 'Einzelzimmer',
                   room_class: 'Standart',
-                  price: 61
+                  price: 64
                 }, {
                   number: 55,
                   room_type: 'Einzelzimmer',
                   room_class: 'Standart',
-                  price: 61
+                  price: 64
                 }, {
                   number: 56,
                   room_type: 'Einzelzimmer',
                   room_class: 'Standart',
-                  price: 61
+                  price: 64
                 }, {
                   number: 57,
                   room_type: 'Einzelzimmer',
@@ -1358,9 +1375,15 @@ define(['./module'], function (controllers) {
                     else {
                       console.log("Itemtype collection contains %d records", count);
                     }
-                    // last action in app.js
-                    $rootScope.$broadcast(configService.constants.appReadyEvent, {});
-                    console.log("app.js complete");
+                    Guest.count(function (err, count) { //don't add records just count to build indices
+                      console.log('Guest collection contains %d records', count);
+                      Firm.count(function (err, count) {
+                        console.log('Firm collection contains %d records', count);
+                        // last action in app.js
+                        $rootScope.$broadcast(configService.constants.appReadyEvent, {});
+                        console.log("app.js complete");
+                      });
+                    });
                   });
                 });
               });
