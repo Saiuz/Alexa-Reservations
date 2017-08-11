@@ -6,7 +6,10 @@ data
 .idea
 releases/
 cache/
-
+osx32/
+osx64/
+win32/
+*.log
 /cache
 /releases
 app.css
