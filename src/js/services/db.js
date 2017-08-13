@@ -7,7 +7,7 @@ define(['./module'], function (services) {
 
   services.factory('db', ['appConstants', function (appConstants) {
 
-    var tungus = require('tungus');
+    //var tungus = require('tungus');
     var mongoose = require('mongoose');
     var fs = require('fs');
     var path = require('path');
@@ -36,9 +36,12 @@ define(['./module'], function (services) {
     });
 
     // Establish the database connection
-    mongoose.connect(appConstants.dbConnStr, function (err) {
+    var constr = 'mongodb://192.168.1.32:27017/AlexaDB';
+    console.log('Connecting to db');
+    mongoose.connect(constr, function (err) {
       // if we failed to connect, abort
       if (err) throw err;
+      console.log("Connected to db: " + constr);
     });
 
     return {
@@ -46,9 +49,10 @@ define(['./module'], function (services) {
         mongoose.disconnect(callback);
       },
       dbReconnect: function () {
-        mongoose.connect(appConstants.dbConnStr, function (err) {
+        mongoose.connect(constr, function (err) {
           // if we failed to connect, abort
           if (err) throw err;
+          console.log("Reconnected to db: " + constr);
         })
       },
       db: mongoose

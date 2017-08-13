@@ -580,6 +580,7 @@ define(['./module'], function (services) {
             props.push('Platz');
             props.push('Ort');
             props.push('Land');
+            props.push('Email')
 
             // now set up the csv and file items for piping
             outStream = fs.createWriteStream(outPath);
@@ -621,6 +622,7 @@ define(['./module'], function (services) {
               arec[props[2]] = record.post_code;
               arec[props[3]] = record.city;
               arec[props[4]] = record.country;
+              arec[props[5]] = record.email;
               recCnt++;
               callback(null, arec);
             }, {parallel: 10});

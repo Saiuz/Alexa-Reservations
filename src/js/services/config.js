@@ -274,7 +274,7 @@ define(['./module'], function (services) {
       'partner': 'Partner',
       'partner_birthday': 'Partner Geburtstag',
       'parkPlace': 'Parkplatz',
-      'parkCharge': 'Parkgebür',
+      'parkCharge': 'Parkgebühr',
       'perDay': 'Pro Tag',
       'perPerson': 'Pro Person',
       'perPersonAbrv': 'p.P.',
