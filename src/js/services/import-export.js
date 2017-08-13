@@ -580,7 +580,8 @@ define(['./module'], function (services) {
             props.push('Platz');
             props.push('Ort');
             props.push('Land');
-            props.push('Email')
+            props.push('Email');
+            props.push('Firma');
 
             // now set up the csv and file items for piping
             outStream = fs.createWriteStream(outPath);
@@ -623,6 +624,7 @@ define(['./module'], function (services) {
               arec[props[3]] = record.city;
               arec[props[4]] = record.country;
               arec[props[5]] = record.email;
+              arec[props[6]] = record.firm;
               recCnt++;
               callback(null, arec);
             }, {parallel: 10});
@@ -632,8 +634,8 @@ define(['./module'], function (services) {
             });
             transformer.on('finish',function() {console.log('TRANSFORMER FINISHED ' + recCnt + ' records')});
 
-            // Query addresses-find all addresses that do not have a firm.
-            Guest.find({firm: {$exists: false}})
+            // Query addresses-find all addresses include firms.
+            Guest.find({})
                 .sort({last_name: 1})
                 .lean()
                 .stream()

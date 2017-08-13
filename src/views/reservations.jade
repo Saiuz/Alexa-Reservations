@@ -22,7 +22,7 @@ include nav_common.jade
                 th {{txt.from}}
                 th {{txt.until}}
                 th {{txt.nights}}
-                th {{txt.roomNumberAbrv}}
+                th {{txt.numRoomsAbrv}} / {{txt.guests}} (#Zr)
                 th {{txt.guest}}
                 th {{txt.type}}
                 th
@@ -43,7 +43,7 @@ include nav_common.jade
                 td {{r.start}}
                 td {{r.end}}
                 td {{r.nights}}
-                td {{r.room}}
+                td {{r.room}} / {{r.guestCount}} ({{r.rcount}})
                 td {{r.guest}}
                 td {{r.type}}
                 td

@@ -36,9 +36,9 @@ define(['./module'], function (directives) {
         scope.tax7 = configService.constants.get('roomTax');
         scope.tax19 = configService.constants.get('salesTax');
         scope.today = new Date();
-        scope.copayMsg = configService.loctxt.minus + ' ' + configService.constants.get('ownContribution') + '% '
+        scope.copayMsg = configService.constants.get('ownContribution') + '% '
                         +configService.loctxt.copay;
-        scope.prescMsg = configService.loctxt.minus + ' ' + configService.loctxt.prescription_charge;
+        scope.prescMsg = configService.loctxt.prescription_charge;
 
         // build the local select list from the expenseItemArray
         // filter the list by the itemType property. Note we must wait until

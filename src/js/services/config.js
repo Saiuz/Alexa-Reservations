@@ -266,6 +266,7 @@ define(['./module'], function (services) {
       'noReservationsFor': 'Keine Reservierungen für',
       'noRoom': 'Kein Zimmer',
       'notFound': 'nicht gefunden',
+      'numRoomsAbrv': '# Zm',
       'ok': 'Ok',
       'onlyOneInRoom': 'Nur ein im Doppelzimmer',
       'open': 'Öffnen',

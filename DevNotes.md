@@ -62,3 +62,7 @@ the _updateRequiredExpenses method. left off at ~372 in reservationVM.
  checkout logic needs to check for early checkout and ask.
  10. **Partially DONE** Need data import code from old excel data.
 
+**08/2017 UPDATES**
+Major change will be to move application to MongoDB. There is a few minor issues with the models. Reservations use IDs which are numeric in TingoDB and complex ObjectID type in MongoDB. Need to work out the handling of these. The one point it is problematic is with the plan type and the plan type dropdown. Check for other ids also.
+
+Will need to import the data and convert where needed from the json files into mongodb. I have set up MongoDB on the actual server and have recreated the environment on my dev box.

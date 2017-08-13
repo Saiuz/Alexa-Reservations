@@ -355,6 +355,7 @@ define(['./module'], function (services) {
             },
             buildRec = function (rec, guest, room) {
               var guestName;
+              var cnt = 0;
 
               if (guest && typeof guest.hasOwnProperty('name')) {
                 guestName = guest.name;
@@ -364,7 +365,9 @@ define(['./module'], function (services) {
               }
 
               room = room || rec.rooms[0];
-
+              rec.rooms.forEach(function (r){
+                cnt += r.guest_count;
+              });
               return {
                 resNum: rec.reservation_number,
                 start: $filter('date')(rec.start_date,'shortDate'),
@@ -378,7 +381,9 @@ define(['./module'], function (services) {
                 lateCheckIn: !room.isCheckedIn && datetime.dateCompare(rec.start_date, new Date()) < 0,
                 lateCheckOut: !room.isCheckedOut && datetime.dateCompare(new Date(), rec.end_date) > 0,
                 canCancel: !rec.checked_in,
-                canCancelIf: rec.checked_in && !rec.checked_out
+                canCancelIf: rec.checked_in && !rec.checked_out,
+                rcount: rec.rooms.length,
+                guestCount: cnt
               };
             };
 
