@@ -66,3 +66,22 @@ the _updateRequiredExpenses method. left off at ~372 in reservationVM.
 Major change will be to move application to MongoDB. There is a few minor issues with the models. Reservations use IDs which are numeric in TingoDB and complex ObjectID type in MongoDB. Need to work out the handling of these. The one point it is problematic is with the plan type and the plan type dropdown. Check for other ids also.
 
 Will need to import the data and convert where needed from the json files into mongodb. I have set up MongoDB on the actual server and have recreated the environment on my dev box.
+
+Bugs / changes on the fly:
+1) Address list export, added email and firm and took off firm filter.
+2) Spelling corrections Parking charge.
+3) Data update: Removed Kur Klassika from kur tab, renamed standard kur data.
+4) Updated reservation list to show room number, number of guests and number of rooms in one column
+5) Kur bill, removed "Minus" from bill
+
+Bugs that still need fixing
+1) Plans with half/full pensions, the meal price is 0 and needs to be manually updated.
+2) For private (Separate) bill feature, the address needs to be taken from the guest, not the firm.
+3) colors need to be changed for some rooms
+
+standard = light blue  9,18,19,47 
+suites = lilac 21,26,27,32,42
+comfort = dark blue 35,45,46,48,53,58
+
+4) correct Spelling of Standard !!
+5) Kur bill, the last page, the u umlaut is printing as a weird symbol, don't know why, it shows up ok in HTML page.
