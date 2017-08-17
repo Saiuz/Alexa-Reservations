@@ -6,7 +6,9 @@
     "name": "Bob Vogel",
     "url": "https://github.com/vogelrh"
   },
-  "dependencies": {},
+  "dependencies": {
+    "tungus": "0.0.5"
+  },
   "devDependencies": {
     "grunt": "~0.4.5",
     "grunt-contrib-clean": "^0.6.0",
