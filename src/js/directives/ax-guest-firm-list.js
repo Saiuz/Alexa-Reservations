@@ -174,7 +174,7 @@ define(['./module'], function (directives) {
                 scope.qryCnt = guests.length;
                 var rowItems = [];
                 guests.forEach(function (g) {
-                  var tds = {id: g._id.id, cols: g.toDisplayObj(scope.withFirm)};
+                  var tds = {id: g._id, cols: g.toDisplayObj(scope.withFirm)};
                   rowItems.push(tds);
                 });
                 scope.loading = false;
@@ -205,7 +205,7 @@ define(['./module'], function (directives) {
                 firms.forEach(function (g) {
                   var cols = g.toDisplayObj();
                   cols[priceCol] = $filter('currency')(cols[priceCol]);
-                  var tds = {id: g._id.id, cols: cols};
+                  var tds = {id: g._id, cols: cols};
                   rowItems.push(tds);
                 });
                 scope.loading = false;

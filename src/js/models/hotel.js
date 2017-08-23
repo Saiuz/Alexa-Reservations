@@ -5,6 +5,7 @@
 define(['./module'], function (model) {
   'use strict';
   console.log('Creating hotel model');
+  
   // ** enums used to control fields in various schemas **
   // Salutaion enum for Guest
   var salutationEnum = ['Herrn', 'Frau', 'Familie', 'Dr.','Herr', 'Damen', 'Prof. Dr.', 'Herrn Pfarrer', 'Gräfin']; // provides display order
@@ -472,7 +473,8 @@ define(['./module'], function (model) {
       double_room_price: Number, // For a package, the per person room price for a double room
       duration: Number, //Number of days the plan covers
       display_string: String, //Formatted string that is displayed on the bill for the plan. (special formatting)
-      required_items: [ExpenseItem] // A list of required expense items that are associated with a room plan.
+      required_items: [ExpenseItem], // A list of required expense items that are associated with a room plan.
+      display_order: Number //Used to display values in a particular order
     });
 
     // Builds a default properties object for the ExpenseItem schema that can be used by the UI
@@ -521,7 +523,7 @@ define(['./module'], function (model) {
       resources: [ReservedResource],  //such as parking spots
       status: {type: String, enum: resStatusEnum},
       plan: String,  //Name of selected plan
-      plan_code: Number,   //id of selected plan
+      plan_code: db.db.Schema.Types.ObjectId,   //id of selected plan
       insurance: {type: String, enum: resInsuranceEnum} ,
       insurance2: {type: String, enum: resInsuranceEnum} ,
       prescription_charges: Boolean, // set based on insurance plan. Some plans require copay - only Private does not.

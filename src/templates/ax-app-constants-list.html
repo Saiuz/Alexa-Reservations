@@ -3,8 +3,8 @@
         <tbody>
         <tr ng-repeat="r in items">
             <td>{{r.display_name}}:&nbsp</td>
-            <td ng-if="r.nvalue"><a href="#" editable-text="textNum['_'+r._id.id]"
-                                    onaftersave="updateConstant(r._id.id)">{{r.nvalue | number: 2}}</a></td>
+            <td ng-if="r.nvalue"><a href="#" editable-text="textNum['_'+r._id]"
+                                    onaftersave="updateConstant(r._id)">{{r.nvalue | number: 2}}</a></td>
             <td ng-if="r.svalue">{{r.svalue}}</td>
             <td>&nbsp{{r.units}}</td>
         </tr>

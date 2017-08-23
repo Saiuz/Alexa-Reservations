@@ -62,7 +62,7 @@
             <td class="text-center">
                 <span>
                     <span ng-if="item.fix_price">{{item.price | currency}}</span>
-                    <a ng-if="!item.fix_price" href="#" editable-text="textPrice['_'+item._id.id]" onaftersave="updateExpense(item._id)">{{item.price | currency}}</a>
+                    <a ng-if="!item.fix_price" href="#" editable-text="textPrice['_'+item._id]" onaftersave="updateExpense(item._id)">{{item.price | currency}}</a>
                 </span>
             </td>
             <td class="text-center">

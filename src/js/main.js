@@ -1,3 +1,5 @@
+var win = nw.Window.get();
+win.showDevTools();
 /**
  * configure RequireJS
  * prefer named modules to long paths, especially for version mgt

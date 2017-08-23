@@ -326,7 +326,7 @@ define(['./module'], function (controllers) {
           function _findPlanInList(id) {
             var pix = -1;
             for (var i = 0; i < $scope.planObjects.length; i++) {
-              if ($scope.planObjects[i]._id.id === id) {
+              if ($scope.planObjects[i]._id === id) {
                 pix = i;
                 break;
               }
@@ -390,7 +390,7 @@ define(['./module'], function (controllers) {
                   name: p.name,
                   active: av,
                   disabled: !p.is_plan,
-                  id: p._id.id,
+                  id: p._id,
                   filterTypes: p.resTypeFilter
                 });
               }

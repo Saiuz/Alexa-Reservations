@@ -18,7 +18,7 @@ define(['./module'], function (services) {
       tmpPath = process.env.TEMP;
       basePath = process.env.APPDATA + '\\' + appName.replace(' ', '-');
       dbPath = basePath + '\\' + dataSubPath;
-      dbConnStr = 'tingodb://'+ dbPath;
+      dbConnStr = 'mongodb://192.168.178.44:27017/AlexaDB'; //'tingodb://'+ dbPath; //requires "mongoose": "~3.8.7",
       defExportPath = process.env.HOMEDRIVE + process.env.HOMEPATH + '\\Desktop';
       execPath = process.execPath.replace('nw.exe','');
       zipCmdfn = function (fpath) {
@@ -32,7 +32,7 @@ define(['./module'], function (services) {
       tmpPath = process.env.TMPDIR;
       basePath = process.env.HOME + '/Library/Application Support/' + appName.replace(' ', '-');
       dbPath = basePath + '/' + dataSubPath;
-      dbConnStr = 'tingodb://'+ dbPath;
+      dbConnStr = 'mongodb://192.168.178.44:27017/AlexaDB'; //'tingodb://'+ dbPath;
       defExportPath = process.env.HOME + '/Desktop';
       execPath = process.env.PWD;
       zipCmdfn = ''; //currently don't have an unzip option for the mac

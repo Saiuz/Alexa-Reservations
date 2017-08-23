@@ -83,7 +83,7 @@ define(['./module'], function (controllers) {
             $scope.plan = (modalParams && modalParams.displayMode > 0);
             // Determine CRUD mode of form.
             // For all but 'C' the query can be by id or by the firm_name property which is also unique.
-            var qry = {'_id': parseInt(modalParams.data)},
+            var qry = {'_id': modalParams.data},
                 notFound = configService.loctxt.expenseItem + ' "' + modalParams.data + '" ' + configService.loctxt.notFound;
 
             mode = modalParams.mode.substring(0, 1).toLowerCase();
@@ -231,7 +231,7 @@ define(['./module'], function (controllers) {
 
           // Delete btn handler
           $scope.delete = function (err) {
-            var id = $scope.roomPlan._id.id;
+            var id = $scope.roomPlan._id;
             $scope.err = false;
             $scope.errSave = false;
             $scope.roomPlan.remove(function (err) {

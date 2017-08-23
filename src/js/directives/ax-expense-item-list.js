@@ -129,7 +129,7 @@ define(['./module'], function (directives) {
         var _buildTextPriceObj = function () {
           var tpObj = {}; //build the textPrice object.
           scope.rvm.res.expenses.forEach(function (item){
-            var fname = '_' + item._id.id;
+            var fname = '_' + item._id;
             tpObj[fname] = item.price.toString();
           });
           scope.textPrice = tpObj;

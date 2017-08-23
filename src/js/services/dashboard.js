@@ -346,7 +346,7 @@ define(['./module'], function (services) {
             findPlan = function (id, plan) {
               var ix = -1;
               for (var i = 0; i < plan.length; i++) {
-                if (plan[0]._id.id === id) {
+                if (plan[0]._id === id) {
                   ix = i;
                   break;
                 }
@@ -522,7 +522,7 @@ define(['./module'], function (services) {
                   var eStartDse = datetime.daysSinceEpoch(event.start_date),
                       eEndDse = datetime.daysSinceEpoch(event.end_date),
                       evt = {
-                              id: event._id.id,
+                              id: event._id,
                               title: event.title,
                               start_date: event.start_date,
                               start_dse: eStartDse,

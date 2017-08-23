@@ -18,15 +18,15 @@
                 </thead>
                 <tbody>
                 <tr ng-repeat="r in items">
-                    <td><i class="glyphicon glyphicon-remove" ng-click="delete(r._id.id)"></i></td>
+                    <td><i class="glyphicon glyphicon-remove" ng-click="delete(r._id)"></i></td>
                     <td><a href="#" editable-text="r.name"
-                           onaftersave="update(r._id.id)">{{r.name}}</a></td></td>
+                           onaftersave="update(r._id)">{{r.name}}</a></td></td>
                     <td><a href="#" editable-text="r.display_name"
-                           onaftersave="update(r._id.id)">{{r.display_name}}</a></td></td>
+                           onaftersave="update(r._id)">{{r.display_name}}</a></td></td>
                     <td><a href="#" editable-number="r.display_order"
-                           onaftersave="update(r._id.id)">{{r.display_order}}</a></td>
-                    <td><a href="#" editable-text="txtPrice['_'+r._id.id]"
-                           onaftersave="update(r._id.id)">{{r.price | currency}}</a></td>
+                           onaftersave="update(r._id)">{{r.display_order}}</a></td>
+                    <td><a href="#" editable-text="txtPrice['_'+r._id]"
+                           onaftersave="update(r._id)">{{r.price | currency}}</a></td>
                 </tr>
                 </tbody>
             </table>

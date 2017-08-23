@@ -64,7 +64,7 @@ define(['./module'], function (controllers) {
           // Determine CRUD mode of form.
           // For all but 'C' the query can be by id or by the event_name property which is also unique.
           var mode = modalParams.mode.substring(0, 1).toLowerCase(),
-              id = parseInt(modalParams.data),
+              id = modalParams.data,
               extraData = modalParams.extraData,
               executeWatch = false,
               ignoreIndex = -1,
@@ -240,7 +240,7 @@ define(['./module'], function (controllers) {
               else {
                 var msg = (mode === 'c' ? configService.loctxt.event + configService.loctxt.success_saved :
                     configService.loctxt.success_changes_saved);
-                $rootScope.$broadcast(configService.constants.calEventChangedEvent, {data: $scope.event._id.id, sDate: $scope.event.start_date});
+                $rootScope.$broadcast(configService.constants.calEventChangedEvent, {data: $scope.event._id, sDate: $scope.event.start_date});
                 autoClose(msg, $scope.event);
               }
             });
@@ -248,7 +248,7 @@ define(['./module'], function (controllers) {
 
           // Delete btn handler
           $scope.delete = function (err) {
-            var id = $scope.event._id.id;
+            var id = $scope.event._id;
             $scope.event.remove(function (err) {
               if (err) {
                 console.log('Event delete error: ' + err);

@@ -70,7 +70,7 @@ define(['./module'], function (controllers) {
           // Determine CRUD mode of form.
           // For all but 'C' the query can be by id or by the firm_name property which is also unique.
           var mode = modalParams.mode.substring(0, 1).toLowerCase(),
-              qry = {'_id': parseInt(modalParams.data)},
+              qry = {'_id': modalParams.data},
               notFound = configService.loctxt.resource + ' "' + modalParams.data + '" ' + configService.loctxt.notFound;
 
           switch (mode) {
@@ -187,7 +187,7 @@ define(['./module'], function (controllers) {
 
           // Delete btn handler
           $scope.delete = function (err) {
-            var id = $scope.resource._id.id;
+            var id = $scope.resource._id;
             $scope.err = false;
             $scope.errSave = false;
             $scope.resource.remove(function (err) {

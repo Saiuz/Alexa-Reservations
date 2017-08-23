@@ -204,7 +204,7 @@ define(['./module'], function (controllers) {
             modalInstance.result.then(function (result) {
               bodyRef.removeClass('ovh');
               if (lastModef === 'c') {
-                $scope.testFid = result._id.id;
+                $scope.testFid = result._id;
               }
               console.log("Firm Modal returned: " + result);
               $scope.firmTestResult = result;
@@ -245,7 +245,7 @@ define(['./module'], function (controllers) {
             modalInstance.result.then(function (result) {
               console.log("Guest Modal returned: " + result);
               if (lastModeg === 'c') {
-                $scope.testGid = result._id.id;
+                $scope.testGid = result._id;
               }
               $scope.guestTestResult = result;
             });
@@ -307,7 +307,7 @@ define(['./module'], function (controllers) {
                   edit_count: true
                 };
                 modals.create(model,dataObjI,function(result) {
-                  $scope.testIid = result._id.id;
+                  $scope.testIid = result._id;
                   $scope.itmTestResult = result;
                 });
                 break;
@@ -343,7 +343,7 @@ define(['./module'], function (controllers) {
                 dataObjRm.data = undefined;
                 dataObjRm.extraData = {};
                 modals.create(model,dataObjRm,function(result) {
-                  $scope.testRmid = result._id.id;
+                  $scope.testRmid = result._id;
                   $scope.rmTestResult = result;
                 });
                 break;
@@ -379,7 +379,7 @@ define(['./module'], function (controllers) {
                 dataObjRs.data = undefined;
                 dataObjRs.extraData = {};
                 modals.create(model,dataObjRs,function(result) {
-                  $scope.testRsid = result._id.id;
+                  $scope.testRsid = result._id;
                   $scope.rsTestResult = result;
                 });
                 break;
@@ -464,7 +464,7 @@ define(['./module'], function (controllers) {
                 dataObjRP.data = undefined;
                 dataObjRP.extraData = dashboard.getRoomPlanPackageDefaultObj($scope.rpResType);
                 modals.create(model,dataObjRP,function(result) {
-                  $scope.testRPid = result._id.id;
+                  $scope.testRPid = result._id;
                   $scope.rpTestResult = result;
                 });
                 break;

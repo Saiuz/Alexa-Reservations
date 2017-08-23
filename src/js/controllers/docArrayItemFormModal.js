@@ -287,7 +287,7 @@ define(['./module'], function (controllers) {
                 modalParams.docArray = undefined;
               }
               var msg = configService.loctxt.expenseItem + configService.loctxt.success_deleted;
-              _autoClose(msg, $scope.itemType._id.id);
+              _autoClose(msg, $scope.itemType._id);
             }
 
           };
@@ -375,7 +375,7 @@ define(['./module'], function (controllers) {
             try {
               for (ix = 0; ix < modalParams.docArray.length; ix++) {
                 if (isNum) {
-                  found = modalParams.docArray[ix]._id.id === id;
+                  found = modalParams.docArray[ix]._id === id;
                 }
                 else {
                   found = modalParams.docArray[ix].name === id;

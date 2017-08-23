@@ -99,7 +99,7 @@ define(['./module'], function (directives) {
               var txObj = {};
               ilist.forEach(function (i) {  //convert all numeric values to text
                 if (i.price) {
-                  txObj['_' + i._id.id] = $filter('number')(i.price, 2);
+                  txObj['_' + i._id] = $filter('number')(i.price, 2);
                 }
               });
               return txObj;
@@ -108,7 +108,7 @@ define(['./module'], function (directives) {
             function _findItem(id) {
               var item;
               for (var j = 0; j < scope.items.length; j++) {
-                if (scope.items[j]._id.id === id){
+                if (scope.items[j]._id === id){
                   item = scope.items[j];
                   break;
                 }

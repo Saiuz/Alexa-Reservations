@@ -34,10 +34,9 @@
     "decompress": "^4.0.0",
     "jade": "~1.11.0",
     "moment": "~2.10.6",
-    "mongoose": "~3.8.7",
+    "mongoose": "^4.11.7",
     "querystring": "~0.2.0",
-    "shortid": "~2.2.2",
-    "tungus": "~0.0.2"
+    "shortid": "~2.2.2"
   },
   "scripts": {
     "postinstall": "node ../etc/scripts/postinstall.js"

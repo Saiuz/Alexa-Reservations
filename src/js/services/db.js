@@ -7,14 +7,14 @@ define(['./module'], function (services) {
 
   services.factory('db', ['appConstants', function (appConstants) {
 
-    var tungus = require('tungus');
+    //var tungus = require('tungus');
     var mongoose = require('mongoose');
     var fs = require('fs');
     var path = require('path');
 
     var files, newfile, oldfile;
 
-    console.log("Creating/opening database in folder", appConstants.dbPath);
+    //console.log("Creating/opening database in folder", appConstants.dbPath);
     // First see if the database path exists, if not create it.
     if (!fs.existsSync(appConstants.basePath)) {
       fs.mkdirSync(appConstants.basePath);
@@ -37,19 +37,26 @@ define(['./module'], function (services) {
 
     // Establish the database connection
     var constr = appConstants.dbConnStr; // 'mongodb://192.168.1.32:27017/AlexaDB';
-    console.log('Connecting to db');
-    mongoose.connect(constr, function (err) {
-      // if we failed to connect, abort
+    console.log('Connecting to db ' + constr);
+    mongoose.Promise = global.Promise;
+    mongoose.connect(constr, {
+      useMongoClient: true
+    }, (err) => {
       if (err) throw err;
       console.log("Connected to db: " + constr);
     });
+    // mongoose.connect(constr, {useMongoClient: true}, function (err) {
+    //   // if we failed to connect, abort
+    //   if (err) throw err;
+    //   console.log("Connected to db: " + constr);
+    // });
 
     return {
       dbDisconnect: function (callback) {
         mongoose.disconnect(callback);
       },
       dbReconnect: function () {
-        mongoose.connect(constr, function (err) {
+        mongoose.connect(constr, {useMongoClient: true}, function (err) {
           // if we failed to connect, abort
           if (err) throw err;
           console.log("Reconnected to db: " + constr);

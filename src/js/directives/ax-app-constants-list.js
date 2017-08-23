@@ -57,7 +57,7 @@ define(['./module'], function (directives) {
         var txObj = {};
         clist.forEach(function (c) {  //convert all numeric values to text
           if (c.nvalue) {
-            txObj['_' + c._id.id] = $filter('number')(c.nvalue, 2);
+            txObj['_' + c._id] = $filter('number')(c.nvalue, 2);
           }
         });
         scope.textNum = txObj;
@@ -66,7 +66,7 @@ define(['./module'], function (directives) {
       function _findItem(id) {
         var item;
         scope.items.forEach(function (c) {
-          if (c._id.id === id) {
+          if (c._id === id) {
             item = c;
           }
         });

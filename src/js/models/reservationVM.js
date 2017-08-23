@@ -167,7 +167,7 @@ define(['./module'], function (model) {
           planRequiredItems =  plan.required_items;// used by methods that manage reservation expense items
           // Update reservation fields with plan information
           this.res.plan = plan.name;
-          this.res.plan_code = plan._id.id;
+          this.res.plan_code = plan._id;
           this.res.individualBill = !plan.one_bill;
           // Set public boolean properties based on plan
           this.showFirm = plan.needs_firm;
@@ -236,7 +236,7 @@ define(['./module'], function (model) {
           this.single_only = false;
           this.double_only = false;
           this.res.plan = '';
-          this.res.plan_code = 0;
+          this.res.plan_code = null;
         }
       };
 
@@ -404,7 +404,7 @@ define(['./module'], function (model) {
             pid = planID ? planID : that.selectedPlan.value;
 
         that.roomPlansAll.forEach(function (plan) {
-          if (plan._id.id === pid) {
+          if (plan._id === pid) {
             curPlan = plan;
           }
         });
@@ -2568,9 +2568,9 @@ define(['./module'], function (model) {
           var selected = null;
           that.roomPlansAll.forEach(function (plan) {
             if (plan.resTypeFilter.indexOf(resType) !== -1) {
-              var pobj = {value: plan._id.id, name: plan.name};
+              var pobj = {value: plan._id, name: plan.name};
               rPlans.push(pobj);
-              if (curPlanCode && pobj.value === curPlanCode) {
+              if (typeof(curPlanCode) === 'object' && pobj.value.toString() === curPlanCode.toString()) {
                 selected = pobj;
               }
               if (plan.is_default) {
@@ -2597,7 +2597,7 @@ define(['./module'], function (model) {
       function _findSelectedPlan() {
         var selPlan = undefined;
         that.roomPlansAll.forEach(function (plan) {
-          if (plan._id.id === that.selectedPlan.value) {
+          if (plan._id === that.selectedPlan.value) {
             selPlan = plan;
           }
         });
@@ -2608,7 +2608,7 @@ define(['./module'], function (model) {
       // Now that everything is defined, initialize the VM based on the reservation model
       // perform model setup actions
       if (reservation) {
-        lastPlanCode = reservation.plan_code ? reservation.plan_code : -1;
+        lastPlanCode = reservation.plan_code ? reservation.plan_code : "-1";
         lastGuest = reservation.guest ? reservation.guest.name : '';
         lastGuest2 = reservation.guest2 ? reservation.guest2.name : '';
         lastFirm = reservation.firm ? reservation.firm : '';

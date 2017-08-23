@@ -66,7 +66,7 @@ define(['./module'], function (controllers) {
           // Determine CRUD mode of form.
           // For all but 'C' the query can be by id or by the unique_name property.
           var mode = modalParams.mode.substring(0, 1).toLowerCase();
-          var qry = parseInt(modalParams.data) ? {'_id': parseInt(modalParams.data)} : {'unique_name': modalParams.data};
+          var qry = typeof(modalParams.data) === 'object' ? {'_id': modalParams.data} : {'unique_name': modalParams.data};
           var notFound = configService.loctxt.guest + ' "' + modalParams.data + '" ' + configService.loctxt.notFound;
           switch (mode) {
             case 'c':
@@ -258,7 +258,7 @@ define(['./module'], function (controllers) {
 
           // Delete btn handler
           $scope.delete = function () {
-            var id = $scope.guest._id.id;
+            var id = $scope.guest._id;
             $scope.guest.remove(function (err) {
               if (err) {
                 console.log('Guest delete error: ' + err);

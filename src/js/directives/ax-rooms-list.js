@@ -43,15 +43,15 @@ define(['./module'], function (directives) {
         });
       };
 
-      scope.update = function (id) { //id is the numeric value not the _id object.
-        var num = scope.txtPrice['_' + id].replace(/[^0-9,.]/g, '');
+      scope.update = function (id) { //id is  the _id object.
+        var num = scope.txtPrice[id.toString()].replace(/[^0-9,.]/g, '');
         var item = _findItem(id);
 
         if (item) {
           item.price = num ? convert.deNumberToDecimal(num, true) :  0;
           item.save(function (err) {
             if (err && num) {
-              scope.txtPrice['_' + id] = '*error*';
+              scope.txtPrice[id.toString()] = '*error*';
             }
            scope.$apply();
           });
@@ -101,7 +101,9 @@ define(['./module'], function (directives) {
         var txObj = {};
         ilist.forEach(function (i) {  //convert all numeric values to text
           if (i.price) {
-            txObj['_' + i._id.id] = $filter('number')(i.price, 2);
+            txObj[i.id] = $filter('number')(i.price, 2);
+          } else {
+            txObj[i.id] = '0';
           }
         });
         return txObj;
@@ -110,7 +112,7 @@ define(['./module'], function (directives) {
       function _findItem(id) {
         var item;
         for (var j = 0; j < scope.items.length; j++) {
-          if (scope.items[j]._id.id === id){
+          if (scope.items[j]._id === id){
             item = scope.items[j];
             break;
           }
