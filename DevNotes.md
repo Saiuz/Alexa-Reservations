@@ -85,3 +85,10 @@ comfort = dark blue 35,45,46,48,53,58
 
 4) correct Spelling of Standard !!
 5) Kur bill, the last page, the u umlaut is printing as a weird symbol, don't know why, it shows up ok in HTML page.
+
+*Issues found during data conversion*
+Need to tighten up logic around firm and guest on res form and room names for bus res. There are a lot of business reservations that are using guests without firm while the correct guest exists. Should never be able to add a new guest from the res form without a firm when the res has a firm.
+
+Update name virtual property of the guest model. If first name is missing, names in reservations have 'undefined' as first names. DONE
+
+Note updating guest names need to update reservations with the guest name if they are still open.

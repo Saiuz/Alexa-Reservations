@@ -1,6 +1,6 @@
 /*
  * Configuration service. Provides methods to get and set local storage variables. Also provides objects containing
- * global constants and text strings for the UI.
+ * global constants and text strings for the UI. Alexa MongoDB server ip ??? 192.168.178.44 ???
  */
 define(['./module'], function (services) {
   'use strict';
@@ -18,7 +18,7 @@ define(['./module'], function (services) {
       tmpPath = process.env.TEMP;
       basePath = process.env.APPDATA + '\\' + appName.replace(' ', '-');
       dbPath = basePath + '\\' + dataSubPath;
-      dbConnStr = 'mongodb://192.168.178.44:27017/AlexaDB'; //'tingodb://'+ dbPath; //requires "mongoose": "~3.8.7",
+      dbConnStr = 'mongodb://192.168.1.126:27017/AlexaDB'; //'mongodb://192.168.178.44:27017/AlexaDB'; 'tingodb://'+ dbPath; //requires "mongoose": "~3.8.7",
       defExportPath = process.env.HOMEDRIVE + process.env.HOMEPATH + '\\Desktop';
       execPath = process.execPath.replace('nw.exe','');
       zipCmdfn = function (fpath) {
@@ -32,7 +32,7 @@ define(['./module'], function (services) {
       tmpPath = process.env.TMPDIR;
       basePath = process.env.HOME + '/Library/Application Support/' + appName.replace(' ', '-');
       dbPath = basePath + '/' + dataSubPath;
-      dbConnStr = 'mongodb://192.168.178.44:27017/AlexaDB'; //'tingodb://'+ dbPath;
+      dbConnStr = 'mongodb://192.168.1.126:27017/AlexaDB'; //'tingodb://'+ dbPath;
       defExportPath = process.env.HOME + '/Desktop';
       execPath = process.env.PWD;
       zipCmdfn = ''; //currently don't have an unzip option for the mac

@@ -8,7 +8,7 @@ define(['./module'], function (model) {
   
   // ** enums used to control fields in various schemas **
   // Salutaion enum for Guest
-  var salutationEnum = ['Herrn', 'Frau', 'Familie', 'Dr.','Herr', 'Damen', 'Prof. Dr.', 'Herrn Pfarrer', 'Gräfin']; // provides display order
+  var salutationEnum = ['Herrn', 'Frau', 'Familie', 'Herrn Dr.', 'Dr.','Herr', 'Damen', 'Prof. Dr.', 'Herrn Pfarrer', 'Gräfin']; // provides display order
   var salutationSearchOrder = [6,7,0,1,2,3,4,5,8];// order to search for salutations (two word salutations first)
   // item type enum used in ExpenseItem and ItemType schema
   var itemTypeEnum =['Plan', 'Allgemein', 'Speisen', 'Getränke', 'Dienste', 'VDAK', 'AOK & Andere', 'Privat'];
@@ -330,30 +330,32 @@ define(['./module'], function (model) {
   model.factory('Guest', function(db, dbEnums, $filter) {
 
     var schema = new db.db.Schema({
-        first_name: { type: String},
+        first_name: { type: String, default: '' },
         last_name: { type: String, required: true, index: true },
         partner_name: String, // name of spouse or significant other. First name or full name if different last name
         salutation: { type: String, enum: salutationEnum},
         birthday: Date,
         birthday_partner: Date,
         email: { type: String}  ,
-        firm: String, //unique name from Firm schema
+        firm: { type: String, default: '' }, //unique name from Firm schema
         address1: String,
         address2: String,
-        city: String,
+        city: { type: String, default: '' },
         post_code: String,
         country: String,
         telephone: String,
         comments: String,
+        last_stay: Date,
         unique_name: {type: String, unique: true} //NOTE this field should not be exposed as an editable field on a UI form. It is generated on save.
     });
     // Virtual fields
     schema.virtual('name').get(function() {
-      if (this.salutation) {
-        return this.salutation + " " + this.first_name + " " + this.last_name;
-      } else {
-        return this.first_name + " " + this.last_name;
-      }
+      let n = `${this.salutation} ${this.first_name} ${this.last_name}`
+      return n.replace(/\s\s+/g, ' ').trim();
+    });
+    schema.virtual('full_address').get(function() {
+      let addr = `${(this.address1 || "--")} ${(this.address2 || "")} ${(this.post_code || "--")} ${(this.city || "--")} ${(this.country || "")}`
+      return addr.replace(/\s\s+/g, ' ').trim();
     });
     // if partner then generate the partner name
     schema.virtual('partner').get(function () {
@@ -404,11 +406,9 @@ define(['./module'], function (model) {
     // Note there is no equivalent function for update. Unique name does not get updated
     // when say the firm name is changed and the guests firm fields are updated with an update command.
     schema.pre('save', function(next) {
-      var nam = this.salutation ? this.salutation : '';
-      nam = this.first_name ? nam.length > 0 ? nam + ' ' + this.first_name : this.first_name : nam;
-      nam = nam.length > 0 ? nam + ' ' + this.last_name : this.last_name; //last name always there
-      nam = this.city ? nam + ' ('  + this.city + ')' : this.firm ? nam + ' [' + this.firm + ']' : nam;
-      this.unique_name = nam;
+      let up = this.firm ? `[${this.firm}]` : this.city ? `(${this.city})` : `(${this.last_name})`;
+      let un = `${this.salutation} ${this.first_name ? this.first_name : ''} ${this.last_name} ${up}`
+      this.unique_name = un.replace(/\s\s+/g, ' ').trim();
       next();
     });
 
@@ -418,25 +418,25 @@ define(['./module'], function (model) {
     schema.methods.toDisplayObj = function (withFirm) {
       if (withFirm) {
         return {
-          'Name': this.name, 'Firma': this.firm, 'Telefon': this.telephone, 'Email': this.email,
-          'Bemerkung': this.comments
+          'Name': this.name, 'Firma': this.firm, 'Telefon': this.telephone, 'Email': this.email, 
+          'Letzter Aufenthalt': $filter('date')( this.last_stay, 'shortDate'), 'Bemerkung': this.comments
         };
       }
       else {
         return {
-          'Name': this.name, 'Partner': this.partner_name, 'Geburtstag': $filter('date')( this.birthday, 'shortDate'),
-          'Addresse 1': this.address1, 'Addresse 2': this.address2,
-          'PLZ': this.post_code, 'Ort': this.city, 'Land': this.country, 'Telefon': this.telephone, 'Email': this.email,
-          'Bemerkung': this.comments
+          'Name': this.name, 'Partner': this.partner_name, 'Addresse': this.full_address,
+          'Telefon': this.telephone, 'Email': this.email,
+          'Letzter Aufenthalt': $filter('date')( this.last_stay, 'shortDate'), 
+          'Geburtstag': $filter('date')( this.birthday, 'shortDate'), 'Bemerkung': this.comments
         };
       }
     };
     schema.statics.toDisplayObjHeader = function (withFirm) {
       if (withFirm) {
-        return ['Name','Firma','Telefon','Email','Bemerkung'];
+        return ['Name','Firma','Telefon','Email','Letzter Aufenthalt','Bemerkung'];
       }
       else {
-        return ['Name','Partner', 'Geburtstag','Addresse 1','Addresse 2','PLZ','Ort','Land','Telefon','Email','Bemerkung'];
+        return ['Name','Partner', 'Addresse','Telefon','Email','Letzter Aufenthalt','Geburtstag','Bemerkung'];
       }
     };
 
@@ -595,20 +595,24 @@ define(['./module'], function (model) {
       comments: String
     });
 
+    schema.virtual('full_address').get(function() {
+      let addr = `${(this.address1 || "--")} ${(this.address2 || "")} ${(this.post_code || "--")} ${(this.city || "--")} ${(this.country || "")}`
+      return addr.trim().replace("  ", " ");
+    });
+
     // Model method to convert the model's schema properties to an object with German Property names suitable for
     // displaying in the UI. This object uses the name field instead of first_name and last_name. If withFirm is true
     // then it contains the firm name but not the address fields since they are contained in the firm collection.
     schema.methods.toDisplayObj = function () {
         return {
-          'Firma': this.firm_name, 'Zimmer Preis': this.room_price, 'Addresse 1': this.address1,
-          'Addresse 2': this.address2, 'PLZ': this.post_code, 'Ort': this.city, 'Land': this.country,
+          'Firma': this.firm_name, 'Zimmer Preis': this.room_price, 'Addresse': this.full_address,
           'Kontakt Name': this.contact_name, 'Kontakt Tf': this.contact_telephone, 'Kontakt E-Mail': this.contact_email,
           'Bemerkung': this.comments
         };
     };
 
     schema.statics.toDisplayObjHeader = function () {
-      return ['Firma', 'Zimmer Preis', 'Addresse 1','Addresse 2','PLZ','Ort','Land', 'Kontakt Name',
+      return ['Firma', 'Zimmer Preis', 'Addresse', 'Kontakt Name',
               'Kontakt Tf','Kontakt E-Mail','Bemerkung'];
     };
 

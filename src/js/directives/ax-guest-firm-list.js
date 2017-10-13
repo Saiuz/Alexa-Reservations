@@ -153,13 +153,14 @@ define(['./module'], function (directives) {
       function _getGuests (qryRegex, firmSearch, altRegex) {
         scope.lastQry = qryRegex;
         scope.lastQry2 = altRegex;
+        let fqry = scope.withFirm ? {$ne: ''} : {$eq: ''};
         var qry = firmSearch ?
                   qryRegex && altRegex ?
                   {firm: {$regex: altRegex, $options: 'i'}, last_name: {$regex: qryRegex, $options: 'i'} }
                   : qryRegex && !altRegex ?
-                    {last_name: {$regex: qryRegex, $options: 'i'}, firm: {$exists: scope.withFirm}}
+                    {last_name: {$regex: qryRegex, $options: 'i'}, firm: fqry}
                     : {firm: {$regex: altRegex, $options: 'i'}}
-                  : {last_name: {$regex: qryRegex, $options: 'i'}};
+                  : {last_name: {$regex: qryRegex, $options: 'i'}, firm: fqry};
 
         scope.loading = true;
         Guest.find(qry)
