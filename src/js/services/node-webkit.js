@@ -99,7 +99,7 @@ define(['./module', '_'], function (services, _) {
       $dlg.trigger('click');
       return result.promise;
     };
-//TODO- Try and replace '_' (lodash) with js or angular utilities
+
     function createMenuItems(menu, items) {
 
       _.each(items, function (i) {

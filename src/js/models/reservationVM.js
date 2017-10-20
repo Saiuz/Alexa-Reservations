@@ -28,6 +28,8 @@ define(['./module'], function (model) {
 
       // *** public properties assigned to VM and initialization code
       this.res = reservation; // The Reservation (Mongoose model) that this ViewModel works with.
+      this.guest1rec = null;
+      this.guest2rec = null;
       this.roomPlanFirstText = '<' + configService.loctxt.selectRoomPlan + '>'; // default text for first item in room plan list
       this.roomPlansAll = roomPlanList; // The list of available room plans for the reservation. This list is filtered based on
       // reservation type and the filtered list is placed in the roomPlans array.
@@ -2683,39 +2685,25 @@ define(['./module'], function (model) {
 
         return deferred.promise;
       },
-
-      // Retrieves the specified reservation and returns a view model containing the reservation model.
-      // Parameter resnum is the reservation number of the reservation to retrieve.
-      // Parameter readOnly, if true then the reservation is retrieved but the available rooms list is not
-      // retrieved.
-      getReservationVM: function (resnum, readOnly) {
-        var deferred = $q.defer();
-        // Get the required data from other collections for the VM, retrieve the specified Reservation and
-        // create and return the VM with the reservation.
-        dashboard.getRoomPlanList().then(function (roomPlanList) {
-          dashboard.getItemTypeList().then(function (itemTypeList) {
-            dashboard.getReservationByNumber(resnum).then(function (reservation) {
-              console.log("Reservation " + reservation.reservation_number + " retrieved");
-              var rvm = new reservationVM(reservation, roomPlanList, itemTypeList, true);
-              if (readOnly) {
-                return deferred.resolve(rvm);
-              }
-              rvm.updateAvailableRoomsAndResources().then(function () {
-                return deferred.resolve(rvm);
-              }, function (err) {
-                return deferred.reject(new utility.errObj(err)); //pass error up the chain.
-              });
-            }, function (err) {
-              return deferred.reject(new utility.errObj(err)); //pass error up the chain.
-            });
-          }, function (err) {
-            return deferred.reject(new utility.errObj(err)); //pass error up the chain.
-          });
-        }, function (err) {
-          return deferred.reject(new utility.errObj(err)); //pass error up the chain.
-        });
-
-        return deferred.promise;
+      /**
+       * Async function that retrieves the specified reservation and returns a view model containing the 
+       * reservation model.
+       * @param {num} resnum - the reservation number of the reservation to retrieve.
+       * @param {bool} readOnly - if true then the reservation is retrieved but the available rooms list is not.
+       */
+      getReservationVM: async function (resnum, readOnly) {
+        try {
+          let roomPlanList = await dashboard.getRoomPlanList();
+          let itemTypeList = await dashboard.getItemTypeList();
+          let reservation = await dashboard.getReservationByNumber(resnum);
+          let rvm = new reservationVM(reservation, roomPlanList, itemTypeList, true);
+          if (!readOnly) {
+            await rvm.updateAvailableRoomsAndResources();
+          }
+          return rvm;
+        } catch (err) {
+          throw new utility.errObj(err);
+        }
       }
     }; //end of factory
   });

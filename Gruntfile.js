@@ -1,13 +1,15 @@
-var nwVer =  '0.24.3'; //'0.15.4'; //'0.12.3';
+const nwVer = '0.25.4'; // '0.24.3'; //'0.15.4'; //'0.12.3';
 
-var isWin32 = /^win/.test(process.platform) || nwVer === '0.10.5';
-var isWin64 = (/^win/.test(process.platform) && nwVer !== '0.10.5') && /^x64/.test(process.arch);
-var isMac32 = /^darwin/.test(process.platform) && /^ia32/.test(process.arch);
-var isMac64 = /^darwin/.test(process.platform) && /^x64/.test(process.arch);
-var isLinux32 = /^linux/.test(process.platform);
-var isLinux64 = /^linux64/.test(process.platform);
+const isWin32 = /^win/.test(process.platform) || nwVer === '0.10.5';
+const isWin64 = (/^win/.test(process.platform) && nwVer !== '0.10.5') && /^x64/.test(process.arch);
+const isMac32 = /^darwin/.test(process.platform) && /^ia32/.test(process.arch);
+const isMac64 = /^darwin/.test(process.platform) && /^x64/.test(process.arch);
+const isLinux32 = /^linux/.test(process.platform);
+const isLinux64 = /^linux64/.test(process.platform);
 
-var os = "unknown";
+const flavor = 'sdk';
+
+let os = "unknown";
 
 if (isWin32)
   os = "win32";
@@ -22,14 +24,14 @@ if (isLinux32)
 if (isLinux64)
     os = "linux64";
 
-var appDir = "~//Alexa-Reservations";  //hard wired todo - figure out how to get this programmatically for mac
+const appDir = "~//Alexa-Reservations";  //hard wired todo - figure out how to get this programmatically for mac
 
-var nwExec = "";
+let nwExec = "";
 
 if (!isMac32 && !isMac64)
-    nwExec = "cd cache/" + nwVer + "/" + os + " && nw ../../../src";
+    nwExec = `cd cache/${nwVer}-${flavor}/${os} && nw ../../../src`;
 else
-    nwExec = appDir + "/cache/" + nwVer + "/" + os + "/nwjs.app/Contents/MacOS/nwjs " + appDir + "/src";
+    nwExec = `${appDir}/cache/${nwVer}-${flavor}/${os}/nwjs.app/Contents/MacOS/nwjs ${appDir}/src`;
 
 
 console.log("OS: " + os);
@@ -50,6 +52,7 @@ module.exports = function(grunt) {
                 osx64: isMac64,
                 win32: isWin32,
                 win64: isWin64,
+                flavor: flavor,
                 //linux32: isLinux32,
                 //linux64: isLinux64,
                 keep_nw: false,

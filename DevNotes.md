@@ -77,11 +77,11 @@ Bugs / changes on the fly:
 Bugs that still need fixing
 1) Plans with half/full pensions, the meal price is 0 and needs to be manually updated.
 2) For private (Separate) bill feature, the address needs to be taken from the guest, not the firm.
-3) colors need to be changed for some rooms
+3) **DONE** ~~colors need to be changed for some rooms
 
 standard = light blue  9,18,19,47 
 suites = lilac 21,26,27,32,42
-comfort = dark blue 35,45,46,48,53,58
+comfort = dark blue 35,45,46,48,53,58~~
 
 4) correct Spelling of Standard !!
 5) Kur bill, the last page, the u umlaut is printing as a weird symbol, don't know why, it shows up ok in HTML page.
@@ -89,6 +89,12 @@ comfort = dark blue 35,45,46,48,53,58
 *Issues found during data conversion*
 Need to tighten up logic around firm and guest on res form and room names for bus res. There are a lot of business reservations that are using guests without firm while the correct guest exists. Should never be able to add a new guest from the res form without a firm when the res has a firm.
 
-Update name virtual property of the guest model. If first name is missing, names in reservations have 'undefined' as first names. DONE
+**DONE** Update name virtual property of the guest model. If first name is missing, names in reservations have 'undefined' as first names.
 
 Note updating guest names need to update reservations with the guest name if they are still open.
+
+Many group business reservations require one bill instead of individual bills. Currently Carola converts them to travel group reservations.
+
+
+Conversion tasks (to MongoDB) that still need to be done:
+1) 

@@ -109,6 +109,7 @@ define(['./module'], function (controllers) {
 
           // converts this person's bill from a business to a private bill. Adds kurtax.
           // or reverts a private bill back to a business bill and removes kurtax.
+          // Note we also must toggle address and take guest's address not firm's address
           $scope.toggleSecond = function () {
             if ($scope.secondPrivate) {
               $scope.rvm.addKurtaxForGuestInRoom($scope.guest, $scope.room).then( function () {

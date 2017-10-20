@@ -9,10 +9,10 @@ define("app", [
   'text!',
   'angular-xeditable',
   'angular-i18n',
-  './controllers/index',
-  './directives/index',
-  './filters/index',
   './services/index',
+  './controllers/index',
+  './filters/index',
+  './directives/index',
   './views/index',
   './states/index',
   './models/index'
@@ -72,23 +72,40 @@ define("app", [
                   }
                 ]
               },
-              {
-                label: 'Importieren...',
-                tooltip: 'Importieren von Daten',
-                click: 'open-file',
-                items: [
-                  {
-                    label: 'Einzeldaten',
-                    tooltip: 'Gäste Addresse Liste, Firma, usw.',
-                    click: 'import-one'
-                  },
-                  {
-                    label: 'Alle Daten',
-                    tooltip: 'Wiederherstellung alle Programmdaten',
-                    click: 'import-all'
-                  }
-                ]
-              },
+              // {
+              //   label: 'Importieren...',
+              //   tooltip: 'Importieren von Daten',
+              //   click: 'open-file',
+              //   items: [
+              //     {
+              //       label: 'Einzeldaten',
+              //       tooltip: 'Gäste Addresse Liste, Firma, usw.',
+              //       click: 'import-one'
+              //     },
+              //     {
+              //       label: 'Alle Daten',
+              //       tooltip: 'Wiederherstellung alle Programmdaten',
+              //       click: 'import-all'
+              //     }
+              //   ]
+              // },,
+              // {
+              //   label: 'Importieren...',
+              //   tooltip: 'Importieren von Daten',
+              //   click: 'open-file',
+              //   items: [
+              //     {
+              //       label: 'Einzeldaten',
+              //       tooltip: 'Gäste Addresse Liste, Firma, usw.',
+              //       click: 'import-one'
+              //     },
+              //     {
+              //       label: 'Alle Daten',
+              //       tooltip: 'Wiederherstellung alle Programmdaten',
+              //       click: 'import-all'
+              //     }
+              //   ]
+              // },
               {
                 label: 'Quit',
                 tooltip: 'Quit Alexa Reservierung',

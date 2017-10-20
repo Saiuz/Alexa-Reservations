@@ -2,40 +2,46 @@
  * Configuration service. Provides methods to get and set local storage variables. Also provides objects containing
  * global constants and text strings for the UI. Alexa MongoDB server ip ??? 192.168.178.44 ???
  */
+const mongoose = require('mongoose');
+
 define(['./module'], function (services) {
   'use strict';
 
-  // returns object with aplication specific constants
+  // returns object with application specific constants
   services.service('appConstants', [function () {
-    var pjson = require('./package.json'),
-        appName = 'Alexa Reservierungen',
-        dataSubPath = 'data2',
-        appTitle = 'Hotel Alexa Reservierungssystem',
-        tmpPath, dbPath, dbConnStr, defExportPath, zipCmdfn, execPath, basePath;
+    console.log('Defining constants...')
+    const pjson = require('./package.json'),
+          appName = 'Alexa Reservierungen',
+          dataSubPath = 'temp',
+          appTitle = 'Hotel Alexa Reservierungssystem';
 
-    // Determine the database path and the default export path based on the operating system (mac or windows).
+    let tmpPath, workPath, dbConnStr, defExportPath, execPath, basePath, host, port, database, dbDumpCmd, dbDumpPath;
+    // establish db info
+    host = pjson.db.host;
+    port = pjson.db.port || '27017';
+    database = pjson.db.database || 'AlexaDB';
+    dbConnStr = `mongodb://${host}:${port}/${database}`;
+    mongoose.connect(dbConnStr,{useMongoClient: true}); //establish the connection here
+    
+
+    // Determine the database export working directory and the default export path based on the operating system (mac or windows).
     if (/^win/.test(process.platform)) {
       tmpPath = process.env.TEMP;
       basePath = process.env.APPDATA + '\\' + appName.replace(' ', '-');
-      dbPath = basePath + '\\' + dataSubPath;
-      dbConnStr = 'mongodb://192.168.1.126:27017/AlexaDB'; //'mongodb://192.168.178.44:27017/AlexaDB'; 'tingodb://'+ dbPath; //requires "mongoose": "~3.8.7",
+      workPath = basePath + '\\' + dataSubPath;
       defExportPath = process.env.HOMEDRIVE + process.env.HOMEPATH + '\\Desktop';
       execPath = process.execPath.replace('nw.exe','');
-      zipCmdfn = function (fpath) {
-        //execute 7-Zip command line version (in same folder as the nw.exe file. The zip options are as follows:
-        // e to expand archive, -aou to quietly add a copy of the expanded file if the old file exists. The
-        // copy has a _1 suffix. -o specifies the output path.
-        return execPath + '7za e ' + fpath + ' -aou -o' + dbPath;
-      }
+      dbDumpPath = `${workPath}\\${database}`
+      dbDumpCmd =  (outFile) => {return `${execPath}\\extra\\mongodump --host ${host} --port ${port} --gzip --archive="${outFile}"`;};
     }
     else { //assume mac
       tmpPath = process.env.TMPDIR;
       basePath = process.env.HOME + '/Library/Application Support/' + appName.replace(' ', '-');
-      dbPath = basePath + '/' + dataSubPath;
-      dbConnStr = 'mongodb://192.168.1.126:27017/AlexaDB'; //'tingodb://'+ dbPath;
+      workPath = basePath + '/' + dataSubPath;
       defExportPath = process.env.HOME + '/Desktop';
       execPath = process.env.PWD;
-      zipCmdfn = ''; //currently don't have an unzip option for the mac
+      dbDumpPath = `${workPath}/${database}`;
+      dbDumpCmd = (outFile) => {return `${execPath}/extra/mongodump --host ${host} --port ${port} --gzip  --archive="${outFile}"`;};
     }
 
     return {
@@ -44,11 +50,14 @@ define(['./module'], function (services) {
       version: pjson.version, //from package json
       tmpPath: tmpPath,
       basePath: basePath,
-      dbPath: dbPath,
+      workPath: workPath,
       execPath: execPath,
       dbConnStr: dbConnStr,
       defExportPath: defExportPath,
-      zipCommand: zipCmdfn
+      dbDumpCmd: dbDumpCmd,
+      dbDumpPath: dbDumpPath,
+      dbName: database,
+      db: mongoose
     };
   }]);
 
@@ -80,6 +89,7 @@ define(['./module'], function (services) {
       autoCloseTime: 2000,
       billNumberID: 'billNo', //used by Counters collection to identify the bill number counter
       billNoSeed: 10000, // value used to seed the counter if the entry doesn;t exist
+      resNumberID: 'resNo', //used by Counters collection to identify the reservation number counter 
       expensesChangedEvent: 'EXP_EVENT1',  // event names
       reservationChangedEvent: 'RES_EVENT1',
       roomPlanClickEvent: 'ZPLAN_EVENT1',

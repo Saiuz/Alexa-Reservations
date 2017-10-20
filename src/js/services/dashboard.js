@@ -117,6 +117,16 @@ define(['./module'], function (services) {
         return deferred.promise;
       },
       getNewReservationNumber: function () {
+        try {
+          // same logic as bill number but check new value if it is less than
+          // year start then jump number up to year start and save new number.
+          
+        } catch (err) {
+          console.log("getNewReservationNumber query failed: " + err);
+          throw err;
+        }
+
+
         var deferred = $q.defer();
         var yearstart = (new Date().getFullYear() - 2000) * 10000;  //Y3k bug!!!
         Reservation.find({reservation_number: {$gt: yearstart}})
@@ -138,37 +148,19 @@ define(['./module'], function (services) {
             });
         return deferred.promise;
       },
-      // retrieves the bill number sequence and returns the value. Then it increments the number and saves it back
-      getNewBillNumber: function() {
-        var deferred = $q.defer();
-        var num = -1;
-        Counters.findOne({counter: configService.constants.billNumberID})
-            .exec(function (err, cntr) {
-              if (err) {
-                deferred.reject(err);
-                console.log("getNewBillNumber query failed: " + err);
-              }
-              else {
-                if (cntr) {
-                  num = cntr.seq;
-                  cntr.seq = cntr.seq + 1;
-                }
-                else {
-                  num = configService.constants.billNoSeed;
-                  cntr = new Counters({counter: configService.constants.billNumberID, seq: num + 1});
-                }
-                cntr.save(function(err) {
-                  if (err) {
-                    deferred.reject(err);
-                    console.log("getNewBillNumber save failed: " + err);
-                  }
-                  else {
-                    deferred.resolve(num);
-                  }
-                });
-              }
-            });
-        return deferred.promise;
+      // retrieves the bill number sequence and returns the next value. Then it increments the number and saves it back
+      getNewBillNumber: async function() {
+        try {
+          let cntr = await Counters.findAndModify({
+            query: {counter: configService.constants.billNumberID},
+            update: { $inc: {seq: 1}},
+            new: true
+          });
+          return cntr.seq;
+        } catch (err) {
+          console.log("getNewBillNumber save failed: " + err);
+          throw err;
+        }
       },
       getGuestNamesIds: function () {
         var deferred = $q.defer();

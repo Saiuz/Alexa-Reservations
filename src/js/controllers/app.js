@@ -4,7 +4,6 @@ define(['./module'], function (controllers) {
   controllers.controller('AppCtrl',
       ['$scope',
        '$rootScope',
-        'db',
         'Firm',
         'Guest',
         'Reservation',
@@ -16,9 +15,10 @@ define(['./module'], function (controllers) {
         'configService',
         'datetime',
         '$state',
-        function ($scope, $rootScope, db, Firm, Guest, Reservation, Resource,
+        'fileExecUtil',
+        function ($scope, $rootScope, Firm, Guest, Reservation, Resource,
                   Room, Itemtype, RoomPlan, AppConstants, configService, datetime,
-                  $state) {
+                  $state, fileExecUtil) {
           //var gui = nw.guirequire('nw.gui');
           var zoomPercent = 100,
               win = nw.Window.get(),
@@ -29,6 +29,8 @@ define(['./module'], function (controllers) {
           // Set the saved date for the home page room plan to the current date
           configService.set('planDate', datetime.dateOnly(new Date()));
 
+          // set up the app directories
+          fileExecUtil.prepAppDirectories().then(() => console.log("App directories created")).catch((err) => console.error(err));
           // add global keyboard shortcuts
           var refreshShortcut = new nw.Shortcut({
             key : "Ctrl+Shift+R",
@@ -112,8 +114,9 @@ define(['./module'], function (controllers) {
             $state.go('import_all');
           });
 
-          $scope.$on('close-app', function (e, menu, item) {
-            $state.go('close_app');
+          $scope.$on('close-app', function (e, menu, item) { //brut force close
+            win.close(true);
+            App.quit();
           });
 
           // Add base db collections if needed.  This must be at end of module

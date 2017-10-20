@@ -5,8 +5,13 @@
  */
 define(['./module'], function (services) {
   'use strict';
-  services.service('convert', ['$filter' , function ($filter) {
-     // *** Private methods used by the public service methods
+  const fs = require('fs-extra');
+  const path = require('path');
+  const exec = require('child-process-promise').exec;
+  const archiver = require('archiver');
+
+  services.service('convert', ['$filter', function ($filter) {
+    // *** Private methods used by the public service methods
 
     // A function that returns an array of objects that are used by the formatDisplayString method to
     // provide the correct plural version of words in the string. It looks for the following patterns in a
@@ -16,17 +21,20 @@ define(['./module'], function (services) {
     //
     function _getPluralMatches(string) {
       var matches = [],
-          regex = /(?:\S+\s)?(\S*\w+(\|\w+)+)/g,
-          match, words, num, wix;
+        regex = /(?:\S+\s)?(\S*\w+(\|\w+)+)/g,
+        match, words, num, wix;
 
       while (match = regex.exec(string)) {
         //console.log(match);
         //mPlus = match[0];
         //mPlus = match[0].replace(match[1],'');
         words = match[1].split('|');
-        num = Number(match[0].replace(match[1],''));
+        num = Number(match[0].replace(match[1], ''));
         wix = num > 1 ? 1 : 0;
-        matches.push({replace: match[1], withWord: words[wix]});
+        matches.push({
+          replace: match[1],
+          withWord: words[wix]
+        });
       }
       return matches;
     }
@@ -58,7 +66,7 @@ define(['./module'], function (services) {
       // Check if the mainObj is a Mongoose document. If so, then we perform property checking differently. (Need to
       // check the prototype for properties.)
       var result = '',
-          intExtras = {};
+        intExtras = {};
 
       if (extras) {
         for (var property in extras) {
@@ -126,16 +134,87 @@ define(['./module'], function (services) {
     //TODO-this logic is a bit week may want to be more careful about accepting decimal values
     this.deNumberToDecimal = function (input, asNumber) {
       var p = input.indexOf('.') !== -1,
-          result;
+        result;
       if (p && Number(input.replace('.', '')) < 1000) { //treat as decimal number
         return asNumber ? Number(input) : input;
-      }
-      else {
+      } else {
         result = input.replace('.', '').replace(',', '.');
         return asNumber ? Number(result) : result;
       }
 
     };
+  }]);
+
+  /**
+   * File utility service 
+   */
+  services.service('fileExecUtil', ['appConstants', function (appConstants) {
+    /**
+     * Function creates and/or cleans the required working directories for the app.
+     */
+    this.prepAppDirectories = async function () {
+      try {
+        await fs.ensureDir(appConstants.basePath);
+        await fs.remove(appConstants.workPath);
+        await fs.mkdir(appConstants.workPath);
+      } catch (err) {
+        throw err;
+      }
+    }
+    /**
+     * Function cleans the workPath directory
+     */
+    this.cleanWorkingDirectory = async function () {
+      try {
+        await fs.remove(appConstants.workPath);
+        await fs.mkdir(appConstants.workPath);
+      } catch (err) {
+        throw err;
+      }
+    }
+    /**
+     * Function that exposes the path.join function. It joins
+     * the parts of a directory/file path together with the 
+     * correct operating system separator. 
+     */
+    this.pathJoin = (...parts) => {
+      return path.join(...parts);
+    }
+    /**
+     * zips up all files in the specified source directory into 
+     * a zip archive.
+     */
+    this.zipDir = async function (sourceDir, destPath) {
+      let zbytes = 0;
+      try {
+        let dpath = path.dirname(destPath);
+
+        if (await fs.pathExists(sourceDir) && await fs.pathExists(dpath)) {
+          zbytes = await _zipFiles(sourceDir, destPath);
+          console.log(`Zipped ${zbytes} total bytes in ${sourceDir}`);
+        } else {
+          throw new Error(`zidDir Error: invalid source or destination`);
+        }
+        return zbytes;
+      } catch (err) {
+        throw err;
+      }
+    }
+
+    /**
+     * Executes a shell command and returns the output. It returns
+     * either stdout or if nothing in stdout then stderr. 
+     * Note the mondodump command only returns output to stderr for
+     * some reason.
+     */
+    this.execCmd = async function (cmd) {
+      try {
+        let results = await exec(cmd);
+        return (results.stdout ? results.stdout : results.stderr);
+      } catch (err) {
+        throw err;
+      }
+    }
   }]);
 
   services.service('utility', [function () {
@@ -161,4 +240,50 @@ define(['./module'], function (services) {
       }
     };
   }]);
+
+   /**
+    * Helper functions
+    */
+
+  /**
+   * Actually does the Zip action on the directory.
+   * @param {string} sourceDir 
+   * @param {string} destPath 
+   */
+  function _zipFiles(sourceDir, destPath) {
+    return new Promise((resolve, reject) => {
+      let zipArchive = archiver('zip');
+      try {
+        let output = fs.createWriteStream(destPath);
+        output.on('close', function () {
+          resolve(zipArchive.pointer()); //Total bytes archived
+        });
+
+        zipArchive.on('error', function (err) {
+          reject(err);
+        });
+
+        let lastDir = _lastDir(sourceDir); // specifiy the source dir inside the archive
+        zipArchive.pipe(output);
+        zipArchive.directory(sourceDir, lastDir);
+        zipArchive.finalize();
+      } catch (err) {
+        reject(err);
+      }
+    });
+  }
+  /**
+   * Returns the last directory/folder of a path string
+   * @param {string} dirpath 
+   */
+  function _lastDir(dirPath) {
+    let dp = path.parse(dirPath); //in case a file is also specified
+    let pts = dp.dir.split(path.sep);
+    let lastDir = dp.ext ? pts[pts.length - 1] : dp.name;
+    if (lastDir === dp.root) {
+      return '';
+    } else {
+      return lastDir;
+    }
+  }
 });
