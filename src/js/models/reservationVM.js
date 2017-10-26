@@ -26,10 +26,11 @@ define(['./module'], function (model) {
     var reservationVM = function (reservation, roomPlanList, itemTypeList, loadExisting) {
       var that = this; // for internal function reference
 
-      // *** public properties assigned to VM and initialization code
+      //#region - public properties assigned to VM and initialization code
+
       this.res = reservation; // The Reservation (Mongoose model) that this ViewModel works with.
-      this.guest1rec = null;
-      this.guest2rec = null;
+      this.guest1rec = null; // Holds complete guest record
+      this.guest2rec = null; // Holds complete guest2 record
       this.roomPlanFirstText = '<' + configService.loctxt.selectRoomPlan + '>'; // default text for first item in room plan list
       this.roomPlansAll = roomPlanList; // The list of available room plans for the reservation. This list is filtered based on
       // reservation type and the filtered list is placed in the roomPlans array.
@@ -93,8 +94,9 @@ define(['./module'], function (model) {
           lastInsurance1,
           lastInsurance2;
       var planRequiredItems = []; //used by pre-save code stores required items of current plan.
+      //#endregion
 
-      // *** Public methods assigned to VM ***
+      //region *** Public methods assigned to VM ***
 
       // Utility method to return a room type abbreviation from a reservedRoom item
       this.generateRoomAbbrv = function (rrObj) {
@@ -1215,8 +1217,9 @@ define(['./module'], function (model) {
         aggArr = _aggregateItems(locItems);
         return aggArr;
       };
+      //#endregion
 
-      // ******* private methods  and constructor initialization *******
+      //#region ******* private methods  and constructor initialization *******
 
       // retrieves a specific expense item based on name gues and room
       function _getExpenseItem(name, roomNo, guest) {
@@ -2605,8 +2608,9 @@ define(['./module'], function (model) {
         });
         return selPlan;
       }
+      //#endregion
 
-      // *** Constructor initialization ***
+      //#region *** Constructor initialization ***
       // Now that everything is defined, initialize the VM based on the reservation model
       // perform model setup actions
       if (reservation) {
@@ -2635,55 +2639,46 @@ define(['./module'], function (model) {
         _filterRoomPlans(reservation.type, reservation.plan_code);
         this.nights = reservation.nights; //The reservation model's nights property is calculated and read only.
       }
-
+      //#endregion
     }; //End of VM class
 
-    // *** Start of ViewModel factory. Has methods to return the VM class with a new or existing VM.
-    return {
-      // Creates a new Reservation model and gets the new reservation number, Returns a view model containing the new
-      // Reservation model.
-      // The method will also initialize the start_date, end_date, nights and occupants properties of the reservation
-      // with default values. It will select the default reservation type of standard and a room plan of single room,
-      //
-      // NOTE: this method does not reserve the reservation number so it only works in a single user environment.
-      newReservationVM: function (startDate, endDate) {
-        var deferred = $q.defer();
+    //#region *** Start of ViewModel factory. Has methods to return the VM class with a new or existing VM.
+    return { //exposes an object with the following methods to the application
+      /**
+       * Async function that creates a new Reservation model with a new reservation number, wraps the reservation
+       * in a new ViewModel and returns the view model.
+       * The method will also initialize the start_date, end_date, nights and occupants properties of the reservation
+       * with default values. It will select the default reservation type of standard and a room plan of single room.
+       * @param {date} startDate - reservation start date
+       * @param {date} endDate - reservation end date.
+       */
+      newReservationVM: async function (startDate, endDate) {
         // Create the VM and get the required data from other collections to populate various static lists
         // in the VM.
-        var rvm,
+        let rvm,
             start = datetime.isDate(startDate) ? datetime.dateOnly(startDate) : datetime.dateOnly(new Date()),
             end = datetime.isDate(endDate) ? datetime.dateOnly(endDate) : datetime.dateOnly(new Date(), 1);
-        dashboard.getRoomPlanList().then(function (roomPlanList) {
-          // get a unique reservation number and create the Reservation model
-          dashboard.getItemTypeList().then(function (itemTypeList) {
-            dashboard.getNewReservationNumber().then(function (val) {
-              var reservation = new Reservation();
-              reservation.reservation_number = val;
-              reservation.start_date = start;
-              reservation.end_date = end;
-              reservation.occupants = 1;
-              rvm = new reservationVM(reservation, roomPlanList, itemTypeList);
-              reservation.type = rvm.resTypeList[0]; //defaults to standard reservation
-              reservation.status = rvm.statusList[0];
-              reservation.source = rvm.sourceList[0];
-              rvm.reservationTypeChanged(); //force an update since we added a default type to the new reservation.
-              rvm.updateAvailableRoomsAndResources().then(function () {
-                console.log("Reservation " + reservation.reservation_number + " created");
-                return deferred.resolve(rvm);
-              }, function (err) {
-                return deferred.reject(new utility.errObj(err)); //pass error up the chain.
-              });
-            }, function (err) {
-              return deferred.reject(new utility.errObj(err)); //pass error up the chain.
-            });
-          }, function (err) {
-            return deferred.reject(new utility.errObj(err)); //pass error up the chain.
-          });
-        }, function (err) {
-          return deferred.reject(new utility.errObj(err)); //pass error up the chain.
-        });
 
-        return deferred.promise;
+        try { // get a unique reservation number and create the Reservation model with defaults
+          let roomPlanList = await dashboard.getRoomPlanList();         
+          let itemTypeList = await dashboard.getItemTypeList();
+          let resNo = await  dashboard.getNewReservationNumber();
+          let reservation = new Reservation();
+          reservation.reservation_number = resNo;
+          reservation.start_date = start;
+          reservation.end_date = end;
+          reservation.occupants = 1;
+          rvm = new reservationVM(reservation, roomPlanList, itemTypeList);
+          reservation.type = rvm.resTypeList[0]; //defaults to standard reservation
+          reservation.status = rvm.statusList[0];
+          reservation.source = rvm.sourceList[0];
+          rvm.reservationTypeChanged(); //force an update since we added a default type to the new reservation.
+          await rvm.updateAvailableRoomsAndResources();
+          console.log("Reservation " + reservation.reservation_number + " created");
+          return rvm;
+        } catch (err) {
+          throw new utility.errObj(err);
+        }
       },
       /**
        * Async function that retrieves the specified reservation and returns a view model containing the 
@@ -2697,6 +2692,11 @@ define(['./module'], function (model) {
           let itemTypeList = await dashboard.getItemTypeList();
           let reservation = await dashboard.getReservationByNumber(resnum);
           let rvm = new reservationVM(reservation, roomPlanList, itemTypeList, true);
+          rvm.guest1rec = await dashboard.getGuestById(rvm.res.guest.id);
+          if(rvm.res.guest2) {
+            rvm.guest2rec = await dashboard.getGuestById(rvm.res.guest2.id);
+          }
+          
           if (!readOnly) {
             await rvm.updateAvailableRoomsAndResources();
           }
@@ -2706,5 +2706,6 @@ define(['./module'], function (model) {
         }
       }
     }; //end of factory
+    //#endregion
   });
 });

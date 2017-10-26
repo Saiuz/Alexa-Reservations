@@ -61,11 +61,32 @@ define(['./module'], function (services) {
       else
         return dateval;
     };
+    /**
+     * Returns UTC date (milliseconds since Unix Epoch) of the date specified.
+     * It will only consider the date part and ignore the HMS. It can be
+     * used to query MongoDB date fields
+     * @param {date} dateval 
+     */
+    function _dateOnlyUTC(dateval) {
+      if (dateval instanceof Date && !isNaN(dateval.valueOf())) {
+        return Date.UTC(dateval.getFullYear(), dateval.getMonth(), dateval.getDate(),0,0,0);
+      } else {
+        return dateval;
+      }
+    }
+    
+    function __lastSecondUTC(dateval) {
+      if (dateval instanceof Date && !isNaN(dateval.valueOf())) {
+        return Date.UTC(dateval.getFullYear(), dateval.getMonth(), dateval.getDate(),23,59,59);
+      } else {
+        return dateval;
+      }
+    }
     //NOTE: Bug in original code using getTime - timezone dependent!
     // find milliseconds from UTC date to stard of epoch then round up if current timezone is not UTC
     var _daysSinceEpoch = function (dateval) {
       if (_isDate(dateval)) {
-        var offset = dateval.getTimezoneOffset() * 60000;
+        var offset  = 0 ;//= dateval.getTimezoneOffset() * 60000;
         var ms =  Date.UTC(dateval.getFullYear(), dateval.getMonth(), dateval.getDate(), 0, 0, 0) + offset;
         return Math.floor(ms / millisecondsPerDay) + (offset === 0 ? 0 : 1); //UTC time zone, no rounding
       }
@@ -75,6 +96,8 @@ define(['./module'], function (services) {
     };
 
     return {
+      dateOnlyUTC: _dateOnlyUTC,
+      lastSecondUTC: __lastSecondUTC,
       // Strip time value off a Date object and optionally changes the date
       // by the specified number of days (+ or -). Function returns a new
       // date object, or the original object if the original object is not a Date

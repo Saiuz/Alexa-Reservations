@@ -116,51 +116,76 @@ define(['./module'], function (services) {
             });
         return deferred.promise;
       },
-      getNewReservationNumber: function () {
+      /**
+       * Retrieves the next reservation number sequence and saves it in the reservation
+       * number counter record (counters collection). It tests to see if the
+       * new value is less than the yearStart value which would be the first counter value
+       * for the current year. If so then we update the current count to the yearStart
+       * value. The reservation number is in YY0000 format where YY are the last two
+       * digits of the current year.
+       */
+      getNewReservationNumber: async function () {
         try {
-          // same logic as bill number but check new value if it is less than
-          // year start then jump number up to year start and save new number.
-          
+          let yearStart = (new Date().getFullYear() - 2000) * 10000; //Y3k bug!!!
+      
+          let cntr = await Counters.findOneAndUpdate({
+            counter: configService.constants.resNumberID
+          }, {
+            $inc: {
+              seq: 1
+            }
+          }, {
+            new: true,
+            upsert: true
+          });
+      
+          if (cntr.seq < yearStart) {
+            cntr = await Counters.findOneAndUpdate({
+              counter: configService.constants.resNumberID
+            }, {
+              seq: yearStart
+            }, {
+              new: true
+            });
+          }
+          return cntr.seq;
         } catch (err) {
           console.log("getNewReservationNumber query failed: " + err);
           throw err;
-        }
-
-
-        var deferred = $q.defer();
-        var yearstart = (new Date().getFullYear() - 2000) * 10000;  //Y3k bug!!!
-        Reservation.find({reservation_number: {$gt: yearstart}})
-            .sort({reservation_number: -1})
-            .limit(1)
-            .exec(function (err, res) {
-              if (err) {
-                deferred.reject(err);
-                console.log("getNewReservationNumber query failed: " + err);
-              }
-              else {
-                if (res.length === 0) {
-                  deferred.resolve(yearstart + 1);
-                }
-                else {
-                  deferred.resolve(res[0].reservation_number + 1);
-                }
-              }
-            });
-        return deferred.promise;
+        }      
       },
-      // retrieves the bill number sequence and returns the next value. Then it increments the number and saves it back
+      /**
+       * Retrieves the next bill number in the bill number sequence and updates the seq
+       * property of the bill number record with the new value. If the record does not
+       * exist it will seed the counter with the billNoSeed value.
+       */
       getNewBillNumber: async function() {
         try {
-          let cntr = await Counters.findAndModify({
-            query: {counter: configService.constants.billNumberID},
-            update: { $inc: {seq: 1}},
-            new: true
+          let cntr = await Counters.findOneAndUpdate({
+            counter: configService.constants.billNumberID
+          }, {
+            $inc: {
+              seq: 1
+            }
+          }, {
+            new: true,
+            upsert: true
           });
+      
+          if (cntr.seq < configService.constants.billNoSeed) {
+            cntr = await Counters.findOneAndUpdate({
+              counter: configService.constants.billNumberID
+            }, {
+              seq: configService.constants.billNoSeed
+            }, {
+              new: true
+            });
+          }
           return cntr.seq;
         } catch (err) {
-          console.log("getNewBillNumber save failed: " + err);
+          console.log("getNewReservationNumber query failed: " + err);
           throw err;
-        }
+        }      
       },
       getGuestNamesIds: function () {
         var deferred = $q.defer();
@@ -433,13 +458,23 @@ define(['./module'], function (services) {
       // day of year of end date, and two flags that indicate if the reservation starts before the specified date or
       // ends after the specified date.
       findReservationsByDateRange: function(start, end) {
-        var deferred = $q.defer(),
+        
+        let deferred = $q.defer(),
             results = {reservations: [], resources: []},
             startDoy = datetime.dayOfYear(start),
             endDoy = datetime.dayOfYear(end);
 
-        Reservation.find({start_date: {$lt: end}, end_date: {$gt: start}})
-          .sort({start_date: 1})
+        Reservation.find({
+          $and: [{
+            start_date: {
+              $lt: datetime.dateOnlyUTC(end)
+            }
+          }, {
+            end_date: {
+              $gt: datetime.lastSecondUTC(start)
+            }
+          }]
+        }).sort({start_date: 1})
           .exec(function (err, resResults) {
             if (err) {
               deferred.reject(err);

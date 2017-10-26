@@ -63,6 +63,12 @@ define(['./module'], function (directives) {
                 var updateData =  function(extras) {
                     var ktext =  scope.rvm.oneBill ? configService.loctxt.aggregatePersonDisplayString : '',
                         aggObj = [];
+                    let gRec = (scope.rvm.guest1rec.name == scope.guest ? scope.rvm.guest1rec : scope.rvm.guest2rec) || {};
+                    scope.address1 = gRec.address1;
+                    scope.address2 = gRec.address2;
+                    scope.post_code = gRec.post_code;
+                    scope.city = gRec.city;
+                    scope.country = gRec.country;
 
                     if (haveAttributes) {
                         scope.rvm.getBillNumber(room, scope.guest).then( function (bnum) {
