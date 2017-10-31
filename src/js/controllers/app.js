@@ -36,7 +36,8 @@ define(['./module'], function (controllers) {
             key : "Ctrl+Shift+R",
             active : function() {
               console.log("Global desktop keyboard shortcut: " + this.key + " active.");
-              win.reloadDev();
+              //win.reloadDev();
+              chrome.runtime.reload();
 
             },
             failed : function(msg) {

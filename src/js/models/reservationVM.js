@@ -2686,7 +2686,7 @@ define(['./module'], function (model) {
        * @param {num} resnum - the reservation number of the reservation to retrieve.
        * @param {bool} readOnly - if true then the reservation is retrieved but the available rooms list is not.
        */
-      getReservationVM: async function (resnum, readOnly) {
+      getReservationVM:  async function getReservationVM(resnum, readOnly) {
         try {
           let roomPlanList = await dashboard.getRoomPlanList();
           let itemTypeList = await dashboard.getItemTypeList();
@@ -2700,6 +2700,7 @@ define(['./module'], function (model) {
           if (!readOnly) {
             await rvm.updateAvailableRoomsAndResources();
           }
+          console.log("Reservation " + reservation.reservation_number + " loaded");
           return rvm;
         } catch (err) {
           throw new utility.errObj(err);

@@ -57,6 +57,7 @@ define(['./module'], function (controllers) {
                 $scope.roomGuest2 = rmObj.roomGuest2;
                 $scope.gRooms = rmObj.groupRooms;
                 $scope.planText = rmObj.displayText;
+                $scope.$apply();
                 //$scope.selectedReservation = newval;
               }
             });

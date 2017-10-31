@@ -76,10 +76,10 @@ Bugs / changes on the fly:
 
 Bugs that still need fixing
 1) Plans with half/full pensions, the meal price is 0 and needs to be manually updated.
-2) For private (Separate) bill feature, the address needs to be taken from the guest, not the firm.
-3) **DONE** ~~colors need to be changed for some rooms
+2) **DONE** ~~For private (Separate) bill feature, the address needs to be taken from the guest, not the firm.~~
+3) **DONE** ~~colors need to be changed for some rooms~~
 
-standard = light blue  9,18,19,47 
+~~standard = light blue  9,18,19,47 
 suites = lilac 21,26,27,32,42
 comfort = dark blue 35,45,46,48,53,58~~
 
@@ -97,4 +97,8 @@ Many group business reservations require one bill instead of individual bills. C
 
 
 Conversion tasks (to MongoDB) that still need to be done:
-1) 
+1) Replace $q promise wrapped methods with async functions
+
+Bugs Introduced:
+1) new res - when new res form comes up, everything is blank until I click cursor in window (not sure if this is from conversion of reservation view model factory or not);
+2) clicking on a reservation link in Gebuhren and Rechnung tabs does not select res - jumps to top of list. Requires a second click to actually select

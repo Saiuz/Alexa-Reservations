@@ -7,7 +7,6 @@
  **/
 define([
   './config',
-  './security',
   './dashboard',
   './node-webkit',
   './datetime',

@@ -17,7 +17,7 @@ define(['./module'], function (controllers) {
         'datetime',
         'modals',
         function ($scope, $state, $rootScope, $stateParams, ReservationVM, dashboard, configService, datetime, modals) {
-          var currRoom;
+          let currRoom;
 
           $scope.appTitle = $rootScope.appTitle;
           $scope.appBrand = $rootScope.appBrand;
@@ -73,12 +73,13 @@ define(['./module'], function (controllers) {
                 else {
                   $scope.secondPrivate = false;
                 }
+                $scope.$apply();
               }
-            },
-            function (err) {
-              $scope.err= err;
-              $scope.hasErr = true;
-            });
+            }).catch((err) => {
+                $scope.err= err;
+                $scope.hasErr = true;
+                console.error(err);
+              });
           });
 
           // removes the selected marker on the reservation lists

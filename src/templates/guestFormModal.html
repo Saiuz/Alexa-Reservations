@@ -82,7 +82,13 @@
                 <ax-lookup-firm firm="guest.firm" firm-price="firmPrice"></ax-lookup-firm>
             </div>
         </div>
-        <div class="form-group" ng-show="!guest.firm">
+        <div  class="form-group"  ng-show="guest.firm">
+            <label class="control-label col-xs-4">{{txt.privateAddress}}</label>
+            <div class="col-xs-8">
+                <p class="form-control-static">&nbsp</p>
+            </div>
+        </div>
+        <div class="form-group">
             <label class="control-label col-xs-4">{{txt.address1}}</label>
             <div class="col-xs-8" ng-show="!edit">
                 <p class="form-control-static">{{guest.address1}}</p>
@@ -91,7 +97,7 @@
                 <input class="form-control" ng-model="guest.address1" type="text"/>
             </div>
         </div>
-        <div class="form-group" ng-show="!guest.firm">
+        <div class="form-group">
             <label class="control-label col-xs-4">{{txt.address2}}</label>
             <div class="col-xs-8" ng-show="!edit">
                 <p class="form-control-static">{{guest.address2}}</p>
@@ -100,7 +106,7 @@
                 <input class="form-control" ng-model="guest.address2" type="text"/>
             </div>
         </div>
-        <div class="form-group" ng-show="!guest.firm">
+        <div class="form-group">
             <label class="control-label col-xs-4">{{txt.postCode}}</label>
             <div class="col-xs-8" ng-show="!edit">
                 <p class="form-control-static">{{guest.post_code}}</p>
@@ -109,7 +115,7 @@
                 <input class="form-control" ng-model="guest.post_code" type="text"/>
             </div>
         </div>
-        <div class="form-group" ng-show="!guest.firm">
+        <div class="form-group">
             <label class="control-label col-xs-4">{{txt.city}}</label>
             <div class="col-xs-8" ng-show="!edit">
                 <p class="form-control-static">{{guest.city}}</p>
@@ -118,7 +124,7 @@
                 <input class="form-control" ng-model="guest.city" type="text"/>
             </div>
         </div>
-        <div class="form-group" ng-show="!guest.firm">
+        <div class="form-group">
             <label class="control-label col-xs-4">{{txt.country}}</label>
             <div class="col-xs-8" ng-show="!edit">
                 <p class="form-control-static">{{guest.country}}</p>

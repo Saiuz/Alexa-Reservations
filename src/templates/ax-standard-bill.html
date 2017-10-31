@@ -3,23 +3,23 @@
         <table class="table-bill-page">
             <thead>
             <tr>
-                <td><a href="#" editable-text="rvm.res.billing_name" onaftersave="rvm.updateBillingNameSave()">{{rvm.res.billing_name}}</a></td>
+                <td><a href="#" editable-text="rvm.res.billing_name" onaftersave="rvm.updateBillingNameSave()">{{rvm.res.billing_name}}</a> <i class="glyphicon glyphicon-edit no-print" ng-click="edit()"></i></td>
                 <td></td>
             </tr>
             <tr>
-                <td>{{rvm.res.address1}}</td>
+                <td>{{address1}}</td>
                 <td></td>
             </tr>
-            <tr ng-if="rvm.res.address2">
-                <td>{{rvm.res.address2}}</td>
-                <td></td>
-            </tr>
-            <tr>
-                <td>{{rvm.res.post_code}} {{rvm.res.city}}</td>
+            <tr ng-if="address2">
+                <td>{{address2}}</td>
                 <td></td>
             </tr>
             <tr>
-                <td>{{rvm.res.country}}</td>
+                <td>{{post_code}} {{city}}</td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>{{country}}</td>
                 <td></td>
             </tr>
             <tr>

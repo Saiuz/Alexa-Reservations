@@ -219,23 +219,44 @@ define(['./module'], function (services) {
       // updates the firm for guests that are associated with a firm that's name has changed. Note: because the
       // Guest collection has a pre 'save' function, we can't just do an update, we have to do a find then save the
       // individual matches.
-      updateFirmInGuests: function (oldFirm, newFirm) {
-        var deferred = $q.defer();
-        Guest.find({firm: oldFirm})
-            .exec(function (err, guests) {
-              if (err) {
-                deferred.reject(err);
-                console.log("updateFirmInGuests query failed: " + err);
-              }
-              else {
-                guests.forEach(function (guest) {
-                  guest.firm = newFirm;
-                  guest.save();
-                });
-                return deferred.resolve(guests.length);
-              }
-            });
-        return deferred.promise;
+      updateFirmInGuests: async function (oldFirm, newFirm) {
+        try {
+          let guests = await Guest.find({firm: oldFirm});
+          for (let i = 0; i < guests.length; i++) {
+            let g = guests[i];
+            g.firm = newFirm;
+            await g.save();
+          }
+          return guests.length;
+          
+        } catch (err) {
+          throw new Error("updateFirmInGuests query failed: " + err)
+        }
+      },
+      /**
+       * Updates all reservations with the specified firm and firm addresses.
+       * If oldFirm is specified then we search for reservations with the old name and
+       * the firm name will be updated with the newFirm name.
+       */
+      updateFirmInReservations: async function (oldFirmName, firmRecord) {
+        try {
+          let findName = oldFirmName ? oldFirmName : firmRecord.firm_name;
+          let reservations = await Reservation.find({$and: [{firm: findName}, {checked_out: {$exists: false}}]});
+          for (let i = 0; i < reservations.length; i++) {
+            let r = reservations[i];
+            r.firm = firmRecord.firm_name;
+            r.address1 = firmRecord.address1;
+            r.address2 = firmRecord.address2;
+            r.city = firmRecord.city;
+            r.post_code = firmRecord.post_code;
+            r.country = firmRecord.country;
+            await r.save();
+          }
+          return reservations.length;
+          
+        } catch (err) {
+          throw new Error("updateFirmInReservations query failed: " + err)
+        }
       },
       // retrieves firms based on a a full firm name.
       getFirmByName: function (name) {

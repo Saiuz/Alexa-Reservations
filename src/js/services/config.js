@@ -95,6 +95,8 @@ define(['./module'], function (services) {
       roomPlanClickEvent: 'ZPLAN_EVENT1',
       calEventChangedEvent: 'CAL_EVENT_EVENT', // calendar event saved/deleted
       weekButtonsSetEvent: 'WEEK_BTN1',
+      resGuestEditedEvent: 'GUEST_EDITED_EVENT',
+      firmEditedEvent: 'FIRM_EDITED_EVENT',
       appReadyEvent: '', // broadcast when app.js finishes.
       bcRoom: 0,
       bcPackageItem: 1, // item is a required item for a standard package plan
@@ -296,6 +298,7 @@ define(['./module'], function (services) {
       'priceLookup': 'Preisabfrage',
       'priceSymbol': '€',
       'print': 'Drucken',
+      'privateAddress': 'Privat Adresse',
       'programRestart': 'Das Programm wird in 5 Sekunden neu starten',
       'recent': 'Kürzlich',
       'resource': 'Ressource',

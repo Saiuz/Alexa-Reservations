@@ -79,7 +79,7 @@ define(['./module'], function (controllers) {
               $scope.title = configService.loctxt.reservation_titleCreate;
               $scope.edit = true;
               $scope.read = false;
-              ReservationVM.newReservationVM(start, end).then(function (resVM) { // start and end dates passed into VM factory constructor
+              ReservationVM.newReservationVM(start, end).then((resVM) => { // start and end dates passed into VM factory constructor
                 $scope.rvm = resVM;
                 if (extraData) {
                   $scope.title = extraData.room ? $scope.title + ' (' + configService.loctxt.selectedRoom + ' ' + extraData.room + ')' : $scope.title; //todo-can we figure out how to pre select room?
@@ -92,7 +92,8 @@ define(['./module'], function (controllers) {
                   $scope.end_date = new Date(resVM.res.end_date);
                   executeWatch = true;
                 }
-              }, function (err) {
+                $scope.$apply();
+              }).catch((err) => {
                 console.log('Create Error: ' + err);
                 $scope.err = err; // returns an error object
                 $scope.errLoad = true;
@@ -103,19 +104,20 @@ define(['./module'], function (controllers) {
               $scope.edit = false;
               $scope.read = true;
               $scope.cancelTxt = configService.loctxt.close;
-              ReservationVM.getReservationVM(resNumber, true).then(function (resVM) {
+              ReservationVM.getReservationVM(resNumber, true).then((resVM) => {
                 $scope.rvm = resVM;
-              }, function (err) {
+              }).catch((err) => {
                 console.log('Read Error: ' + err);
                 $scope.err = err; // returns an error object
                 $scope.errLoad = true;
               });
+              $scope.$apply();
               break;
 
             case 'u':
               firstLoad = true;
               $scope.title = configService.loctxt.reservation_titleUpdate;
-              ReservationVM.getReservationVM(resNumber).then(function (resVM) {
+              ReservationVM.getReservationVM(resNumber).then((resVM) => {
                 $scope.rvm = resVM;
                 $scope.start_date = new Date(resVM.res.start_date);
                 $scope.end_date = new Date(resVM.res.end_date);
@@ -125,10 +127,11 @@ define(['./module'], function (controllers) {
                 $scope.read = false;
                 $scope.saveTxt = configService.loctxt.update;
                 executeWatch = true;
-
-              }, function (err) {
+                $scope.$apply();
+              }).catch((err) => {
                 $scope.err = err; // returns an error object
                 $scope.errLoad = true;
+                $scope.$apply();
               });
               break;
 
@@ -139,12 +142,14 @@ define(['./module'], function (controllers) {
               $scope.deleteMode = true;
               $scope.cancelTxt = configService.loctxt.close;
               $scope.saveTxt = configService.loctxt.delete;
-              ReservationVM.getReservationVM(resNumber, true).then(function (resVM) {
+              ReservationVM.getReservationVM(resNumber, true).then((resVM) => {
                 $scope.rvm = resVM;
-              }, function (err) {
+                $scope.$apply();
+              }).catch((err) => {
                 console.log('Read Error: ' + err);
                 $scope.err = err; // returns an error object
                 $scope.errLoad = true;
+                $scope.$apply();
               });
               break;
           }
@@ -177,8 +182,7 @@ define(['./module'], function (controllers) {
                   rdates = $scope.rvm.calculateEndDate($scope.rvm.res.start_date);
                   $scope.rvm.res.end_date = rdates.end;
                   $scope.end_date = rdates.end;
-                  $scope.rvm.updateAvailableRoomsAndResources().then(function (cnt) {
-                  });
+                  $scope.rvm.updateAvailableRoomsAndResources().then((cnt) => {$scope.$apply();});
 
                   break;
 
@@ -187,8 +191,7 @@ define(['./module'], function (controllers) {
                   ignoreIndex = 2; //nights
                   $scope.rvm.res.end_date = $scope.end_date;
                   $scope.rvm.calculateNights();
-                  $scope.rvm.updateAvailableRoomsAndResources().then(function (cnt) {
-                  });
+                  $scope.rvm.updateAvailableRoomsAndResources().then((cnt) => {$scope.$apply();});
                   break;
 
                 case 2:
@@ -197,8 +200,7 @@ define(['./module'], function (controllers) {
                   rdates = $scope.rvm.calculateEndDate($scope.rvm.res.start_date);
                   $scope.rvm.res.end_date = rdates.end;
                   $scope.end_date = rdates.end;
-                  $scope.rvm.updateAvailableRoomsAndResources().then(function (cnt) {
-                  });
+                  $scope.rvm.updateAvailableRoomsAndResources().then((cnt) => {$scope.$apply();});
                   break;
 
                 case 3:
@@ -221,14 +223,12 @@ define(['./module'], function (controllers) {
                   //  $scope.rvm.res.guest2 = null;
                   //}
                   if ($scope.rvm.oneBill && $scope.rvm.oneRoom) {
-                    $scope.rvm.updateGuestDataFromDb().then(function () {
-                      $scope.rvm.occupantsChanged().then(function (cnt) {
-                      });
+                    $scope.rvm.updateGuestDataFromDb().then(() => {
+                      $scope.rvm.occupantsChanged().then((cnt)=>{$scope.$apply();});
                     });
                   }
                   else {
-                    $scope.rvm.occupantsChanged().then(function (cnt) {
-                    });
+                    $scope.rvm.occupantsChanged().then((cnt) => {$scope.$apply();});
                   }
                   break;
 

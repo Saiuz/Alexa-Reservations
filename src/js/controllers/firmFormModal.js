@@ -35,6 +35,7 @@ define(['./module'], function (controllers) {
 
   controllers.controller('FirmFormModalCtrl',
       ['$scope',
+        '$rootScope',      
         '$modalInstance',
         'modalParams',
         'Firm',
@@ -42,7 +43,7 @@ define(['./module'], function (controllers) {
         'configService',
         '$timeout',
         'utility',
-        function ($scope, $modalInstance, modalParams, Firm, dashboard, configService, $timeout, utility) {
+        function ($scope, $rootScope, $modalInstance, modalParams, Firm, dashboard, configService, $timeout, utility) {
           console.log("FirmFormModal controller fired");
 
           $scope.err = {};
@@ -160,6 +161,7 @@ define(['./module'], function (controllers) {
             $scope.actionMsg = msg;
             $scope.$apply();
             timer = $timeout(function () {
+              $rootScope.$broadcast(configService.constants.firmEditedEvent, $scope.firm); //fire firmEdited event                             
               $modalInstance.close(val);
             }, configService.constants.autoCloseTime)
           };
@@ -171,37 +173,15 @@ define(['./module'], function (controllers) {
             // If we change the name of the firm, then we must update the guests that are
             // associated with the previous firm name!
             // TODO-NOTE: by updating guest firm field, the unique name does not get regenerated. Need to find all firms then modify and save each!!!
-            var nameChanged = lastFirm && (lastFirm !== $scope.firm.firm_name),
-                msg = '';
-
-            //save/update firm and return
-            $scope.firm.save(function (err) {
-              if (err) {
-                console.log('Firm save error: ' + err);
-                $scope.err = new utility.errObj(err);
-                $scope.errSave = true;
-                $scope.$apply();
-              }
-              else {
-                if (nameChanged) {
-                  dashboard.updateFirmInGuests(lastFirm, $scope.firm.firm_name).then(function (numAffected) {
-                        msg = configService.loctxt.success_changes_saved + ' ' + numAffected + ' ' + configService.loctxt.guests;
-                        autoClose(msg, $scope.firm);
-                      },
-                      function (err) {
-                        console.log('Guest update error: ' + err);
-                        $scope.err = new utility.errObj(err);
-                        $scope.errSave = true;
-                        $scope.$apply();
-                      });
-                }
-                else {
-                  msg = (mode === 'c' ? configService.loctxt.firm + configService.loctxt.success_saved :
-                      configService.loctxt.success_changes_saved);
-                  autoClose(msg, $scope.firm);
-                }
-
-              }
+            let nameChanged = lastFirm && (lastFirm !== $scope.firm.firm_name);
+                
+            saveFirm(nameChanged).then((msg) => {
+              autoClose(msg, $scope.firm);
+            }).catch((err) => {
+              console.log('Firm save error: ' + err);
+              $scope.err = new utility.errObj(err);
+              $scope.errSave = true;
+              $scope.$apply();
             });
           };
 
@@ -234,5 +214,31 @@ define(['./module'], function (controllers) {
           $scope.hideErr = function () {
             $scope.errSave = false;
           };
+
+          /**
+           * Async function to save firm and update guests and reservations that access the firm.
+           * It updates all active reservations that have the firm name (or old firm name if changed).
+           * If the firm name changed then guests that are associated with the old firm name are updated.
+           */
+          async function saveFirm(nameChanged) {
+            try {
+              let msg = '';
+              await $scope.firm.save();
+              let oldName = nameChanged ? lastFirm : '';
+              let numAffected;
+              
+              let resAffected = await dashboard.updateFirmInReservations(oldName, $scope.firm); //update reservations
+              if (nameChanged) {
+                let numAffected = await dashboard.updateFirmInGuests(lastFirm, $scope.firm.firm_name);
+              }
+
+              msg = (mode === 'c' ? configService.loctxt.firm + configService.loctxt.success_saved :
+                `${configService.loctxt.success_changes_saved} ${numAffected}, ${configService.loctxt.guests} ${resAffected} ${configService.loctxt.reservations}`);
+
+              return msg;
+            } catch (err) {
+              throw err;
+            }
+          }
         }]);
 });

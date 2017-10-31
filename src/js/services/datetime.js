@@ -137,16 +137,7 @@ define(['./module'], function (services) {
 
       //Calculate the number of nights stayed between the two dates
       getNightsStayed:  function(startDate, endDate) {
-        function treatAsUTC(date){
-          var result = new Date(date);
-          result.setMinutes(result.getMinutes() - result.getTimezoneOffset());
-          return result;
-        }
-        if (startDate && endDate) {
-          return (treatAsUTC(endDate) - treatAsUTC(startDate)) / millisecondsPerDay;
-        } else {
-          return 0;
-        }
+        return _daysSinceEpoch(endDate) - _daysSinceEpoch(startDate);
       },
       // function parses a date string in the German format: dd.MM.yyyy and returns a date object
       dateParseDe: _dateParseDeF,

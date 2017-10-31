@@ -38,6 +38,7 @@ define(['./module'], function (controllers) {
 
   controllers.controller('GuestFormModalCtrl',
       ['$scope',
+        '$rootScope',
         '$modalInstance',
         'modalParams',
         'Guest',
@@ -45,7 +46,7 @@ define(['./module'], function (controllers) {
         'configService',
         '$timeout',
         'utility',
-        function ($scope, $modalInstance, modalParams, Guest, dbEnums, configService, $timeout, utility) {
+        function ($scope, $rootScope, $modalInstance, modalParams, Guest, dbEnums, configService, $timeout, utility) {
           console.log("guestFormModal controller fired");
           $scope.err = {};
           $scope.errSave = false;
@@ -231,15 +232,6 @@ define(['./module'], function (controllers) {
               $scope.guest.salutation = undefined;
             }
 
-            // If the firm field contains a firm name, then clear address fields.  The address of the firm will
-            // be used.
-            if ($scope.guest.firm) {
-              $scope.guest.address1 = '';
-              $scope.guest.address2 = '';
-              $scope.guest.post_code = '';
-              $scope.guest.city = '';
-              $scope.guest.country = '';
-            }
             //save guest and return
             $scope.guest.save(function (err) {
               if (err) {
@@ -251,6 +243,7 @@ define(['./module'], function (controllers) {
               else {
                 var msg = (mode === 'c' ? configService.loctxt.guest + configService.loctxt.success_saved :
                     configService.loctxt.success_changes_saved);
+                $rootScope.$broadcast(configService.constants.resGuestEditedEvent, $scope.guest.id); //fire guestEdited event  
                 autoClose(msg, $scope.guest);
               }
             });

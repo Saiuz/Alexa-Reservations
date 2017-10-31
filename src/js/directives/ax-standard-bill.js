@@ -10,8 +10,8 @@
  */
 define(['./module'], function (directives) {
   'use strict';
-  directives.directive('axStandardBill', ['$filter', 'configService', 'convert',
-    function ($filter, configService, convert) {
+  directives.directive('axStandardBill', ['$filter', 'configService', 'convert', 'modals', 'dashboard',
+    function ($filter, configService, convert, modals, dashboard) {
       var linker = function (scope, element, attrs) {
         console.log("axStandardBill linker fired");
         //define which items appear in which section of the bill_dec32
@@ -55,9 +55,49 @@ define(['./module'], function (directives) {
           }
         });
 
+        let model = modals.getModelEnum().guest;
+        let dataObjR = {data: undefined, extraData: undefined};
+        scope.edit = function () {
+            dataObjR.data = scope.guestId;
+            modals.update(model, dataObjR); //no callback
+        };
+
+        // Respond to guest edited event update the guest record properties of the VM
+        scope.$on(configService.constants.resGuestEditedEvent, (event, val) => {
+            if (scope.rvm) {
+                let gRec = (scope.rvm.guest1rec.id === val ? 1 : scope.rvm.guest2rec.id === val ? 2 : 0) || {}; //left off here need to
+                if (gRec > 0) {
+                    dashboard.getGuestById(val).then((rec) => {
+                        if (gRec === 1) {
+                            scope.rvm.guest1rec = rec;
+                        } else {
+                            scope.rvm.guest2rec = rec;
+                        }
+                        console.log(`Event ${event} received with value ${val}`);
+                        updateAddress();
+                    }).catch((err) => {
+                        scope.err = err;
+                        scope.hasErr = true;
+                        console.error(err);
+                    });
+                }
+            }
+        });
+
+        var updateAddress = function () {
+            let gRec = (scope.rvm.guest1rec.name == scope.guest ? scope.rvm.guest1rec : scope.rvm.guest2rec) || {};
+            scope.guestId = gRec._id;
+            scope.address1 = gRec.address1;
+            scope.address2 = gRec.address2;
+            scope.post_code = gRec.post_code;
+            scope.city = gRec.city;
+            scope.country = gRec.country;
+        }
+
         var updateData =  function(extras) {
           var ktext =  scope.rvm.oneBill ? configService.loctxt.aggregatePersonDisplayString : '',
               aggObj = [];
+          updateAddress();
 
           if (haveAttributes) {
             scope.rvm.getBillNumber(room, scope.guest).then( function (bnum) {
