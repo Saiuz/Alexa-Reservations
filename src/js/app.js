@@ -8,6 +8,7 @@ define("app", [
   'angular-bootstrap',
   'text!',
   'angular-xeditable',
+  'angular-chart',
   'angular-i18n',
   './services/index',
   './controllers/index',
@@ -32,7 +33,8 @@ define("app", [
     'ui.bootstrap.tooltip',
     'ui.router',
     'ngLocale',
-    'xeditable'
+    'xeditable',
+    'chart.js'
   ]).config(function($compileProvider){ //perform app configuration steps
     $compileProvider.aHrefSanitizationWhitelist(/^\s*(https?|ftp|mailto|chrome-extension):/); //needed for NW.js 0.15.4
   }).run(function ($state, nwService, appConstants, $rootScope, editableOptions) {

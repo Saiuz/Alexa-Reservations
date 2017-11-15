@@ -10,8 +10,8 @@
  */
 define(['./module'], function (directives) {
   'use strict';
-  directives.directive('axTourBill', ['$filter', 'configService',
-    function ($filter, configService) {
+  directives.directive('axTourBill', ['$filter', 'configService', 'modals', 'dashboard',
+    function ($filter, configService, modals, dashboard) {
       var linker = function (scope, element, attrs) {
         console.log("axTourBill linker fired");
         //define which items appear in which section of the bill_dec32
@@ -54,7 +54,45 @@ define(['./module'], function (directives) {
           }
         });
 
+        let model = modals.getModelEnum().firm;
+        let dataObjR = {data: undefined, extraData: undefined};
+        scope.editFirm = function () {
+            dataObjR.data = scope.rvm.res.firm;
+            modals.update(model, dataObjR); //no callback
+        };
+
+        /**
+         * Respond to firm edited event update the firm/address info in the current
+         * reservation in the VM. Note we don't need to update the reservation since
+         * it was updated by the firm edit modal.
+         */
+        scope.$on(configService.constants.firmEditedEvent, (event, firm) => {
+          if (scope.rvm && firm) {
+            updateAddress(firm);
+            scope.$apply();
+            console.log(`Event ${event.name} received with firm ${firm.firm_name}`);
+          }
+        });
+
+      var updateAddress = function (firm) {
+        if (firm) {
+          scope.firm = firm.firm_name;
+          scope.address1 = firm.address1;
+          scope.address2 = firm.address2;
+          scope.post_code = firm.post_code;
+          scope.city = firm.city;
+          scope.country = firm.country;
+        } else {
+          scope.firm = scope.rvm.res.firm;
+          scope.address1 = scope.rvm.res.address1;
+          scope.address2 = scope.rvm.res.address2;
+          scope.post_code = scope.rvm.res.post_code;
+          scope.city = scope.rvm.res.city;
+          scope.country = scope.rvm.res.country;
+        }
+      }
         var updateData =  function(extras) {
+          updateAddress();
           var roomBills = [],
               ktext =  scope.rvm.oneBill ? configService.loctxt.aggregatePersonDisplayString : '',
               bill;

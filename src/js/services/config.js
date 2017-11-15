@@ -87,6 +87,7 @@ define(['./module'], function (services) {
     // bill section.
     this.constants = {
       autoCloseTime: 2000,
+      errorDisplayTime: 3500,
       billNumberID: 'billNo', //used by Counters collection to identify the bill number counter
       billNoSeed: 10000, // value used to seed the counter if the entry doesn;t exist
       resNumberID: 'resNo', //used by Counters collection to identify the reservation number counter 
@@ -115,6 +116,13 @@ define(['./module'], function (services) {
       // Method to retrieve an array of bill codes associated with package plans
       getPackageItemCodes: function (){
         return [1,10]; //bcPackageItem and bcKurPackageItem
+      },
+      /**
+       * Method that returns an array of excluded (fake rooms). These are not
+       * real rooms but just temporary placeholders for reservations.
+       */
+      getExcludedRooms: () => {
+        return [30,40];
       },
 
       // Method to retrieve value of the specified constant. (For programmatic retrieval of constant value.)
@@ -258,9 +266,11 @@ define(['./module'], function (services) {
       'insurance': 'Krankenkasse',
       'item': 'Artikel',
       'itemsFor': 'Artikel für',
+      'itemsSum': 'Artikel Summe',
       'item_notFound': 'Artikel nicht gefunden',
       'lastName': 'Nachname',
       'lastNameSearch': 'Nachnamen Suche...',
+      'lastStay': 'Letzter Aufenthalt',
       'leave': 'Abfahrt',
       'minus': 'Minus',
       'miscellaneous': 'Diverses',
@@ -320,6 +330,7 @@ define(['./module'], function (services) {
       'reservation_titleRead': 'Informationen zur Reservierung',
       'reservationType': 'Res. Typ',
       'reservationYearMonth': 'Reservierungen im Jahr / Monat',
+      'revenueStatistics': 'Umsatzstatistiken',
       'room': 'Zimmer',
       'room_titleCreate': 'Zimmer Informationen Erstellen',
       'room_titleDelete': 'Zimmer Informationen Löschen',
@@ -355,6 +366,7 @@ define(['./module'], function (services) {
       'singleRoomPriceAbr': 'EZ Preise',
       'singleSurchargeAbr': 'EZ Zuschlag',
       'source': 'Quelle',
+      'statistics': 'Statistiken',
       'status': 'Status',
       'start': 'Starten',
       'stay': 'Bleiben',
@@ -381,7 +393,9 @@ define(['./module'], function (services) {
       'val_invalidRoom': 'Mindestens ein Zimmer ist erforderlich',
       'val_invalidDates': 'Fehlende oder ungültige Reservierungsdaten',
       'val_invalidInsurance': 'Eine Versicherung muss ausgewählt werden',
+      'val_invalidLastName': 'Nachname ist erforderlich',
       'val_invalidPlanInsurance': 'Das Kur Plan erfordert "Private" Versicherung',
+      'val_invalidSalutation': 'Gast muss eine Anrede haben',
       'val_guestCountMismatch': 'Die Zahl der Gäste bei der Reservierung nicht die Anzahl der Gäste in den Zimmern entsprechen.',
       'wantToEdit': 'Diese Reservierung ist geschlossen. Sind Sie sicher, dass Sie sie bearbeiten möchten.?',
       'wantToCheckout': 'Das Ende der Reservierung ist in der Zunkunft. Jetzt wirklich auschecken? Der Endtermin für die Reservierung <b>wird nicht</b> geändert!',
@@ -400,7 +414,7 @@ define(['./module'], function (services) {
     // Kalendar month and day names and abbreviations
     this.calendarInfo = {
       months: ['Januar', 'Febuar', 'März', 'April', 'Mai', 'Juni', 'Juli', 'August', 'September', 'Oktober', 'November', 'Dezember'],
-      monthsAbrv: ['Januar', 'Febuar', 'März', 'April', 'Mai', 'Juni', 'Juli', 'August', 'September', 'Oktober', 'November', 'Dezember'],
+      monthsAbrv: ['Jan.', 'Feb.', 'März', 'Apr.', 'Mai', 'Juni', 'Juli', 'Aug.', 'Sept.', 'Okt.', 'Nov.', 'Dez.'],
       days: ['Sonntag','Montag','Dienstag','Mittwoch','Donnerstag','Freitag','Samstag'],
       daysAbrv: ['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa'],
       daysDe: ['Montag','Dienstag','Mittwoch','Donnerstag','Freitag','Samstag','Sonntag'],

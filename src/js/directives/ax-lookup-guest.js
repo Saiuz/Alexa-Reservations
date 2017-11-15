@@ -127,7 +127,7 @@ define(['./module'], function (directives) {
 
       scope.newGuest = function (size) {
         var model = modals.getModelEnum().guest,
-            dataObj = {data: scope.axguest ? scope.axguest.split(' ') : [], extraData: undefined};
+            dataObj = {data: scope.axguest ? scope.axguest.split(' ') : [], extraData: scope.firm};
 
         //if the name in the input field is in the db then ignore the button click
         if (names.length !== 0 && scope.axguest) {

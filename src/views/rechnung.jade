@@ -35,7 +35,7 @@ include nav_common.jade
             .bill-container(ng-show="showCharges && !hasErr")
               ax-standard-bill(ng-if="stdRes" reservation-vm="rvm" details="resDetails")
               ax-standardb-bill(ng-if="busstdRes" reservation-vm="rvm" room="{{room}}" guest="{{guest}}" details="resDetails")
-              ax-business-bill(ng-if="busRes" reservation-vm="rvm" room="{{room}}" guest="{{guest}}" pauschale="busPauschale")
+              ax-business-bill(ng-if="busRes && !tourRes" reservation-vm="rvm" room="{{room}}" guest="{{guest}}" pauschale="busPauschale")
               ax-kur-bill(ng-if="kurRes" reservation-vm="rvm" room="{{room}}" guest="{{guest}}")
               ax-tour-bill(ng-if="tourRes" reservation-vm="rvm")
               ax-pgroup-bill(ng-if="pGroupRes" reservation-vm="rvm" details="resDetails")

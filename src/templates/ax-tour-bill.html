@@ -2,22 +2,26 @@
     <div class="bill-page-1">
         <table class="table-bill-page">
             <thead>
-            <tr>
-                <td>{{rvm.res.firm}}</td>
-                <td></td>
-            </tr>
-            <tr>
-                <td>{{rvm.res.address1}} {{rvm.res.address2}}</td>
-                <td></td>
-            </tr>
-            <tr>
-                <td>{{rvm.res.post_code}} {{rvm.res.city}}</td>
-                <td></td>
-            </tr>
-            <tr>
-                <td>{{rvm.res.country}}</td>
-                <td></td>
-            </tr>
+                <tr>
+                    <td>{{firm}}  <i class="glyphicon glyphicon-edit no-print" ng-click="editFirm()"></i></td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td>{{address1}}</td>
+                    <td></td>
+                </tr>
+                <tr ng-if="address2">
+                    <td>{{address2}}</td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td>{{post_code}} {{city}}</td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td>{{country}}</td>
+                    <td></td>
+                </tr>
             <tr>
                 <td>&nbsp;</td>
                 <td>&nbsp;</td>

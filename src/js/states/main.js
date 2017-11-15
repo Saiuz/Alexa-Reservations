@@ -58,5 +58,12 @@ define(['./module'], function (states) {
 
         });
 
+        $stateProvider.state('statistics', {
+          url:'/statistics',
+          template: viewProvider.renderView('statistics'),
+          controller: 'StatisticsCtrl'
+
+        });
+
       }]);
 });

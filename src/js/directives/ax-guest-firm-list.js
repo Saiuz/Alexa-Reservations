@@ -5,11 +5,11 @@
  */
 define(['./module'], function (directives) {
   'use strict';
-  directives.directive('axGuestFirmList', ['Guest', 'Firm', 'modals', '$filter', 'convert', 'configService',
-    function (Guest, Firm, modals, $filter, convert, configService) {
+  directives.directive('axGuestFirmList', ['Guest', 'Firm', 'Reservation', 'modals', '$filter', 'convert', 'configService',
+    function (Guest, Firm, Reservation, modals, $filter, convert, configService) {
 
-    var linker = function (scope, element, attrs, modelCtrl) {
-      var modechar = attrs.mode.toLowerCase().charAt(0),
+      let linker = function (scope, element, attrs, modelCtrl) {
+      let modechar = attrs.mode.toLowerCase().charAt(0),
           isGuest = modechar === 'a' || modechar === 'g',
           dataObjR = {data: undefined, extraData: undefined},
           model;
@@ -54,7 +54,7 @@ define(['./module'], function (directives) {
         if (newVals[1] !== oldVals[1]) {
           if (isGuest) {
             if (newVals[1]) {
-              _getGuests(newVals[1], scope.withFirm, scope.lastQry2);
+              _getGuests(newVals[1], scope.withFirm, scope.lastQry2).then().catch(err => _showErr(err));
             }
             else {
               scope.items = [];
@@ -62,7 +62,7 @@ define(['./module'], function (directives) {
           }
           else {
             if (newVals[1]) {
-              _getFirms(newVals[1]);
+              _getFirms(newVals[1]).then().catch(err => _showErr(err));
             }
             else {
               scope.items = [];
@@ -72,7 +72,7 @@ define(['./module'], function (directives) {
         if (newVals[2] !== oldVals[2] || scope.lastQry) { // only applies to guests - firm search box value changed
           if (isGuest) {
             if (newVals[1] || newVals[2]) {
-              _getGuests(scope.lastQry, scope.withFirm, newVals[2]);
+              _getGuests(scope.lastQry, scope.withFirm, newVals[2]).then().catch(err => _showErr(err));
             }
             else {
               scope.items = [];
@@ -101,7 +101,7 @@ define(['./module'], function (directives) {
         scope.searchTxt2 = '';
         scope.headers = Guest.toDisplayObjHeader(scope.withFirm);
         if (scope.lastQry) {
-          _getGuests(scope.lastQry, scope.withFirm, scope.lastQry2);
+          _getGuests(scope.lastQry, scope.withFirm, scope.lastQry2).then().catch(err => _showErr(err));
         }
       };
 
@@ -111,10 +111,10 @@ define(['./module'], function (directives) {
         modals.create(model,dataObjR,function(result) {
           if (result) {
             if (isGuest) {
-              _getGuests(result.last_name);
+              _getGuests(result.last_name).then().catch(err => _showErr(err));
             }
             else {
-              _getFirms(result.firm_name);
+              _getFirms(result.firm_name).then().catch(err => _showErr(err));
             }
           }
         });
@@ -125,10 +125,10 @@ define(['./module'], function (directives) {
         modals.update(model,dataObjR,function(result) {
           if (result) {
             if (isGuest && scope.lastQry) {
-              _getGuests(scope.lastQry);
+              _getGuests(scope.lastQry).then().catch(err => _showErr(err));
             }
             else if (!isGuest && scope.lastQry) {
-              _getFirms(scope.lastQry);
+              _getFirms(scope.lastQry).then().catch(err => _showErr(err));
             }
           }
         });
@@ -139,10 +139,10 @@ define(['./module'], function (directives) {
         modals.delete(model,dataObjR,function(result) {
           if (result) {
             if (isGuest && scope.lastQry) {
-              _getGuests(scope.lastQry);
+              _getGuests(scope.lastQry).then().catch(err => _showErr(err));
             }
             else if (!isGuest && scope.lastQry) {
-              _getFirms(scope.lastQry);
+              _getFirms(scope.lastQry).then().catch(err => _showErr(err));
             }
           }
         });
@@ -150,11 +150,11 @@ define(['./module'], function (directives) {
 
       // Method to retrieve and transform the Guest data. If firm search is true then the guests returned are
       // those that are associated with the firms that match the qryRegex
-      function _getGuests (qryRegex, firmSearch, altRegex) {
+      async function _getGuests (qryRegex, firmSearch, altRegex) {
         scope.lastQry = qryRegex;
         scope.lastQry2 = altRegex;
         let fqry = scope.withFirm ? {$ne: ''} : {$eq: ''};
-        var qry = firmSearch ?
+        let qry = firmSearch ?
                   qryRegex && altRegex ?
                   {firm: {$regex: altRegex, $options: 'i'}, last_name: {$regex: qryRegex, $options: 'i'} }
                   : qryRegex && !altRegex ?
@@ -163,58 +163,62 @@ define(['./module'], function (directives) {
                   : {last_name: {$regex: qryRegex, $options: 'i'}, firm: fqry};
 
         scope.loading = true;
-        Guest.find(qry)
-            .sort({last_name: 1})
-            .exec(function (err, guests) {
-              if (err) {
-                scope.errMsg = err;
-                scope.hasErr = true;
-              }
-              else {
-                scope.hasErr = false;
-                scope.qryCnt = guests.length;
-                var rowItems = [];
-                guests.forEach(function (g) {
-                  var tds = {id: g._id, cols: g.toDisplayObj(scope.withFirm)};
-                  rowItems.push(tds);
-                });
-                scope.loading = false;
-                scope.items = rowItems;
-                scope.$apply();
-              }
-            });
+        
+        try {
+          let guests = await Guest.find(qry).sort({last_name: 1}).exec();
+          scope.hasErr = false;
+          scope.qryCnt = guests.length;
+          var rowItems = [];
+          for (let i = 0; i < guests.length; i++) {
+            let g = guests[i];
+            let rCnt = await Reservation.count({$or: [{"guest.id": g._id},{"gust2.id": g._id}]})
+            let tds = {id: g._id, cols: g.toDisplayObj(scope.withFirm, rCnt)};
+            rowItems.push(tds);
+          }
+          scope.loading = false;
+          scope.items = rowItems;
+          scope.$apply();   
+        } catch (err) {
+          throw err;
+        }
       }
 
       // Method to retrieve and transform the Firm data
-      function _getFirms (qryRegex) {
+      async function _getFirms (qryRegex) {
         scope.lastQry = qryRegex;
-        var qry = {firm_name: {$regex: qryRegex, $options: 'i'}},
+        let qry = {firm_name: {$regex: qryRegex, $options: 'i'}},
             priceCol = scope.headers[1];
 
         scope.loading = true;
-        Firm.find(qry)
-            .sort({firm_name: 1})
-            .exec(function (err, firms) {
-              if (err) {
-                scope.errMsg = err;
-                scope.hasErr = true;
-              }
-              else {
-                scope.hasErr = false;
-                scope.qryCnt = firms.length;
-                var rowItems = [];
-                firms.forEach(function (g) {
-                  var cols = g.toDisplayObj();
-                  cols[priceCol] = $filter('currency')(cols[priceCol]);
-                  var tds = {id: g._id, cols: cols};
-                  rowItems.push(tds);
-                });
-                scope.loading = false;
-                scope.items = rowItems;
-                scope.$apply();
-              }
-            });
+        try {
+          let firms = await Firm.find(qry).sort({firm_name: 1}).exec();
+          scope.hasErr = false;
+          scope.qryCnt = firms.length;
+          var rowItems = [];
+          for (let i = 0; i < firms.length; i++) {
+            let g = firms[i];
+            let gCnt = await Guest.count({firm: g.firm_name});
+            let cols = g.toDisplayObj(gCnt);
+            cols[priceCol] = $filter('currency')(cols[priceCol]);
+            let tds = {id: g._id, cols: cols};
+            rowItems.push(tds);
+          }
+
+          scope.loading = false;
+          scope.items = rowItems;
+          scope.$apply();
+
+        } catch (err) {
+          throw err;
+        }
       }
+
+     function _showErr(err) {
+      scope.errMsg = err.message;
+      scope.hasErr = true;
+      scope.$apply();
+     }
+
     };  //end linker
 
     return {

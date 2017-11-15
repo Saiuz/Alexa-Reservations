@@ -160,6 +160,12 @@
                 <textarea class="form-control" ng-model="guest.comments"></textarea>
             </div>
         </div>
+        <div class="form-group" ng-if="edit">
+            <label class="control-label col-xs-4">{{txt.lastStay}}</label>
+            <div class="col-xs-8">
+                <p class="form-control-static">{{guest.last_stay | date:'dd.MM.yyyy'}}</p>
+            </div>
+        </div>
     </div>
     <div class="alert alert-danger" ng-show="errLoad || errSave">
         <a class="close" ng-click="hideErr()" ng-show="!errLoad">&times;</a>

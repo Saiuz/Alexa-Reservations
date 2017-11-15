@@ -238,7 +238,7 @@ define(['./module'], function (controllers) {
               // replace old plan with new edits in local list
               $scope.planObjects.splice(localPlanIX, 1, plan);
               $scope.setSelected(plan.name); //incase the name was changed
-              _calculateUpdatePlanPrice(); // update prices
+              _calculatePlanPrice(); // update prices
               plan.save(function (err) {
                 if (err) {
                   console.log(err);

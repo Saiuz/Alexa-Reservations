@@ -13,7 +13,7 @@
  * instance object. In the case of a delete operation, the _id of the deleted object will be returned.
  *
  * The form is activated, and any returned results are handled by the following code:
- *        var modalInstance = $modal.open({
+ *        let modalInstance = $modal.open({
  *                     templateUrl: './templates/firmFormModal.html',
  *                     controller: 'firmFormModalCtrl',
  *                     size: size,
@@ -33,212 +33,155 @@
 define(['./module'], function (controllers) {
   'use strict';
 
-  controllers.controller('FirmFormModalCtrl',
-      ['$scope',
-        '$rootScope',      
-        '$modalInstance',
-        'modalParams',
-        'Firm',
-        'dashboard',
-        'configService',
-        '$timeout',
-        'utility',
-        function ($scope, $rootScope, $modalInstance, modalParams, Firm, dashboard, configService, $timeout, utility) {
-          console.log("FirmFormModal controller fired");
+  controllers.controller('FirmFormModalCtrl', ['$scope',
+    '$rootScope',
+    '$modalInstance',
+    'modalParams',
+    'Firm',
+    'dashboard',
+    'configService',
+    'modalUtility',
+    function ($scope, $rootScope, $modalInstance, modalParams, Firm, dashboard, configService, utility) {
+      console.log("FirmFormModal controller fired");
 
-          $scope.err = {};
-          $scope.errSave = false;
-          $scope.errLoad = false;
-          $scope.hide = false;
-          $scope.actionMsg = '';
-          $scope.saveTxt = configService.loctxt.add;
-          $scope.cancelTxt = configService.loctxt.cancel;
-          $scope.txt = configService.loctxt;
-          $scope.deleteMode = false;
-          $scope.confirmed = false;
-          $scope.roomPrice = undefined; //Since we must manipulate the number (convert from de to en numbers), we can't connect to the DB model directly
+      let helpers = new utility.Helpers($scope, $modalInstance);
+      $scope.actionMsg = '';
+      $scope.saveTxt = configService.loctxt.add;
+      $scope.cancelTxt = configService.loctxt.cancel;
+      $scope.txt = configService.loctxt;
+      $scope.deleteMode = false;
+      $scope.confirmed = false;
+      $scope.roomPrice = undefined; //Since we must manipulate the number (convert from de to en numbers), we can't connect to the DB model directly
 
-          // Determine CRUD mode of form.
-          // For all but 'C' the query can be by id or by the firm_name property which is also unique.
-          var mode = modalParams.mode.substring(0, 1).toLowerCase();
-          var qry = typeof(modalParams.data) === 'object' ? {'_id': modalParams.data} : {'firm_name': modalParams.data};
-          var notFound = configService.loctxt.firm + ' "' + modalParams.data + '" ' + configService.loctxt.notFound;
-          var lastFirm = '';
+      // Determine CRUD mode of form.
+      // For all but 'C' the query can be by id or by the firm_name property which is also unique.
+      const mode = modalParams.mode.substring(0, 1).toLowerCase();
+      const qry = typeof (modalParams.data) === 'object' ? {
+        '_id': modalParams.data
+      } : {
+        'firm_name': modalParams.data
+      };
+      const notFound = configService.loctxt.firm + ' "' + modalParams.data + '" ' + configService.loctxt.notFound;
+      let lastFirm = '';
 
-          switch (mode) {
-            case 'c':
-              $scope.title = configService.loctxt.firm_titleCreate;
-              $scope.firm = new Firm();
-              $scope.firm.contact = {name: '', phone: '', email: ''};
-              $scope.firm.firm_name = modalParams.data;
-              $scope.edit = true;
-              $scope.read = false;
-              break;
-            case 'r':
-              $scope.title = configService.loctxt.firm_titleRead;
-              Firm.findOne(qry, function (err, firm) {
-                if (err) {
-                  $scope.err = new utility.errObj(err);
-                  $scope.errLoad = true;
-                }
-                else {
-                  if (firm) {
-                    $scope.firm = firm;
-                    $scope.roomPrice = firm.room_price;
-                    $scope.edit = false;
-                    $scope.read = true;
-                    $scope.cancelTxt = configService.loctxt.close;
-                  }
-                  else {
-                    $scope.err = new utility.errObj(notFound);
-                    $scope.errLoad = true;
-                  }
-                  $scope.$apply();
-                }
-              });
-              break;
-            case 'u':
-              $scope.title = configService.loctxt.firm_titleUpdate;
-              Firm.findOne(qry, function (err, firm) {
-                if (err) {
-                  $scope.err = new utility.errObj(err);
-                  $scope.errLoad = true;
-                }
-                else {
-                  if (firm) {
-                    lastFirm = firm.firm_name;
-                    $scope.firm = firm;
-                    $scope.roomPrice = firm.room_price;
-                    $scope.edit = true;
-                    $scope.read = false;
-                    $scope.saveTxt = configService.loctxt.update;
-                  }
-                  else {
-                    $scope.err = new utility.errObj(notFound);
-                    $scope.errLoad = true;
-                  }
-                  $scope.$apply();
-                }
-              });
-              break;
-            case 'd':
-              $scope.title = configService.loctxt.firm_titleDelete;
-              Firm.findOne(qry, function (err, firm) {
-                if (err) {
-                  $scope.err = new utility.errObj(err);
-                  $scope.errLoad = true;
-                }
-                else {
-                  if (firm) {
-                    $scope.firm = firm;
-                    $scope.edit = false;
-                    $scope.read = true;
-                    $scope.deleteMode = true;
-                    $scope.cancelTxt = configService.loctxt.close;
-                    $scope.saveTxt = configService.loctxt.delete;
-                  }
-                  else {
-                    $scope.err = new utility.errObj(notFound);
-                    $scope.errLoad = true;
-                  }
-                  $scope.$apply();
-                }
-              });
-              break;
+      switch (mode) {
+        case 'c':
+          $scope.title = configService.loctxt.firm_titleCreate;
+          $scope.firm = new Firm();
+          $scope.firm.contact = {
+            name: '',
+            phone: '',
+            email: ''
+          };
+          $scope.firm.firm_name = modalParams.data;
+          $scope.edit = true;
+          $scope.read = false;
+          break;
+        case 'r':
+          $scope.title = configService.loctxt.firm_titleRead;
+          Firm.findOne(qry).then((firm) => {
+              if (firm) {
+                $scope.firm = firm;
+                $scope.roomPrice = firm.room_price;
+                $scope.edit = false;
+                $scope.read = true;
+                $scope.cancelTxt = configService.loctxt.close;
+                helpers.dApply();
+              } else {
+                helpers.showLoadErr(notFound);
+              }
+            }).catch(err => helpers.showLoadErr(err));
+          break;
+        case 'u':
+          $scope.title = configService.loctxt.firm_titleUpdate;
+          Firm.findOne(qry).then((firm) => {
+              if (firm) {
+                lastFirm = firm.firm_name;
+                $scope.firm = firm;
+                $scope.roomPrice = firm.room_price;
+                $scope.edit = true;
+                $scope.read = false;
+                $scope.saveTxt = configService.loctxt.update;
+                helpers.dApply();
+              } else {
+                helpers.showLoadErr(notFound);
+              }
+            }).catch(err => helpers.showLoadErr(err));
+          break;
+        case 'd':
+          $scope.title = configService.loctxt.firm_titleDelete;
+          Firm.findOne(qry).then((firm) => {
+              if (firm) {
+                $scope.firm = firm;
+                $scope.edit = false;
+                $scope.read = true;
+                $scope.deleteMode = true;
+                $scope.cancelTxt = configService.loctxt.close;
+                $scope.saveTxt = configService.loctxt.delete;
+                helpers.dApply();
+              } else {
+                helpers.showLoadErr(notFound);
+              }
+            }).catch(err => helpers.showLoadErr(err));
+          break;
+      }
+
+      // listen to changes in price
+      $scope.$watch('roomPrice', function (newval) {
+        if (newval) {
+          $scope.firm.room_price = Number(newval);
+        }
+      });
+
+      // modal button click methods
+      // save button handler
+      $scope.save = function () {
+        //perform any pre save form validation or logic here
+        // If we change the name of the firm, then we must update the guests that are
+        // associated with the previous firm name!
+        // TODO-NOTE: by updating guest firm field, the unique name does not get regenerated. Need to find all firms then modify and save each!!!
+        let nameChanged = lastFirm && (lastFirm !== $scope.firm.firm_name);
+        _saveFirm(nameChanged).then((msg) => {
+          helpers.autoClose(msg, $scope.firm);
+        }).catch(err => helpers.showSaveError(err));
+      };
+
+      // Delete btn handler
+      $scope.delete = function (err) {
+        let id = $scope.firm._id;
+        $scope.firm.remove().then(() => {
+            let msg = configService.loctxt.firm + configService.loctxt.success_deleted;
+            helpers.autoClose(msg, id);
+        }).catch(err => helpers.showSaveError(err));
+      };
+
+      //#region - private functions
+      /**
+       * Async function to save firm and update guests and reservations that access the firm.
+       * It updates all active reservations that have the firm name (or old firm name if changed).
+       * If the firm name changed then guests that are associated with the old firm name are updated.
+       */
+      async function _saveFirm(nameChanged) {
+        try {
+          let msg = '';
+          await $scope.firm.save();
+          let oldName = nameChanged ? lastFirm : '';
+          let numAffected;
+
+          let resAffected = await dashboard.updateFirmInReservations(oldName, $scope.firm); //update reservations
+          if (nameChanged) {
+            let numAffected = await dashboard.updateFirmInGuests(lastFirm, $scope.firm.firm_name);
           }
 
-          // listen to changes in price
-          $scope.$watch('roomPrice', function(newval) {
-             if (newval) {
-               $scope.firm.room_price = Number(newval);
-             }
-          });
+          msg = (mode === 'c' ? configService.loctxt.firm + configService.loctxt.success_saved :
+            `${configService.loctxt.success_changes_saved} ${numAffected}, ${configService.loctxt.guests} ${resAffected} ${configService.loctxt.reservations}`);
 
-          // auto close after successful action methods
-          var timer = null; // used for timer to auto close modal after a delay when a C, U or D operation occurs
-          var autoClose = function (msg, val) {
-            $scope.hide = true;
-            $scope.actionMsg = msg;
-            $scope.$apply();
-            timer = $timeout(function () {
-              $rootScope.$broadcast(configService.constants.firmEditedEvent, $scope.firm); //fire firmEdited event                             
-              $modalInstance.close(val);
-            }, configService.constants.autoCloseTime)
-          };
-
-          // modal button click methods
-          // save button handler
-          $scope.save = function () {
-            //perform any pre save form validation or logic here
-            // If we change the name of the firm, then we must update the guests that are
-            // associated with the previous firm name!
-            // TODO-NOTE: by updating guest firm field, the unique name does not get regenerated. Need to find all firms then modify and save each!!!
-            let nameChanged = lastFirm && (lastFirm !== $scope.firm.firm_name);
-                
-            saveFirm(nameChanged).then((msg) => {
-              autoClose(msg, $scope.firm);
-            }).catch((err) => {
-              console.log('Firm save error: ' + err);
-              $scope.err = new utility.errObj(err);
-              $scope.errSave = true;
-              $scope.$apply();
-            });
-          };
-
-          // Delete btn handler
-          $scope.delete = function (err) {
-            var id = $scope.firm._id;
-            $scope.firm.remove(function (err) {
-              if (err) {
-                console.log('Firm delete error: ' + err);
-                $scope.err = new utility.errObj(err);
-                $scope.errSave = true;
-                $scope.$apply();
-              }
-              else {
-                var msg = configService.loctxt.firm + configService.loctxt.success_deleted;
-                autoClose(msg, id);
-              }
-            });
-          };
-
-          // Cancel btn handler
-          $scope.cancel = function () {
-            if (timer) {
-              $timeout.cancel(timer);
-            }
-            $modalInstance.dismiss('cancel');
-          };
-
-          // Error msg close handler for save/delete error only
-          $scope.hideErr = function () {
-            $scope.errSave = false;
-          };
-
-          /**
-           * Async function to save firm and update guests and reservations that access the firm.
-           * It updates all active reservations that have the firm name (or old firm name if changed).
-           * If the firm name changed then guests that are associated with the old firm name are updated.
-           */
-          async function saveFirm(nameChanged) {
-            try {
-              let msg = '';
-              await $scope.firm.save();
-              let oldName = nameChanged ? lastFirm : '';
-              let numAffected;
-              
-              let resAffected = await dashboard.updateFirmInReservations(oldName, $scope.firm); //update reservations
-              if (nameChanged) {
-                let numAffected = await dashboard.updateFirmInGuests(lastFirm, $scope.firm.firm_name);
-              }
-
-              msg = (mode === 'c' ? configService.loctxt.firm + configService.loctxt.success_saved :
-                `${configService.loctxt.success_changes_saved} ${numAffected}, ${configService.loctxt.guests} ${resAffected} ${configService.loctxt.reservations}`);
-
-              return msg;
-            } catch (err) {
-              throw err;
-            }
-          }
-        }]);
+          return msg;
+        } catch (err) {
+          throw err;
+        }
+      }
+      //#endregion
+    }
+  ]);
 });

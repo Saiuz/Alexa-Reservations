@@ -26,5 +26,6 @@ define([
     './yesNoFormModal',
     './billDisplayModal',
     './export',
-    './import'
+    './import',
+    './statistics'
 ], function () {});

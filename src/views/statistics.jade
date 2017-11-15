@@ -1,0 +1,32 @@
+include nav_common.jade
+.container
+  .row
+    .col-md-12
+      h3 {{txt.revenueStatistics}}
+      tabset(type="pills")
+        tab(ng-repeat="y in years" heading="{{y.year}}" active="y.active" select="yearSelected(y.year)")
+      .reservations-content-box
+        div(ng-show="working")
+          span.btn.btn-warning.btn-sm
+          i.glyphicon.glyphicon-refresh
+        div(ng-show="mData.length")
+          canvas(class="chart chart-line" chart-data="data" chart-labels="labels" chart-series="series" chart-click="onClick" height="100px")
+        div(ng-show="mData.length")
+          table.table.table-bordered.table-hover.table-condensed.text-center
+            thead
+              tr
+                th
+                th(ng-repeat="m in months" class="text-center") {{m}}
+            tbody
+              tr
+                td Occ
+                td(ng-repeat="o in mData") {{o.occupancy}}
+              tr
+                td ADR
+                td(ng-repeat="o in mData") {{o.ADR}}
+              tr
+                td RevPAR
+                td(ng-repeat="o in mData") {{o.RevPAR}}
+        div.alert.alert-danger(ng-show="errShow")
+          h3 Error!
+          span {{errMsg.toString()}}
