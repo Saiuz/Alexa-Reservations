@@ -36,6 +36,7 @@ define(['./module'], function (directives) {
             });
             scope.tabs = tabarr;
             _getItems(0);
+            
           }
           else {
             scope.show = false;
@@ -60,9 +61,11 @@ define(['./module'], function (directives) {
             scope.hasErr = false;
             scope.tabs[tabIndex].txtPrice = _convertNumToText(items);
             scope.tabs[tabIndex].items = items;
+            scope.$apply();
           }, function (err) {
-            scope.errMsg = err;
+            scope.errMsg = err.message;
             scope.hasErr = true;
+            scope.$apply();
           });
         }
 
@@ -104,8 +107,9 @@ define(['./module'], function (directives) {
               if (item){
                 item.remove(function (err) {
                   if (err) {
-                    scope.errMsg = err;
+                    scope.errMsg = err.message;
                     scope.hasErr = true;
+                    scope.$apply();
                   }
                   else {
                     scope.hasErr = false;

@@ -37,6 +37,7 @@ define(['./module'], function (controllers) {
 
           dashboard.getItemTypeListExcept('').then(function(items){
             $scope.itemTypes = items;
+            $scope.$apply();
           });
 
           $scope.$watch('selected.reservation', function (newval) {

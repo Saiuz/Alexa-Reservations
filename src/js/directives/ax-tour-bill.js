@@ -34,16 +34,16 @@ define(['./module'], function (directives) {
         // build the local select list from the expenseItemArray
         // filter the list by the itemType property. Note we must wait until
         // both properties have been set during the compile phase of the hosting page
-        scope.$watchCollection('[reservationVm]', function (newvals) {
+        scope.$watchCollection('[reservationVm, pauschale]', function (newvals) {
           var extras = {};
 
           if (newvals[0] !== undefined) {
             console.log("axTourBill watch fired with all parameters " + newvals[1]);
             haveAttributes = true;
             scope.rvm = newvals[0]; // same as reservationVM just less typing
-            room = Number(newvals[1]);
+            //room = Number(newvals[1]);
             rmObj = scope.rvm.generatePlanRoomString(scope.rvm.res.rooms[0].number, scope.rvm.res.rooms[0].guest);
-            busPachale = newvals[3];
+            busPachale = newvals[1];
             // build 'vocabulary' that expense display strings may need.
             extras['planName'] = rmObj.displayText;
             extras['planPrice'] = scope.rvm.planPrice;
@@ -104,7 +104,7 @@ define(['./module'], function (directives) {
                 }
             );
 
-            calcResult = scope.rvm.calculateTotals(unterItems, null, null, extras, true, ktext);
+            calcResult = scope.rvm.calculateTotals(unterItems, null, null, extras, true, ktext, busPachale);
             scope.section1 = {
               page_title: "Rechnung",
               section_title: "Unterkunft:",
@@ -152,7 +152,8 @@ define(['./module'], function (directives) {
         link: linker,
         templateUrl: './templates/ax-tour-bill.html',
         scope: {
-          reservationVm: '='
+          reservationVm: '=',
+          pauschale: '='
         }
       };
     }]);

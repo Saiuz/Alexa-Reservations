@@ -113,3 +113,7 @@ Others:
 7) **DONE** ~~Update the validation error display on the modal forms to hide after a predefined time interval, refactor all common modal code into utility service method.~~
 8) Can we modify the address list to not scroll to the top when a res is selected or checked in on pages with lots of entries
 
+NEW BUGS FOUND During testing
+
+**NOTE** Whenever a $q promise is replaced with a native promise then the controller or directive calling the method may need to manually call $scope.$apply()!!!
+

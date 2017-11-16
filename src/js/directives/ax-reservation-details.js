@@ -61,6 +61,7 @@ define(['./module'], function (directives) {
             scope.canDelete = !datetime.isDate(resVM.res.checked_out) && !datetime.isDate(resVM.res.checked_in);
             title = (resVM.res.firm ? resVM.res.firm : configService.loctxt.cure) + ' (' + rm.guest + (rm.guest2 ? ' / ' + rm.guest2 : '') + ')';
             scope.title = resVM.oneBill ? resVM.res.title : title
+            scope.$apply();
           }, function (err) {
             console.log('Read Error: ' + err);
             scope.err = err;

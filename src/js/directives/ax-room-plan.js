@@ -66,12 +66,14 @@ define(['./module'], function (directives) {
                   },
                   function (err) {
                     scope.hasErr = true;
-                    scope.errMsg = err;
+                    scope.errMsg = err.message;
+                    scope.$apply();
                   });
             },
             function (err) {
               scope.hasErr = true;
-              scope.errMsg = err;
+              scope.errMsg = err.message;
+              scope.$apply();
             });
 
         // Register events that this directive responds to. The first three events don't change the date
@@ -198,7 +200,8 @@ define(['./module'], function (directives) {
                   }
                 }, function (err) {
                   scope.hasErr = true;
-                  scope.errMsg = err;
+                  scope.errMsg = err.message;
+                  scope.$apply();
                 });
               });
             }

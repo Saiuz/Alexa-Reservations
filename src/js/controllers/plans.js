@@ -300,8 +300,8 @@ define(['./module'], function (controllers) {
             $scope.working = true;
             dashboard.getPackagePlanItemTypes().then(function (items) {
                   $scope.planItemTypes = items;
-
                   $scope.working = false;
+                  $scope.$apply()
                 },
                 function (err) {
                   $scope.working = false;

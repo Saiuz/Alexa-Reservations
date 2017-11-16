@@ -135,6 +135,7 @@ define(['./module'], function (controllers) {
             dashboard.getReservationsInMonth($scope.selectedMonth, $scope.selectedYear).then(function (results) {
               $scope.reservations = results;
               $scope.working = false;
+              $scope.$apply();
             }, function(err) {
               $scope.working = false;
               $scope.errShow = true;

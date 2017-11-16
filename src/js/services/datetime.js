@@ -57,7 +57,7 @@ define(['./module'], function (services) {
     /**
      * Takes a valid date object and converts it to a new date object with the time component
      * set to 00:00:00.000. It can apply an optional day offset to the original date. If the dateVal
-     * parameter is not a valid date it simply returns the parameter.
+     * parameter is not a valid date it simply returns the dateVal parameter.
      * @param {Date} dateVal - valid date object
      * @param {Number / String} daysOffset - optional days offset that will be applied to the date. Can
      *  be a string that will parse to a integer.
@@ -76,12 +76,17 @@ define(['./module'], function (services) {
     /**
      * Returns UTC date (milliseconds since Unix Epoch) of the date specified.
      * It will only consider the date part and ignore the HMS. It can be
-     * used to query MongoDB date fields
+     * used to query MongoDB date fields. It can apply an optional day offset to the original date. If the dateVal
+     * parameter is not a valid date it simply returns the parameter.
      * @param {date} dateVal 
+     * @param {Number / String} daysOffset - optional days offset that will be applied to the date. Can
+     *  be a string that will parse to a integer.
      */
-    const _dateOnlyUTC = (dateVal) => {
+    const _dateOnlyUTC = (dateVal, daysOffset = 0) => {
       if (_isDate(dateVal)) {
-        return Date.UTC(dateVal.getFullYear(), dateVal.getMonth(), dateVal.getDate(), 0, 0, 0);
+        let offset = (typeof daysOffset === "number") ? Math.floor(daysOffset) : 
+        (typeof daysOffset === "string") ? isNaN(parseInt(daysOffset)) ? 0 : parseInt(daysOffset) : 0;
+        return Date.UTC(dateVal.getFullYear(), dateVal.getMonth(), dateVal.getDate() + offset, 0, 0, 0);
       } else {
         return dateVal;
       }
@@ -104,12 +109,17 @@ define(['./module'], function (services) {
     }
     /**
      * Converts a Date object to a UTC date (milliseconds since Unix epoch) that represents
-     * the last millisecond of the the day of the date provided.
+     * the last millisecond of the the day of the date provided. It can apply an optional 
+     * day offset to the original date.
      * @param {Date} dateVal - date to convert
+     * @param {Number / String} daysOffset - optional days offset that will be applied to the date. Can
+     *  be a string that will parse to a integer.
      */
-    const __lastSecondUTC = (dateVal) => {
+    const __lastSecondUTC = (dateVal, daysOffset = 0) => {
       if (_isDate(dateVal)) {
-        return Date.UTC(dateVal.getFullYear(), dateVal.getMonth(), dateVal.getDate(), 23, 59, 59, 999);
+        let offset = (typeof daysOffset === "number") ? Math.floor(daysOffset) : 
+        (typeof daysOffset === "string") ? isNaN(parseInt(daysOffset)) ? 0 : parseInt(daysOffset) : 0;
+        return Date.UTC(dateVal.getFullYear(), dateVal.getMonth(), dateVal.getDate() + offset, 23, 59, 59, 999);
       } else {
         return dateVal;
       }
