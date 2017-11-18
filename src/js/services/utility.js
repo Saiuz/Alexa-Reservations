@@ -592,7 +592,7 @@ define(['./module'], function (services) {
           reject(err);
         });
 
-        let lastDir = _lastDir(sourceDir); // specifiy the source dir inside the archive
+        let lastDir = _lastDir(sourceDir); // specify the source dir inside the archive
         zipArchive.pipe(output);
         zipArchive.directory(sourceDir, lastDir);
         zipArchive.finalize();
@@ -603,7 +603,7 @@ define(['./module'], function (services) {
   }
   /**
    * Returns the last directory/folder of a path string
-   * @param {string} dirpath 
+   * @param {string} dirPath 
    */
   function _lastDir(dirPath) {
     let dp = path.parse(dirPath); //in case a file is also specified
