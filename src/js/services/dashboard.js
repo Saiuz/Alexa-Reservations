@@ -331,12 +331,12 @@ define(['./module'], function (services) {
                   qry = firm ? {
                     firm: firm,
                     unique_name: {
-                      $regex: val,
+                      $regex: new RegExp(val),
                       $options: 'i'
                     }
                   } : {
                     unique_name: {
-                      $regex: val,
+                      $regex:  new RegExp(val),
                       $options: 'i'
                     }
                   };
@@ -350,12 +350,12 @@ define(['./module'], function (services) {
                   qry = firm ? {
                     firm: firm,
                     first_name: {
-                      $regex: val,
+                      $regex:  new RegExp(val),
                       $options: 'i'
                     }
                   } : {
                     first_name: {
-                      $regex: val,
+                      $regex:  new RegExp(val),
                       $options: 'i'
                     }
                   };
@@ -369,7 +369,7 @@ define(['./module'], function (services) {
                   qry = firm ? {
                     firm: firm,
                     last_name: {
-                      $regex: val,
+                      $regex:  new RegExp(val),
                       $options: 'i'
                     }
                   } : {

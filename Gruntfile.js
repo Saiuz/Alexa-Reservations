@@ -63,7 +63,7 @@ module.exports = function(grunt) {
         },
         clean: ["./releases/**/*"],
         shell: {
-            innobuild32: {
+            innobuild: {
                 command: function () {
                     return '"C:\\Program Files (x86)\\Inno Setup 5\\iscc" InnoScript32.iss'
                 },
