@@ -10,9 +10,11 @@
 #define MyAppPublisher "Vogel Software Consulting LLC"
 #define MyAppURL "https://github.com/vogelrh/Alexa-Reservations"
 #define MyAppExeName "Alexa.exe"
+
 #define MyBaseDir "C:\Users\nb88843\AppDevP\working\Alexa-Reservations"
 #define NwVersion "0.25.4-sdk"
 #define Architecture "win64"
+
 #define NwSourcePath MyBaseDir + "\cache\" + NwVersion + "\" + Architecture
 
 [Setup]
@@ -53,29 +55,8 @@ Type: files; Name: "{app}\pdf.dll"
 
 [Files]
 Source: "{#NwSourcePath}\*"; DestDir: "{app}"; Flags: ignoreversion
-;Source: "{#NwSourcePath}\nw.exe"; DestDir: "{app}"; DestName: "Alexa.exe"; Flags: ignoreversion
-;Source: "{#NwSourcePath}\nwjc.exe"; DestDir: "{app}"; Flags: ignoreversion
-;Source: "{#NwSourcePath}\payload.exe"; DestDir: "{app}"; Flags: ignoreversion
-;Source: "{#NwSourcePath}\d3dcompiler_47.dll"; DestDir: "{app}"; Flags: ignoreversion
-;Source: "{#NwSourcePath}\ffmpeg.dll"; DestDir: "{app}"; Flags: ignoreversion
-;Source: "{#NwSourcePath}\libEGL.dll"; DestDir: "{app}"; Flags: ignoreversion
-;Source: "{#NwSourcePath}\libGLESv2.dll"; DestDir: "{app}"; Flags: ignoreversion
-;Source: "{#NwSourcePath}\node.dll"; DestDir: "{app}"; Flags: ignoreversion
-;Source: "{#NwSourcePath}\nw.dll"; DestDir: "{app}"; Flags: ignoreversion
-;Source: "{#NwSourcePath}\nw_elf.dll"; DestDir: "{app}"; Flags: ignoreversion
-;Source: "{#NwSourcePath}\natives_blob.bin"; DestDir: "{app}"; Flags: ignoreversion
-;Source: "{#NwSourcePath}\snapshot_blob.bin"; DestDir: "{app}"; Flags: ignoreversion
-;Source: "{#NwSourcePath}\credits.html"; DestDir: "{app}"; Flags: ignoreversion
-;Source: "{#NwSourcePath}\icudtl.dat"; DestDir: "{app}"; Flags: ignoreversion
-;Source: "{#NwSourcePath}\nacl_irt_x86_32.nexe"; DestDir: "{app}"; Flags: ignoreversion
-;Source: "{#NwSourcePath}\nw_100_percent.pak"; DestDir: "{app}"; Flags: ignoreversion
-;Source: "{#NwSourcePath}\nw_200_percent.pak"; DestDir: "{app}"; Flags: ignoreversion
-;Source: "{#NwSourcePath}\nw_material_100_percent.pak"; DestDir: "{app}"; Flags: ignoreversion
-;Source: "{#NwSourcePath}\nw_material_200_percent.pak"; DestDir: "{app}"; Flags: ignoreversion
-;Source: "{#NwSourcePath}\resources.pak"; DestDir: "{app}"; Flags: ignoreversion
-;Source: "{#NwSourcePath}\locales\*"; DestDir: "{app}\locales"; Flags: ignoreversion recursesubdirs createallsubdirs
-;Source: "{#NwSourcePath}\pnacl\*"; DestDir: "{app}\pnacl"; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "{MyBaseDir}\..\src\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "{MyBaseDir}\..\extra\mongodump*"; DestDir: "{app}"; Flags: ignoreversion
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 
 [Icons]

@@ -87,7 +87,7 @@ define(['./module'], function (services) {
     // bill section.
     this.constants = {
       autoCloseTime: 2000,
-      errorDisplayTime: 3500,
+      errorDisplayTime: 5000,
       billNumberID: 'billNo', //used by Counters collection to identify the bill number counter
       billNoSeed: 10000, // value used to seed the counter if the entry doesn;t exist
       resNumberID: 'resNo', //used by Counters collection to identify the reservation number counter 

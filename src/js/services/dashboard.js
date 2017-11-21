@@ -388,7 +388,7 @@ define(['./module'], function (services) {
                   };
               }
 
-              let guests = Guest.find(qry)
+              guests = await Guest.find(qry)
                 .sort(sort)
                 //.select('_id name unique_name') -can't select just virtual fields!! if they are calculated from fields that aren't returned in model
                 .exec();

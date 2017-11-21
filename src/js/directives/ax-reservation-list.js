@@ -122,6 +122,7 @@ define(['./module'], function (directives) {
                   dashboard.getCurrentReservations().then(function (result) {
                         scope.reservations = _buildList(result, useLink);
                         _setChecked(scope.selectedReservation);
+                        scope.$apply();
                       },
                       function (err) {
                         scope.error = err;
@@ -133,6 +134,7 @@ define(['./module'], function (directives) {
                 dashboard.getPastReservations(afterDate).then(function (result) {
                       scope.reservations = _buildList(result, useLink);
                       _setChecked(scope.selectedReservation);
+                      scope.$apply();
                     },
                     function (err) {
                       scope.error = err;
@@ -142,6 +144,7 @@ define(['./module'], function (directives) {
                 dashboard.getArrivals(theDate).then(function (result) {
                       scope.reservations = _buildList(result, useLink);
                       _setChecked(scope.selectedReservation);
+                      scope.$apply();
                     },
                     function (err) {
                       scope.error = err;
@@ -152,6 +155,7 @@ define(['./module'], function (directives) {
                 dashboard.getDepartures(theDate).then(function (result) {
                       scope.reservations = _buildList(result, useLink);
                       _setChecked(scope.selectedReservation);
+                      scope.$apply();
                     },
                     function (err) {
                       scope.error = err;
@@ -162,6 +166,7 @@ define(['./module'], function (directives) {
                 dashboard.getDepartures(theDate).then(function (result) {
                       scope.reservations = _buildList(result, useLink);
                       _setChecked(scope.selectedReservation);
+                      scope.$apply();
                     },
                     function (err) {
                       scope.error = err;
