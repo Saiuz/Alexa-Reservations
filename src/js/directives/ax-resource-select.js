@@ -20,7 +20,12 @@ define(['./module'], function (directives) {
       scope.txt = configService.loctxt;
       scope.showfrm = false;
       //private function to update the selectTitle
-      var updateTitle = function () {
+      let _dApply = () => {
+        setTimeout(() => {
+          scope.$apply()
+        }, 0);
+      };
+      let _updateTitle =  () => {
         if (scope.resources && scope.resources.length) {
           if (scope.resources.length === 1) {
             scope.selectTitle = scope.resources[0].name + ' ' + configService.loctxt.selected;
@@ -32,6 +37,7 @@ define(['./module'], function (directives) {
         else {
           scope.selectTitle = configService.loctxt.no + ' ' +  scope.resourceTitle;
         }
+        _dApply();
       };
 
       //scope.reservation.resources = scope.reservation.resources || [];
@@ -42,7 +48,7 @@ define(['./module'], function (directives) {
       scope.selectTitle = '';
       scope.displayOnly = false;
       scope.oneRoomB = false;
-      updateTitle();
+      _updateTitle();
 
       var ignoreWatch = true; //on initialization, do not remove any resources
 
@@ -53,11 +59,12 @@ define(['./module'], function (directives) {
         scope.oneRoomB = newvals[3] === 'true';
 
         if (scope.displayOnly && (newvals[1] && newvals[1].length) && newvals[2]) {
-          scope.$apply();
+          _dApply();
         }
         if (newvals[2]) {
           scope.selectedRoom = scope.rooms[0];
           scope.showResources = (!scope.oneRoomB || (scope.oneRoomB && scope.resources.length < 1));
+          _dApply();
         }
       });
       // Watch for a change in resourceList. If the list changes then we need to remove the resources currently
@@ -76,9 +83,10 @@ define(['./module'], function (directives) {
             ignoreWatch = false;
           } else {
             scope.resources = [];
+
           }
         }
-        updateTitle();
+        _updateTitle();
       });
 
       // method fired when user selects a resource. If the showRooms flag is false then we imediately add the
@@ -129,7 +137,7 @@ define(['./module'], function (directives) {
         }
 
         scope.resources.push(resource);
-        updateTitle();
+        _updateTitle();
         scope.resourceSelect = scope.resourceList[0];
         scope.resourcePrice = 0;  //price for resource
         scope.showfrm = false;
@@ -146,7 +154,7 @@ define(['./module'], function (directives) {
           }
         };
         scope.showResources = (!scope.oneRoomB || (scope.oneRoomB && scope.resources.length < 1));
-        updateTitle();
+        _updateTitle();
         //scope.$apply();
       };
     };

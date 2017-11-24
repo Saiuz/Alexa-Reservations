@@ -21,7 +21,7 @@ define(['./module'], function (services) {
     port = pjson.db.port || '27017';
     database = pjson.db.database || 'AlexaDB';
     dbConnStr = `mongodb://${host}:${port}/${database}`;
-    mongoose.connect(dbConnStr,{useMongoClient: true}); //establish the connection here
+
     
 
     // Determine the database export working directory and the default export path based on the operating system (mac or windows).
@@ -56,14 +56,13 @@ define(['./module'], function (services) {
       defExportPath: defExportPath,
       dbDumpCmd: dbDumpCmd,
       dbDumpPath: dbDumpPath,
-      dbName: database,
-      db: mongoose
+      dbName: database
     };
   }]);
 
+  //Injects the Mongoose model "AppConstants", not the service "appConstants"
   services.service('configService', ['$q', 'AppConstants', function ($q, AppConstants) {
-    var _this = this;
-
+    let _this = this;
 
     // methods for accessing local storage
     this.get = function (key, defVal) {
@@ -423,21 +422,18 @@ define(['./module'], function (services) {
     // Constructor actions - populate the constants object with the constants defined in the AppConstants collection
     // This action gives precedence to the string value of a constant. If it is defined then it is choosen, else the
     // numeric value is chosen.
-    AppConstants.find()
-        .exec(function (err, constants) {
-          if (err) {
-            console.log("Failed to retrieve constants!"); //Major error program will not function correctly!!!
-          }
-          else {
-            angular.forEach(constants, function (constant){
-              if (constant.svalue) {
-                _this.constants[constant.name] = constant.svalue;
-              }
-              else {
-                _this.constants[constant.name] = constant.nvalue;
-              }
-            });
-          }
-        });
+    AppConstants.find().then((constants) => {
+      constants.forEach((constant) => {
+        if (constant.svalue) {
+          _this.constants[constant.name] = constant.svalue;
+        }
+        else {
+          _this.constants[constant.name] = constant.nvalue;
+        }
+      });
+    }).catch((err) => {
+      console.log("Failed to retrieve constants!"); //Major error program will not function correctly!!!
+      throw err;
+    });
   }]);
 });

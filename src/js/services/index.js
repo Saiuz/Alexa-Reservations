@@ -13,4 +13,5 @@ define([
   './utility',
   './file-dialogs',
   './import-export',
+  './dbConfig',
   './modals'], function () {});

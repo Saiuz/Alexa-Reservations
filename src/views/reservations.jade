@@ -10,9 +10,8 @@ include nav_common.jade
         tab(ng-repeat="m in months" heading="{{m.month}}" active="m.active" disabled="m.disabled" select="monthSelected(m.mm)")
       .reservations-content-box
         div(ng-show="!working") {{reservations.length}} Reserverungen in {{months[selectedMonth].month}} {{selectedYear}}
-        div(ng-show="working")
-          span.btn.btn-warning.btn-sm
-          i.glyphicon.glyphicon-refresh
+        div(ng-show="working" class="zp-loading")
+          img(src="images/startup.gif" alt="loading...")
         div(ng-show="reservations.length")
           table.table.table-bordered.table-hover.table-condensed.table-first-last-center
             thead

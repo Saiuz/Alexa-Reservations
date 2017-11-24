@@ -75,9 +75,9 @@ define(['./module'], function (model) {
   // Model for constants collection. This collection contains constants that are used throughout the application but
   // the UI will expose the values so that the user can update the values. The UI should not let the user add or delete
   // constants. A constant can have either a numeric value or string value.
-  model.factory('AppConstants', function(appConstants) {
+  model.factory('AppConstants', function(dbConfig) {
     console.log('Creating AppConstants model');
-    var schema = new appConstants.db.Schema({
+    var schema = new dbConfig.db.Schema({
       name: {type: String, required: true, unique: true },
       display_name: String,
       nvalue: Number,
@@ -85,15 +85,15 @@ define(['./module'], function (model) {
       units: String
     });
 
-    return appConstants.db.model('AppConstants', schema);
+    return dbConfig.db.model('AppConstants', schema);
   });
 
   // define a child schema for expense_items. Used in RoomPlan and Reservation models as embedded document properties.
   // The schema is also used in the ExpenseType model.
   // This schema is very similar to the ExpenseType's schema.
-  model.factory('ExpenseItem', function (appConstants, convert, configService, dbEnums){
+  model.factory('ExpenseItem', function (dbConfig, convert, configService, dbEnums){
     console.log('Creating ExpenseItem model');
-    var expenseItem = new appConstants.db.Schema({
+    var expenseItem = new dbConfig.db.Schema({
       name: {type: String, required: true },  //Name of item type, often used to display on bill
       category: {type: String, enum: itemTypeEnum},  // the expense item type category
       bill_code: {type: Number, required: true }, // groups expense items into categories for display on bill. Each category has 10 bill_code values,
@@ -261,9 +261,9 @@ define(['./module'], function (model) {
   });
 
   // Define a child schema for a reserved room. Used in Reservation schema
-  model.factory('ReservedRoom', function (appConstants){
+  model.factory('ReservedRoom', function (dbConfig){
     console.log('Creating ReservedRoom model');
-    var schema = new appConstants.db.Schema({
+    var schema = new dbConfig.db.Schema({
       number: Number, // the room number
       room_type: String, //the room type from the room table
       room_class: String, //the room class from the room table
@@ -291,9 +291,9 @@ define(['./module'], function (model) {
   });
 
   // define a child schema for a reserved resource such as a parking spot. Used in Reservation schema
-  model.factory('ReservedResource', function (appConstants){
+  model.factory('ReservedResource', function (dbConfig){
     console.log('Creating ReservedResource model');
-    return new appConstants.db.Schema({
+    return new dbConfig.db.Schema({
       name: String, // the resource name (unique)
       resource_type: String, //the resource type from the resource table
       display_name: String,
@@ -304,9 +304,9 @@ define(['./module'], function (model) {
   });
 
   // define a subdocument schema for the taxes associated with a reservation
-  model.factory('TaxItem', function (appConstants){
+  model.factory('TaxItem', function (dbConfig){
     console.log('Creating TaxItem model');
-    return new appConstants.db.Schema({
+    return new dbConfig.db.Schema({
       room_number: Number,
       guest: String,
       net7: Number,
@@ -321,9 +321,9 @@ define(['./module'], function (model) {
   });
 
   // defines a subdocument for bill numbering for each bill associated with a reservation
-  model.factory('BillNumber', function (appConstants) {
+  model.factory('BillNumber', function (dbConfig) {
     console.log('Creating BillNumber model');
-    return new appConstants.db.Schema({
+    return new dbConfig.db.Schema({
       room_number: Number,
       guest: String,
       billNo: Number
@@ -331,9 +331,9 @@ define(['./module'], function (model) {
   });
 
   // Guest Schema
-  model.factory('Guest', function (appConstants, dbEnums, $filter) {
+  model.factory('Guest', function (dbConfig, dbEnums, $filter) {
     console.log('Creating Guest model');
-    var schema = new appConstants.db.Schema({
+    var schema = new dbConfig.db.Schema({
         first_name: { type: String, default: '' },
         last_name: { type: String, required: true, index: true },
         partner_name: String, // name of spouse or significant other. First name or full name if different last name
@@ -350,7 +350,7 @@ define(['./module'], function (model) {
         telephone: String,
         comments: String,
         last_stay: Date,
-        unique_name: {type: String, unique: true} //NOTE this field should not be exposed as an editable field on a UI form. It is generated on save.
+        unique_name: {type: String, unique: true, index: true} //NOTE this field should not be exposed as an editable field on a UI form. It is generated on save.
     });
     // Virtual fields
     schema.virtual('name').get(function() {
@@ -445,19 +445,19 @@ define(['./module'], function (model) {
     };
 
     // Instantiating the guest model instance
-    return appConstants.db.model('guest', schema);
+    return dbConfig.db.model('guest', schema);
   });
 
   // ItemTypes Model - Based on the ItemList schema that define expense item types
   // This collection will be populated with the allowed expense item types.
-  model.factory('Itemtype', function (appConstants, ExpenseItem) {
+  model.factory('Itemtype', function (dbConfig, ExpenseItem) {
     console.log('Creating ItemType model');
-    return appConstants.db.model('itemtype', ExpenseItem);
+    return dbConfig.db.model('itemtype', ExpenseItem);
   }) ;
 
-  model.factory('RoomPlan', function (appConstants, dbEnums, ExpenseItem) {
+  model.factory('RoomPlan', function (dbConfig, dbEnums, ExpenseItem) {
     console.log('Creating RoomPlan model');
-    var schema = new appConstants.db.Schema({
+    var schema = new dbConfig.db.Schema({
       name: {type: String, required: true, unique: true },
       resTypeFilter: [String], //A string array of allowed reservation types for this plan.
       is_default: Boolean, // True if plan is the default plan pre selected from the list of plans within same type
@@ -505,17 +505,17 @@ define(['./module'], function (model) {
       };
     };
 
-    return appConstants.db.model('roomplan', schema);
+    return dbConfig.db.model('roomplan', schema);
   });
 
   // Reservation schema
-  model.factory('Reservation', function (appConstants, ExpenseItem, TaxItem, BillNumber, ReservedRoom, ReservedResource, datetime){
+  model.factory('Reservation', function (dbConfig, ExpenseItem, TaxItem, BillNumber, ReservedRoom, ReservedResource, datetime){
     console.log('Creating Reservation model');
-    var schema = new appConstants.db.Schema({
+    var schema = new dbConfig.db.Schema({
       reservation_number: {type: Number, required: true, unique: true, index: true},   //generated by app contains the year as part of the number e.g.1400001
       type: {type: String, enum: resTypeEnum},  // determines if business, standard, group etc.
-      guest: {name: String, id: appConstants.db.Schema.Types.ObjectId}, //primary guest or contact from Address collection list
-      guest2: {name: String, id: appConstants.db.Schema.Types.ObjectId}, //optional second guest in a double room from Address
+      guest: {name: String, id: dbConfig.db.Schema.Types.ObjectId}, //primary guest or contact from Address collection list
+      guest2: {name: String, id: dbConfig.db.Schema.Types.ObjectId}, //optional second guest in a double room from Address
                                                             // collection list, used for non-group plans that require separate bills
                                                             // for each guest in a double room. For Kur reservation, This
                                                             // will contain the partner name field for the main guest
@@ -529,7 +529,7 @@ define(['./module'], function (model) {
       resources: [ReservedResource],  //such as parking spots
       status: {type: String, enum: resStatusEnum},
       plan: String,  //Name of selected plan
-      plan_code: appConstants.db.Schema.Types.ObjectId,   //id of selected plan
+      plan_code: dbConfig.db.Schema.Types.ObjectId,   //id of selected plan
       insurance: {type: String, enum: resInsuranceEnum} ,
       insurance2: {type: String, enum: resInsuranceEnum} ,
       prescription_charges: Boolean, // set based on insurance plan. Some plans require copay - only Private does not.
@@ -590,13 +590,13 @@ define(['./module'], function (model) {
       return [{rate: 0, total: 0}];
     });
 
-    return appConstants.db.model('reservation', schema);
+    return dbConfig.db.model('reservation', schema);
   });
 
   // Schema for a business firm
-  model.factory('Firm', function (appConstants) {
+  model.factory('Firm', function (dbConfig) {
     console.log('Creating Firm model');
-    var schema = new appConstants.db.Schema({
+    var schema = new dbConfig.db.Schema({
       firm_name: {type: String, required: true, unique: true},
       address1: String,
       address2: String,
@@ -632,13 +632,13 @@ define(['./module'], function (model) {
               'Nr. Gäste','Kontakt E-Mail','Bemerkung'];
     };
 
-    return appConstants.db.model('firm', schema);
+    return dbConfig.db.model('firm', schema);
   });
 
   //Schema for room resource
-  model.factory('Room', function (appConstants) {
+  model.factory('Room', function (dbConfig) {
     console.log('Creating Room model');
-    var schema = new appConstants.db.Schema({
+    var schema = new dbConfig.db.Schema({
       number: {type: Number, required: true, unique: true},
       room_type: {type: String, enum: roomTypeEnum, required: true},
       room_class: {type: String, enum: roomClassEnum, required: true},
@@ -680,13 +680,13 @@ define(['./module'], function (model) {
       this.display_order = roomTypeEnum.indexOf(this.room_type) + 1;
       next();
     });
-    return appConstants.db.model('room', schema);
+    return dbConfig.db.model('room', schema);
   });
 
   //Schema for other reservable resources (parking, conference room etc)
-  model.factory('Resource', function (appConstants) {
+  model.factory('Resource', function (dbConfig) {
     console.log('Creating Resource model');
-    var schema = new appConstants.db.Schema({
+    var schema = new dbConfig.db.Schema({
       name: {type: String, required: true, unique: true},
       resource_type: {type: String, enum: resourceTypeEnum, required: true},
       display_order: Number, // to allow specific sorting (e.g. by type)
@@ -694,13 +694,13 @@ define(['./module'], function (model) {
       price: Number
     });
 
-    return appConstants.db.model('resource', schema);
+    return dbConfig.db.model('resource', schema);
   });
 
   //Schema for Events Calendar
-  model.factory('Event', function (appConstants, datetime) {
+  model.factory('Event', function (dbConfig, datetime) {
     console.log('Creating Event model');
-    var schema = new appConstants.db.Schema({
+    var schema = new dbConfig.db.Schema({
       title: {type: String, required: true},
       start_date: {type: Date, required: true},
       end_date:  {type: Date, required: true},
@@ -712,18 +712,18 @@ define(['./module'], function (model) {
       return datetime.getNightsStayed(this.start_date, this.end_date) + 1;
     });
 
-    return appConstants.db.model('event', schema);
+    return dbConfig.db.model('event', schema);
   });
 
   //Schema for counters (unique numbers such as bill number
-  model.factory('Counters', function (appConstants, datetime) {
+  model.factory('Counters', function (dbConfig, datetime) {
     console.log('Creating Counters model');
-    var schema = new appConstants.db.Schema({
+    var schema = new dbConfig.db.Schema({
       counter: {type: String, required: true, unique: true},
       seq: Number
     });
 
-    return appConstants.db.model('counters', schema);
+    return dbConfig.db.model('counters', schema);
   });
 
 }); //module end

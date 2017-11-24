@@ -6,9 +6,8 @@ include nav_common.jade
       tabset(type="pills")
         tab(ng-repeat="y in years" heading="{{y.year}}" active="y.active" select="yearSelected(y.year)")
       .reservations-content-box
-        div(ng-show="working")
-          span.btn.btn-warning.btn-sm
-          i.glyphicon.glyphicon-refresh
+        div(ng-show="working" class="zp-loading")
+          img(src="images/startup.gif" alt="loading...")
         div(ng-show="mData.length")
           canvas(class="chart chart-line" chart-data="data" chart-labels="labels" chart-series="series" chart-click="onClick" height="100px")
         div(ng-show="mData.length")

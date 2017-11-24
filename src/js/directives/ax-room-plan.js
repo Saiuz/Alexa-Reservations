@@ -220,35 +220,64 @@ define(['./module'], function (directives) {
 
           // use timeout kluge to map events to the table elements after it renders.
           $timeout(function () {
-            if (element) {
-              var zpsel = $(element).find(".zpSel"); //broke out find, was getting occasional error on mousedown that "undefined is not a function"
-                  $(zpsel).mousedown(function () {
-                    if (selRoom < 0) {
-                      var sr = $(this).attr("cdat");
-                      if (sr) {
-                        isMouseDown = true;
-                        selRoom = sr.split('|')[0];
-                        selStart = Number(sr.split('|')[1]);
-                        $(this).toggleClass("zp-selColor");
-                        isHighlighted = $(this).hasClass("zp-selColor");
+            if (element.length) {
+              
+              //var zpsel = $(element).find(".zpSel"); //broke out find, was getting occasional error on mousedown that "undefined is not a function"
+              let zpsel = element[0].querySelectorAll(".zpSel");
+              zpsel.forEach((e) => {
+                e.addEventListener('mousedown', () => {
+                  if (selRoom < 0) {
+                    let sr = e.getAttribute("cdat");
+                    if (sr) {
+                      isMouseDown = true;
+                      selRoom = sr.split('|')[0];
+                      selStart = Number(sr.split('|')[1]);
+                      $(e).toggleClass("zp-selColor");
+                      isHighlighted = $(e).hasClass("zp-selColor");
+                    }
+                  }
+                  return false; // prevent text selection
+                });
+                e.addEventListener('mouseover', () => {
+                  if (isMouseDown) {
+                    var sr = e.getAttribute("cdat");
+                    if (sr) {
+                      if (sr.split('|')[0] === selRoom) {
+                        selEnd = Number(sr.split('|')[1]);
+                        $(e).toggleClass("zp-selColor", isHighlighted);
                       }
                     }
-                    return false; // prevent text selection
-                  })
-                  .mouseover(function () {
-                    if (isMouseDown) {
-                      var sr = $(this).attr("cdat");
-                      if (sr) {
-                        if (sr.split('|')[0] === selRoom) {
-                          selEnd = Number(sr.split('|')[1]);
-                          $(this).toggleClass("zp-selColor", isHighlighted);
-                        }
-                      }
-                    }
-                  })
-                  .bind("selectstart", function () {
-                    return false;
-                  });
+                  }
+                });
+                e.addEventListener('selectstart', () => false);
+              });
+                  // $(zpsel).mousedown(function () {
+                  //   if (selRoom < 0) {
+                  //     var sr = $(this).attr("cdat");
+                  //     if (sr) {
+                  //       isMouseDown = true;
+                  //       selRoom = sr.split('|')[0];
+                  //       selStart = Number(sr.split('|')[1]);
+                  //       $(this).toggleClass("zp-selColor");
+                  //       isHighlighted = $(this).hasClass("zp-selColor");
+                  //     }
+                  //   }
+                  //   return false; // prevent text selection
+                  // })
+                  // .mouseover(function () {
+                  //   if (isMouseDown) {
+                  //     var sr = $(this).attr("cdat");
+                  //     if (sr) {
+                  //       if (sr.split('|')[0] === selRoom) {
+                  //         selEnd = Number(sr.split('|')[1]);
+                  //         $(this).toggleClass("zp-selColor", isHighlighted);
+                  //       }
+                  //     }
+                  //   }
+                  // })
+                  // .bind("selectstart", function () {
+                  //   return false;
+                  // });
 
                var xpres = element.find(".zpRes"); //ditto with this find
                $(xpres).each(function () {
@@ -570,7 +599,7 @@ define(['./module'], function (directives) {
           for (i = 0; i < bcount; i++) {
             var blank = {
               resNum: 0,
-              text: '',
+              text: ' ', //need this space for windows otherwise the mousedown event doesn't always work
               span: 1,
               resCol: false,
               endCol: false,

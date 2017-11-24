@@ -202,12 +202,14 @@ define(['./module'], function (controllers) {
                     $scope.selectedPlanItems = []; // the plan will have no items yet
                     $scope.setSelected(plan.name); //select the new plan
                     _calculatePlanPrice(); // update prices
+
                     plan.save(function (err) {
                       if (err) {
                         console.log(err);
                         $scope.working = false;
                         $scope.errShow = true;
                         $scope.errMsg = err;
+                        $scope.$apply();
                       }
                       else {
                         $scope.showExistingItems = false;
@@ -286,12 +288,14 @@ define(['./module'], function (controllers) {
             dashboard.getRoomPlanList().then(function (plans) {
                   $scope.planObjects = plans;
                   $scope.working = false;
+                  $scope.$apply();
                 },
                 function (err) {
                   console.log(err);
                   $scope.working = false;
                   $scope.errShow = true;
                   $scope.errMsg = err;
+                  $scope.$apply();
                 });
           }
 
@@ -307,6 +311,7 @@ define(['./module'], function (controllers) {
                   $scope.working = false;
                   $scope.errShow = true;
                   $scope.errMsg = err;
+                  $scope.$apply();
                 });
           }
 
