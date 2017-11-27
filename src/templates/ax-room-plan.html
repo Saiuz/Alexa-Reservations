@@ -19,8 +19,8 @@
     </div>
     <div class="panel-body">
         <div class="zp-main" id="rm-plan-print">
-            <div ng-show="isLoading" class="zp-loading"><img src="images/startup.gif" alt="loading..."></div>
-            <div class="zp-container">
+            <div ng-show="isLoading" ><img src="images/startup.gif" alt="loading..."></div>
+            <div ng-show="!isLoading" class="zp-container">
                 <table class="table-zp" ng-if="!hasErr">
                     <thead>
                     <tr>
@@ -62,7 +62,7 @@
                     <tr class="zp-divColor">
                         <td>{{txt.room}}</td>
                         <th ng-repeat="d in calObj.dow track by $index"
-                            ng-class="{'zp-dayColor': d.isDay, 'zp-weekColor': d.inWk, 'zp-wkDiv': d.isWknd}">
+                            ng-class="{'zp-dayColor': d.isDay, 'zp-weekColor': d.inWk, 'zp-wkDiv': d.isWknd}" class="center">
                             {{d.date}}
                         </th>
                         <td>{{txt.room}}</td>

@@ -5,11 +5,12 @@ define(['./module'], function (controllers) {
       ['$scope',
        '$rootScope',
         'dbInit',
+        'dbConfig',
         'configService',
         'datetime',
         '$state',
         'fileExecUtil',
-        function ($scope, $rootScope, dbInit, configService, datetime,
+        function ($scope, $rootScope, dbInit, dbConfig, configService, datetime,
                   $state, fileExecUtil) {
           //var gui = nw.guirequire('nw.gui');
           var zoomPercent = 100,
@@ -19,6 +20,8 @@ define(['./module'], function (controllers) {
               shortCuts = [];
 
           console.log("App controller fired");
+          $rootScope.firstTime = true; //Only set to false when app ready event is handled
+          
           // Set the saved date for the home page room plan to the current date
           configService.set('planDate', datetime.dateOnly(new Date()));
 
@@ -105,7 +108,15 @@ define(['./module'], function (controllers) {
             $state.go('import_all');
           });
 
+          $scope.$on('reset-db', function (e, menu, item) {
+            dbConfig.disconnectDB().then(() => {
+              dbConfig.reconnectDB().then(() => {
+                $state.go('home');
+              });
+            });
+          });
           $scope.$on('close-app', function (e, menu, item) { //brut force close
+            dbConfig.disconnectDB();
             win.close(true);
             App.quit();
           });

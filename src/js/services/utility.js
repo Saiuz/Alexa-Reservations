@@ -547,7 +547,7 @@ define(['./module'], function (services) {
           month: key,
           days: val.days,
           occupancy: Math.round((val.rmNights / (totalRooms * val.days)) * 100),
-          ADR: +((val.rmRevenue ? val.rmRevenue / val.rmNights : 0).toFixed(2)),
+          ADR: +((val.rmNights ? val.rmRevenue / val.rmNights : 0).toFixed(2)),
           RevPAR: +((val.rmRevenue / (totalRooms * val.days)).toFixed(2))
         }
         mrTemp.push(mStat);

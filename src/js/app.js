@@ -74,6 +74,11 @@ define("app", [
                   }
                 ]
               },
+              {
+                label: 'Zurücksetzen',
+                tooltip: 'Datenbankverbindung zurücksetzen',
+                click: 'reset-db'
+              },
               // {
               //   label: 'Importieren...',
               //   tooltip: 'Importieren von Daten',

@@ -620,6 +620,8 @@ define(['./module'], function (services) {
          * such as % Occupancy, Average Daily Rate and Revenue Per Available Room. It retrieves
          * the daily occupied room data for all reservations over a specified time interval. 
          * It calculates occupied room totals and revenue for each day in the time period.
+         * Revenue should be taken from the Expense room item if checked in since it truly
+         * represents the room price. The price in the room document may be a total plan price.
          * @param {Date} startDate  - starting date (time part ignored) of date range
          * @param {Date} endDate - ending date  (time part ignored) of date range 
          * @returns {object} An object with the following properties:
@@ -666,27 +668,32 @@ define(['./module'], function (services) {
                 }
               }]
             }, {
+              reservation_number: 1,
               start_date: 1,
               end_date: 1,
               checked_in: 1,
               checked_out: 1,
-              rooms: 1
+              rooms: 1,
+              expenses: 1
             });
             // Build the daily data for all reserved rooms 
             resResults.forEach(function (res) {
               let rStartDse = datetime.daysSinceEpoch(res.start_date)
               let rEndDse = datetime.daysSinceEpoch(res.end_date);
-              res.rooms.forEach((r) => {
+              let expRooms = res.expenses.filter(item => item.bill_code === 0);
+              expRooms.forEach((r) => {
                 if (!excludedRooms.includes(r.room)) { //don't process excluded 'fake' rooms
                   let ds = rStartDse
                   while (ds < rEndDse) {
                     if (resMap.has(ds)) { //ignore days of res that are outside of time range (not in map)
                       let dVal = resMap.get(ds);
+                      let rPrice = isNaN(r.price) ? 0 : r.price
+                      if (rPrice === 0) console.log(`Stats: Reservation: ${res.reservation_number} has a 0 room price`)
                       if (res.checked_in) { //active or past reservation
-                        dVal.rSum += r.price;
+                        dVal.rSum += rPrice;
                         dVal.rCnt++;
                       } else { //future or abandoned reservation
-                        dVal.rfSum += r.price;
+                        dVal.rfSum += rPrice;
                         dVal.rfCnt++;
                       }
                     }

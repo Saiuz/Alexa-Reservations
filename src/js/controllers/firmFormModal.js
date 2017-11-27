@@ -142,6 +142,7 @@ define(['./module'], function (controllers) {
         // TODO-NOTE: by updating guest firm field, the unique name does not get regenerated. Need to find all firms then modify and save each!!!
         let nameChanged = lastFirm && (lastFirm !== $scope.firm.firm_name);
         _saveFirm(nameChanged).then((msg) => {
+          $rootScope.$broadcast(configService.constants.firmEditedEvent, $scope.firm); //fire firmEdited event, pass firm object back
           helpers.autoClose(msg, $scope.firm);
         }).catch(err => helpers.showSaveError(err));
       };

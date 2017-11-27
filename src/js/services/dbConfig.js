@@ -6,20 +6,28 @@ define(['./module'], function (services) {
    */
   services.service('dbConfig', ['appConstants',(appConstants) => {
     console.log("Connecting to DB...");
+    const conOpts = {
+      useMongoClient: true,
+      reconnectTries: Number.MAX_VALUE,
+      reconnectInterval:1000
+    };
+    //Establish the initial connection
     mongoose.Promise = global.Promise;
-    mongoose.connect(appConstants.dbConnStr, { useMongoClient: true }, (err) => {
+    mongoose.connect(appConstants.dbConnStr, conOpts, (err) => {
       if (err) {
         console.log("DB connection error");
         throw err;
       }
-    }); //establish the connection here
-    return {
+    }); 
+    return { //return Mongoose object and utility functions
       db: mongoose,
       disconnectDB: () => {
-        mongoose.connection.close();
+        console.log("Disconnecting from database");
+        return mongoose.disconnect();
       },
       reconnectDB: () => {
-        mongoose.connect(appConstants.dbConnStr, { useMongoClient: true });
+        console.log("Reconnecting to database")
+        return mongoose.connect(appConstants.dbConnStr, conOpts);
       }     
     }
   }]);

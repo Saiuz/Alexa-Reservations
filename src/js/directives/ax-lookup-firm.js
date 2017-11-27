@@ -34,6 +34,7 @@ define(['./module'], function (directives) {
           scope.loading = false;
           scope.notFound = (names.length === 0);
           scope.canClear = !scope.notFound;
+          scope.$apply();
           return names;
         });
       };
@@ -119,6 +120,7 @@ define(['./module'], function (directives) {
                 scope.firmPrice = names[0].price;
                 scope.notFound = false;
                 scope.canClear = true;
+                scope.$apply();
                 if (scope.firmCallback) {
                   scope.firmCallback(result);
                 }
