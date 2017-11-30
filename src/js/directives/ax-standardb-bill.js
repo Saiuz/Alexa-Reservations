@@ -15,8 +15,8 @@
  */
 define(['./module'], function (directives) {
     'use strict';
-    directives.directive('axStandardbBill', ['$filter', 'configService', 'convert', 'modals', 'dashboard',
-        function ($filter, configService, convert, modals, dashboard) {
+    directives.directive('axStandardbBill', ['$rootScope', '$filter', 'configService', 'convert', 'modals', 'dashboard',
+        function ($rootScope, $filter, configService, convert, modals, dashboard) {
             var linker = function (scope, element, attrs) {
                 console.log("axStandardbBill linker fired");
                 //define which items appear in which section of the bill_dec32
@@ -79,6 +79,10 @@ define(['./module'], function (directives) {
                                     scope.rvm.guest2rec = rec;
                                 }
                                 console.log(`Event ${event.name} received with value ${val}`);
+                                if (scope.guest !== rec.name) {
+                                    $rootScope.$broadcast(configService.constants.guestNameChangedEvent, {oldName: scope.guest, newName: rec.name}); 
+                                    scope.guest = rec.name;
+                                }
                                 updateAddress();
                             }).catch((err) => {
                                 scope.err = err;

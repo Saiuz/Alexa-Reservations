@@ -532,16 +532,19 @@ define(['./module'], function (model) {
       };
 
       // method that implements the check-out logic. The reservation is checked out by room for most reservations.
-      // The current exception is for travel group reservations, for this type, all rooms are checked out at once.
+      // The current exception is for group reservations, for this type, all rooms are checked out at once.
       // The method excepts a room number parameter. This parameter is only used for multi-room, individual bill
       // reservations. For all other types, the parameter is ignored.
+      // Prior to saving the reservation we will update the address just incase the main guest or the firm
+      // address has been edited. The checked out reservation captures the state of things at the time of
+      // checkout only.
       // The method returns a promise since it saves the reservation after updating..
-      this.checkOut = function (roomNum, guest) {
+      this.checkOut = async function (roomNum, guest) {
         let room,
             allCheckedOut = true,
             msg, cr;
       
-        return new Promise((resolve, reject) => {
+        try {
 
           if (that.isGroup && that.oneBill) {  //travel group reservation
             that.res.rooms.forEach(function (rm) {
@@ -560,7 +563,7 @@ define(['./module'], function (model) {
             }
             else {
               msg = configService.loctxt.errorBold + ' ' + configService.loctxt.noRoom;
-              deferred.reject(msg);
+              throw new Error(msg);
             }
 
           }
@@ -578,7 +581,7 @@ define(['./module'], function (model) {
               }
               _addTaxItem(roomNum, guest);
               // If we have someone else in the room with their own bill, they will also be checked out
-              // at the same time, so add the taxes for the second bill. todo-this is an issue!!!
+              // at the same time, so add the taxes for the second bill. 
               if (room.guest_count === 2) {
                 _addTaxItem(roomNum, room.guest2);
               }
@@ -586,20 +589,34 @@ define(['./module'], function (model) {
             else { //error couldn't find room.
               msg = configService.loctxt.errorBold + ' ' + configService.loctxt.room + ' ' + roomNum + ' ' +
                   configService.loctxt.notFound;
-              reject(msg);
+              throw new Error(msg);
             }
           }
-
-          that.res.save().then(() => {
-            that.afterSave().then(() => {
-              resolve();
-            }).catch((err) => {
-              reject(err);
-            });
-          }).catch((err) => {
-            reject(err);
-          });
-        });
+          //update the reservation address
+          if (that.res.firm) {
+            let f = await dashboard.getFirmByName(that.res.firm);
+            if (f) {
+              that.res.address1 = f.address1;
+              that.res.address2 = f.address2;
+              that.res.post_code = f.post_code;
+              that.res.city = f.city;
+              that.res.country = f.country;
+            }           
+          } else {
+            let g = await dashboard.getGuestById(that.res.guest.id);
+            if (g) {
+              that.res.address1 = g.address1;
+              that.res.address2 = g.address2;
+              that.res.post_code = g.post_code;
+              that.res.city = g.city;
+              that.res.country = g.country;
+            }
+          }
+          await that.res.save()
+          await that.afterSave();
+        } catch (err) {
+          console.error("Checkout Error: " + err.message);
+        }
     }
 
       // Method that returns a boolean that determines if a reservation / room can be checked in. It implements similar
@@ -635,10 +652,12 @@ define(['./module'], function (model) {
         else if (that.oneRoom && that.oneBill) {  //single bill one room res. also check that a room exists
           return (that.res.canCheckOut && that.res.rooms.length);
         }
-        else { //All individual bill reservations, look only at room
+        else { //All individual bill reservations: NOTE: this logic has changed since we only have
+          // single room, individual bill reservations.
           room = that.getRoomInReservation(roomNum);
           if (room) { //Handle case where a single room res is checked in but the room property is not set
-            return ((room.isCheckedIn && !room.isCheckedOut) || (that.oneRoom && datetime.isDate(that.res.checked_in)));
+            return (that.oneRoom && datetime.isDate(that.res.checked_in) && !datetime.isDate(that.res.checked_out)) ? true : (room.isCheckedIn && !room.isCheckedOut);
+            //return ((room.isCheckedIn && !room.isCheckedOut) || (that.oneRoom && datetime.isDate(that.res.checked_in)));
           }
           else {
             return false;

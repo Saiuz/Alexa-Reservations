@@ -10,8 +10,8 @@
  */
 define(['./module'], function (directives) {
   'use strict';
-  directives.directive('axStandardBill', ['$filter', 'configService', 'convert', 'modals', 'dashboard',
-    function ($filter, configService, convert, modals, dashboard) {
+  directives.directive('axStandardBill', ['$rootScope','$filter', 'configService', 'convert', 'modals', 'dashboard',
+    function ($rootScope, $filter, configService, convert, modals, dashboard) {
       var linker = function (scope, element, attrs) {
         console.log("axStandardBill linker fired");
         //define which items appear in which section of the bill_dec32
@@ -42,6 +42,7 @@ define(['./module'], function (directives) {
             scope.rvm = newvals[0]; // same as reservationVM just less typing
             scope.ktax = convert.roundp(configService.constants.get("cityTax") * scope.rvm.res.nights, 2);
             room = scope.rvm.res.rooms[0].number;
+            scope.showEdits = scope.rvm.canCheckOut(room);
             scope.guest = scope.rvm.res.guest.name; //Todo may want to get name without salutation or change res to store name without salutation.
             rmObj = scope.rvm.generatePlanRoomString(room, scope.guest);
             detailedPage = newvals[1];
@@ -65,7 +66,7 @@ define(['./module'], function (directives) {
         // Respond to guest edited event update the guest record properties of the VM
         scope.$on(configService.constants.resGuestEditedEvent, (event, val) => {
             if (scope.rvm) {
-                let gRec = (scope.rvm.guest1rec.id === val ? 1 : scope.rvm.guest2rec.id === val ? 2 : 0) || {}; //left off here need to
+                let gRec = (scope.rvm.guest1rec.id === val ? 1 : scope.rvm.guest2rec.id === val ? 2 : 0) || {}; 
                 if (gRec > 0) {
                     dashboard.getGuestById(val).then((rec) => {
                         if (gRec === 1) {
@@ -74,6 +75,11 @@ define(['./module'], function (directives) {
                             scope.rvm.guest2rec = rec;
                         }
                         console.log(`Event ${event} received with value ${val}`);
+                        if (scope.guest !== rec.name) {
+                          $rootScope.$broadcast(configService.constants.guestNameChangedEvent, {oldName: scope.guest, newName: rec.name}); 
+                          scope.guest = rec.name;
+                          scope.rvm.res.billing_name = rec.name;
+                        }
                         updateAddress();
                     }).catch((err) => {
                         scope.err = err;
@@ -104,7 +110,7 @@ define(['./module'], function (directives) {
                   scope.billNumber = bnum;
                 }
             );
-            scope.rvm.generateBillingName();
+            scope.rvm.generateBillingName().then(() => {}); //need empty function to get $apply to fire from $q promise
 
             // get the total bill and taxes taxes
             calcResult = scope.rvm.calculateTotals([],room, scope.guest); //total everything

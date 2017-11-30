@@ -97,6 +97,7 @@ define(['./module'], function (services) {
       weekButtonsSetEvent: 'WEEK_BTN1',
       resGuestEditedEvent: 'GUEST_EDITED_EVENT',
       firmEditedEvent: 'FIRM_EDITED_EVENT',
+      guestNameChangedEvent: 'GUEST_NAME_CHANGE_EVENT',
       appReadyEvent: '', // broadcast when app.js finishes.
       bcRoom: 0,
       bcPackageItem: 1, // item is a required item for a standard package plan

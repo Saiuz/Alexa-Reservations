@@ -49,6 +49,7 @@ define(['./module'], function (controllers) {
       console.log("guestFormModal controller fired");
 
       let helpers = new utility.Helpers($scope, $modalInstance);
+      let oldName = '';
       $scope.actionMsg = '';
       $scope.saveTxt = configService.loctxt.add;
       $scope.cancelTxt = configService.loctxt.cancel;
@@ -57,7 +58,6 @@ define(['./module'], function (controllers) {
       $scope.confirmed = false;
       $scope.bdate1 = undefined;
       $scope.bdate2 = undefined;
-      $scope.gName = undefined;
 
       $scope.firmPrice = 0; // required by firm lookup but not used in this form.
       $scope.salutations = dbEnums.getSalutationEnum();
@@ -122,7 +122,7 @@ define(['./module'], function (controllers) {
           $scope.title = configService.loctxt.guest_titleUpdate;
           Guest.findOne(qry).then((guest) => {
             if (guest) {
-              $scope.gName = guest.name;
+              oldName = guest.name;
               $scope.guest = guest;
               $scope.bdate1 = guest.birthday;
               $scope.bdate2 = guest.birthday_partner;
@@ -223,9 +223,8 @@ define(['./module'], function (controllers) {
           $rootScope.$broadcast(configService.constants.resGuestEditedEvent, $scope.guest.id); //fire guestEdited event    
 
           //Update any reservations if needed
-          if ($scope.gName && $scope.guest.name !== $scope.gName) {
-            _updateResNames();
-            helpers.autoClose(msg, $scope.guest);
+          if (oldName && $scope.guest.name !== oldName) {
+            _updateResNames().then(() =>  helpers.autoClose(msg, $scope.guest)).catch((err) => helpers.showSaveError(err));
           } else {
             helpers.autoClose(msg, $scope.guest);
           }
@@ -245,45 +244,61 @@ define(['./module'], function (controllers) {
 
       //#region - private functions
       /**
-       * Updates open reservations with a new name. that contain the old name
-       * @param {Guest} guest 
+       * Updates open reservations with a new name. that contain the old name. This method 
+       * updates the guest fields in the reservation, as well as in the rooms, expenses and
+       * bills document arrays. Note: I could not get the routine to work by finding all of 
+       * the matching reservations then updating and saveing each one in the list. (second
+       * update always failed with a version error). I had to first find all of the ids then
+       * retrieve, modify and save each reservation separately.
        */
-      async function _updateResNames() { //TODO - this does update name but not the title of the reservation for display.
+      async function _updateResNames() { 
         try {
           let guest = $scope.guest;
           //let nameParts = utility.parseNameString(guest.name);
 
-          await Reservation.update({
+          let res = await Reservation.find({ //Guest name field
             $and: [{
               checked_out: {
                 $exists: false
               }
             }, {
-              "guest.id": guest._id
+              $or: [{"guest.id": guest._id},{"guest2.id": guest._id}]              
             }]
-          }, {
-            $set: {
-              "guest.name": guest.name
+          }).lean().distinct('_id');
+          for(let ix = 0; ix < res.length; ix++) {
+            let r = await Reservation.findById(res[ix]);
+            let resOldName;
+            let newName = guest.name;
+            if (r.guest.id.equals(guest._id)) {
+              resOldName = r.guest.name;
+              r.guest.name = newName;
+            } else if (r.guest2.id(guest._id)) {
+              resOldName = r.guest2.name;
+              r.guest2.name = newName;
             }
-          });
-          await Reservation.update({
-            $and: [{
-              checked_out: {
-                $exists: false
+            r.rooms.forEach((rm) => {
+              if (rm.guest === resOldName) {
+                rm.guest = newName;
+              } else if (rm.guest2 === resOldName) {
+                rm.guest2 = newName;
               }
-            }, {
-              "guest2.id": guest._id
-            }]
-          }, {
-            $set: {
-              "guest2.name": guest.name
-            }
-          });
+            });
+            r.expenses.forEach((ex) => {
+              if (ex.guest === resOldName) {
+                ex.guest = newName
+              }
+            });
+            r.bill_numbers.forEach((bn) => {
+              if (bn.guest === resOldName) {
+                bn.guest = newName;
+              }
+            });
+            await r.save();
+          }
         } catch (err) {
           throw err;
         }
       }
-
       //#endregion          
     }
   ]);

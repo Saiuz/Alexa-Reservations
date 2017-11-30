@@ -12,7 +12,7 @@ define(['./module'], function (services) {
   services.factory(
     'dashboard',
     function (Reservation, Guest, Room, RoomPlan, Resource, Itemtype, Firm, Event, Counters,
-      dbEnums, datetime, $q, configService, $filter) {
+      dbEnums, datetime, $q, configService, $filter, convert) {
       return {
         /**
          * Return reservations with start dates on date specified
@@ -473,6 +473,7 @@ define(['./module'], function (services) {
                 nights: datetime.getNightsStayed(rec.start_date, rec.end_date),
                 room: room.number,
                 guest: guestName,
+                lastName: convert.parseNameString(guestName).last_name,
                 type: rec.type,
                 canEdit: !room.isCheckedOut,
                 canCheckIn: !room.isCheckedIn && datetime.dateCompare(rec.start_date, new Date()) === 0,

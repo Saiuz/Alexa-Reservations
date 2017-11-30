@@ -29,6 +29,13 @@ define(['./module'], function (controllers) {
       $scope.labels = configService.calendarInfo.monthsAbrv;
       $scope.series = ['Occupancy', 'ADR', 'RevPAR'];
       $scope.data = [];
+
+      $scope.chartOptions = {
+        legend: {
+          display: true,
+          position: 'top'
+        }
+      };
       $scope.onClick = function (points, evt) {
         console.log(points, evt);
       };

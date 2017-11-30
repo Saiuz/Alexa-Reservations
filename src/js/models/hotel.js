@@ -128,7 +128,7 @@ define(['./module'], function (model) {
                              // value of price is used in the tax calculation.
       single_price: Number, // ditto to double_price
       credit: Number, //If an item is credited e.g. plan item not available, the credited amount is stored here.
-      price: Number, //either single item/unit price or total price if one_count true.
+      price: {type: Number, default: 0}, //either single item/unit price or total price if one_count true.
       count: Number   //number of days or item count or the default count value in the case of the ExpenseType collection.
     });
 

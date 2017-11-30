@@ -12,12 +12,12 @@
  */
 define(['./module'], function (directives) {
   'use strict';
-  directives.directive('axBusinessBill', ['$filter', 'configService', 'modals', 'dashboard',
-    function ($filter, configService, modals, dashboard) {
+  directives.directive('axBusinessBill', ['$rootScope','$filter', 'configService', 'modals', 'dashboard',
+    function ($rootScope, $filter, configService, modals, dashboard) {
       var linker = function (scope, element, attrs) {
         console.log("axBusinessBill linker fired");
         //define which items appear in which section of the bill_dec32
-        var c = configService.constants,
+        let c = configService.constants,
             unterItems = [c.bcRoom, c.bcPackageItem, c.bcMeals, c.bcKurTax, c.bcPlanDiverses ],
             personal = [c.bcDrink, c.bcFood, c.bcKur, c.bcDienste],
             haveAttributes = false,
@@ -25,7 +25,8 @@ define(['./module'], function (directives) {
             room,
             rmObj,
             maxBillRows = 10,
-            busPachale;
+            busPachale,
+            guestID = null;
 
         scope.txt = configService.loctxt;
         scope.tax7 = configService.constants.get('roomTax');
@@ -36,13 +37,14 @@ define(['./module'], function (directives) {
         // filter the list by the itemType property. Note we must wait until
         // both properties have been set during the compile phase of the hosting page
         scope.$watchCollection('[reservationVm, room, guest, pauschale]', function (newvals) {
-          var extras = {};
+          let extras = {};
 
-          if (newvals[0] && newvals[1] && newvals[2] && newvals[3] !== undefined) {
+          if (newvals[0] && newvals[1] && newvals[2] && newvals[3]  !== undefined) {
             console.log("axBusinessBill watch fired with all parameters " + newvals[1] + ' ' + newvals[2] + ' ' + newvals[3]);
             haveAttributes = true;
             scope.rvm = newvals[0]; // same as reservationVM just less typing
             room = Number(newvals[1]);
+            scope.showEdits = scope.rvm.canCheckOut(room);
             rmObj = scope.rvm.generatePlanRoomString(room, newvals[2]);
             busPachale = newvals[3];
             // build 'vocabulary' that expense display strings may need.
@@ -55,13 +57,20 @@ define(['./module'], function (directives) {
           }
         });
 
-        let model = modals.getModelEnum().firm;
-        let dataObjR = {data: undefined, extraData: undefined};
-        scope.editFirm = function () {
-            dataObjR.data = scope.rvm.res.firm;
-            modals.update(model, dataObjR); //no callback
+
+        scope.editFirm = () => {
+          let dataObjR = {data: scope.rvm.res.firm, extraData: undefined};
+          modals.update(modals.getModelEnum().firm, dataObjR); //no callback
         };
 
+        scope.editGuest = () => {
+          guestID = (scope.guest === scope.rvm.guest1rec.name) ? 
+                    scope.rvm.guest1rec._id : (scope.guest === scope.rvm.guest2rec.name) ? scope.rvm.guest2rec._id : null;
+          if (guestID) {
+            let dataObjR = {data: guestID, extraData: undefined};
+            modals.update(modals.getModelEnum().guest, dataObjR); //no callback
+          }
+        };
         /**
          * Respond to firm edited event update the firm/address info in the current
          * reservation in the VM. Note we don't need to update the reservation since
@@ -75,6 +84,38 @@ define(['./module'], function (directives) {
           }
         });
 
+        /**
+         * Respond to the guest edited event. Update the name of the guest and save
+         * the new information in the reservation (Gusest name gets updated)
+         */
+        scope.$on(configService.constants.resGuestEditedEvent, (event, val) => {
+          if (scope.rvm) {
+            let gRec = (scope.rvm.guest1rec.id === val ? 1 : scope.rvm.guest2rec.id === val ? 2 : 0) || {}; 
+            if (gRec > 0) {
+                dashboard.getGuestById(val).then((rec) => {
+                    if (gRec === 1) {
+                        scope.rvm.guest1rec = rec;
+                    } else {
+                        scope.rvm.guest2rec = rec;
+                    }
+                    console.log(`Event ${event} received with value ${val}`);
+                    if (scope.guest !== rec.name) {
+                      $rootScope.$broadcast(configService.constants.guestNameChangedEvent, {oldName: scope.guest, newName: rec.name}); 
+                      scope.guest = rec.name;
+                    }                  
+                    scope.$apply();
+                }).catch((err) => {
+                    scope.err = err;
+                    scope.hasErr = true;
+                    console.error(err);
+                });
+            }
+        }
+        });
+        /**
+         * 
+         * @param {*} firm 
+         */
       var updateAddress = function (firm) {
         if (firm) {
           scope.firm = firm.firm_name;

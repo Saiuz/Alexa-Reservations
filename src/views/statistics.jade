@@ -9,7 +9,7 @@ include nav_common.jade
         div(ng-show="working" class="zp-loading")
           img(src="images/startup.gif" alt="loading...")
         div(ng-show="mData.length")
-          canvas(class="chart chart-line" chart-data="data" chart-labels="labels" chart-series="series" chart-click="onClick" height="100px")
+          canvas(class="chart chart-line" chart-data="data" chart-labels="labels" chart-series="series" chart-click="onClick" chart-options="chartOptions" height="100px")
         div(ng-show="mData.length")
           table.table.table-bordered.table-hover.table-condensed.text-center
             thead

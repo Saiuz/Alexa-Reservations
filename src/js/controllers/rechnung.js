@@ -18,6 +18,7 @@ define(['./module'], function (controllers) {
         'modals',
         function ($scope, $state, $rootScope, $stateParams, ReservationVM, dashboard, configService, datetime, modals) {
           let currRoom;
+          let resInURL = false;
 
           $scope.appTitle = $rootScope.appTitle;
           $scope.appBrand = $rootScope.appBrand;
@@ -82,11 +83,16 @@ define(['./module'], function (controllers) {
               });
           });
 
+          $scope.$on(configService.constants.guestNameChangedEvent, (event, val) => {
+            $scope.guest = val.newName;
+          });
+
           // removes the selected marker on the reservation lists
           $scope.clearSelected = function() {
-            if ($scope.selected.reservation) {
+            if ($scope.selected.reservation && !resInURL) {
               $scope.selected.reservation = undefined;
             }
+            resInURL = false; //only check first time through
           };
 
           //print bill
@@ -144,6 +150,7 @@ define(['./module'], function (controllers) {
                     $scope.canCheckOut = false;
                     $rootScope.$broadcast(configService.constants.reservationChangedEvent, {data: $scope.rvm.res.reservation_number});
                     $scope.clearSelected();
+                    $scope.$apply();
                   }, function (err) {
                     $scope.err = err;
                     $scope.hasErr = true;
@@ -156,6 +163,7 @@ define(['./module'], function (controllers) {
                 $scope.canCheckOut = false;
                 $rootScope.$broadcast(configService.constants.reservationChangedEvent, {data: $scope.rvm.res.reservation_number});
                 $scope.clearSelected();
+                $scope.$apply();
               }, function (err) {
                 $scope.err = err;
                 $scope.hasErr = true;
@@ -165,6 +173,7 @@ define(['./module'], function (controllers) {
 
           // See if we were passed a reservation link in the URL
           if ($stateParams.resNum && $stateParams.resNum > 0){
+            resInURL = true;
             $scope.selected.reservation = {number: Number($stateParams.resNum), room: Number($stateParams.resRoom), guest: $stateParams.resGuest};
           }
         }]);

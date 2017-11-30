@@ -110,7 +110,7 @@ define(['./module'], function (directives) {
           return rlist;
         };
 
-        // updates the reservation list, retrives the reservation info and rebuilds the list
+        // updates the reservation list, retrieves the reservation info and rebuilds the list
         var _updateList = function () {
           var afterDate;
 
