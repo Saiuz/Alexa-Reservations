@@ -3,7 +3,7 @@
         <table class="table-bill-page">
             <thead>
                 <tr>
-                    <td>{{firm}}  <i class="glyphicon glyphicon-edit no-print" ng-click="editFirm()"></i></td>
+                    <td>{{firm}}  <i class="glyphicon glyphicon-edit no-print" ng-click="editFirm()" ng-show="showEdits"></i></td>
                     <td></td>
                 </tr>
                 <tr>
@@ -38,7 +38,7 @@
                 <td>&nbsp;</td>
             </tr>
             <tr>
-                <td>Kontakt: {{rvm.res.guest.name}}</td>
+                <td>Kontakt: {{guest}}  <i class="glyphicon glyphicon-edit no-print" ng-click="editGuest()" ng-show="showEdits"></i></td></td>
                 <td>&nbsp;</td>
             </tr>
             <tr>

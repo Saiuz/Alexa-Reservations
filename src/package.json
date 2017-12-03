@@ -7,22 +7,12 @@
     "name": "Bob Vogel",
     "url": "https://github.com/vogelrh"
   },
-  "contributors": [
-    {
-      "name": "Tom Lawson",
-      "url": "https://github.com/talss89"
-    },
-    {
-      "name": "Joel Grenon",
-      "url": "https://github.com/jgrenon"
-    }
-  ],
   "repository": {
     "type": "git",
     "url": "https://github.com/vogelrh/Alexa-Reservations"
   },
   "db": {
-    "host": "192.168.1.126",
+    "host": "192.168.1.230",
     "port": "27017",
     "database": "AlexaDB"
   },

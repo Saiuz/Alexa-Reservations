@@ -436,11 +436,11 @@ define(['./module'], function (model) {
           rmObj = that.getRoomInReservation(roomNum);
           result.roomGuest1 = rmObj.guest;
           result.roomGuest2 = rmObj.guest2;
-          if (that.isGroup && !that.oneBill) { //group business reservation
+          if (that.isGroup && !that.oneBill) { //group business reservation //This mode is deprecated
             extras = {nights: that.res.nights, roomType: rmObj.room_type, roomPrice: rmObj.price};
             result.displayText = convert.formatDisplayString(plan, extras, instructions);
           }
-          else if (that.isGroup && that.oneBill) { //group tour and private group reservation.
+          else if (that.isGroup && that.oneBill) { //group business, tour and private reservation.
             extras = {nights: that.res.nights, occupants: that.res.occupants, roomCnt: that.res.rooms.length};
             result.displayText = convert.formatDisplayString(plan, extras, instructions);
 
@@ -481,7 +481,7 @@ define(['./module'], function (model) {
             allCheckedIn = true,
             msg;
 
-        if (that.isGroup && that.oneBill) {  //travel group reservation
+        if (that.isGroup && that.oneBill) {  // group reservation
           that.res.rooms.forEach(function (rm) {
             rm.isCheckedIn = true;
           });
@@ -546,7 +546,7 @@ define(['./module'], function (model) {
       
         try {
 
-          if (that.isGroup && that.oneBill) {  //travel group reservation
+          if (that.isGroup && that.oneBill) {  // group reservation
             that.res.rooms.forEach(function (rm) {
               rm.isCheckedOut = true;
             });
@@ -624,7 +624,7 @@ define(['./module'], function (model) {
       this.canCheckIn = function (roomNum) {
         var room;
 
-        if (that.isGroup && that.oneBill) {  //travel group reservation
+        if (that.isGroup && that.oneBill) {  // group reservation
           return that.res.canCheckIn; // uses the reservation model's virtual property
         }
         else if (that.oneRoom && that.oneBill) {  //single bill one room res. also check that a room exists
@@ -646,7 +646,7 @@ define(['./module'], function (model) {
       this.canCheckOut = function (roomNum) {
         var room;
 
-        if (that.isGroup && that.oneBill) {  //travel group reservation
+        if (that.isGroup && that.oneBill) {  // group reservation
           return that.res.canCheckOut; // uses the reservation model's virtual property
         }
         else if (that.oneRoom && that.oneBill) {  //single bill one room res. also check that a room exists

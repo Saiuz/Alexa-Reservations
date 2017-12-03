@@ -10,8 +10,8 @@
  */
 define(['./module'], function (directives) {
   'use strict';
-  directives.directive('axTourBill', ['$filter', 'configService', 'modals', 'dashboard',
-    function ($filter, configService, modals, dashboard) {
+  directives.directive('axTourBill', ['$rootScope','$filter', 'configService', 'modals', 'dashboard',
+    function ($rootScope, $filter, configService, modals, dashboard) {
       var linker = function (scope, element, attrs) {
         console.log("axTourBill linker fired");
         //define which items appear in which section of the bill_dec32
@@ -41,6 +41,8 @@ define(['./module'], function (directives) {
             console.log("axTourBill watch fired with all parameters " + newvals[1]);
             haveAttributes = true;
             scope.rvm = newvals[0]; // same as reservationVM just less typing
+            scope.showEdits = scope.rvm.canCheckOut(scope.rvm.res.rooms[0].number);
+            scope.guest = scope.rvm.res.guest.name; //original guest name
             //room = Number(newvals[1]);
             rmObj = scope.rvm.generatePlanRoomString(scope.rvm.res.rooms[0].number, scope.rvm.res.rooms[0].guest);
             busPachale = newvals[1];
@@ -54,13 +56,19 @@ define(['./module'], function (directives) {
           }
         });
 
-        let model = modals.getModelEnum().firm;
-        let dataObjR = {data: undefined, extraData: undefined};
+        
         scope.editFirm = function () {
-            dataObjR.data = scope.rvm.res.firm;
-            modals.update(model, dataObjR); //no callback
+          let dataObjR = {data: scope.firm, extraData: undefined};
+          modals.update(modals.getModelEnum().firm, dataObjR); //no callback
         };
 
+        scope.editGuest = () => {
+          let guestID = scope.rvm.res.guest.id;
+          if (guestID) {
+            let dataObjR = {data: guestID, extraData: undefined};
+            modals.update(modals.getModelEnum().guest, dataObjR); //no callback
+          }
+        };
         /**
          * Respond to firm edited event update the firm/address info in the current
          * reservation in the VM. Note we don't need to update the reservation since
@@ -71,6 +79,27 @@ define(['./module'], function (directives) {
             updateAddress(firm);
             scope.$apply();
             console.log(`Event ${event.name} received with firm ${firm.firm_name}`);
+          }
+        });
+        /**
+         * Respond to the guest edited event. Update the name of the guest and save
+         * the new information in the reservation VM (Guest name gets updated)
+         */
+        scope.$on(configService.constants.resGuestEditedEvent, (event, val) => {
+          if (scope.rvm) {
+            dashboard.getGuestById(val).then((rec) => {
+              scope.rvm.guest1rec = rec;
+              console.log(`Event ${event} received for guest ${val.name}`);
+              if (scope.guest !== rec.name) {
+                $rootScope.$broadcast(configService.constants.guestNameChangedEvent, { oldName: scope.guest, newName: rec.name });
+                scope.guest = rec.name;
+              }
+              scope.$apply();
+            }).catch((err) => {
+              scope.err = err;
+              scope.hasErr = true;
+              console.error(err);
+            });
           }
         });
 

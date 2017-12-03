@@ -272,7 +272,7 @@ define(['./module'], function (controllers) {
             if (r.guest.id.equals(guest._id)) {
               resOldName = r.guest.name;
               r.guest.name = newName;
-            } else if (r.guest2.id(guest._id)) {
+            } else if (r.guest2 && r.guest2.id && r.guest2.id.equals(guest._id)) {
               resOldName = r.guest2.name;
               r.guest2.name = newName;
             }

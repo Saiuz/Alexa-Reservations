@@ -33,7 +33,7 @@
  *
  * Note the form works with the reservationVM viewModel class to implement some specific UI business logic. The
  * reservationVM also implements some specific domain level business logic when an entity is saved.
- *
+ * Dec 01 2017 - Modified Group logic. There is no Group Business with individual bills. For that case, 
  */
 define(['./module'], function (controllers) {
   'use strict';

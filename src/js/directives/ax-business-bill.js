@@ -59,13 +59,13 @@ define(['./module'], function (directives) {
 
 
         scope.editFirm = () => {
-          let dataObjR = {data: scope.rvm.res.firm, extraData: undefined};
+          let dataObjR = {data: scope.firm, extraData: undefined};
           modals.update(modals.getModelEnum().firm, dataObjR); //no callback
         };
 
         scope.editGuest = () => {
-          guestID = (scope.guest === scope.rvm.guest1rec.name) ? 
-                    scope.rvm.guest1rec._id : (scope.guest === scope.rvm.guest2rec.name) ? scope.rvm.guest2rec._id : null;
+          let guestID = (scope.guest === scope.rvm.guest1rec.name) ? 
+                    scope.rvm.guest1rec._id : (scope.rvm.guest2rec && (scope.guest === scope.rvm.guest2rec.name)) ? scope.rvm.guest2rec._id : null;
           if (guestID) {
             let dataObjR = {data: guestID, extraData: undefined};
             modals.update(modals.getModelEnum().guest, dataObjR); //no callback
@@ -86,31 +86,31 @@ define(['./module'], function (directives) {
 
         /**
          * Respond to the guest edited event. Update the name of the guest and save
-         * the new information in the reservation (Gusest name gets updated)
+         * the new information in the reservation VM (Guest name gets updated)
          */
         scope.$on(configService.constants.resGuestEditedEvent, (event, val) => {
           if (scope.rvm) {
-            let gRec = (scope.rvm.guest1rec.id === val ? 1 : scope.rvm.guest2rec.id === val ? 2 : 0) || {}; 
+            let gRec = (scope.rvm.guest1rec.id === val ? 1 : scope.rvm.guest2rec.id === val ? 2 : 0) || {};
             if (gRec > 0) {
-                dashboard.getGuestById(val).then((rec) => {
-                    if (gRec === 1) {
-                        scope.rvm.guest1rec = rec;
-                    } else {
-                        scope.rvm.guest2rec = rec;
-                    }
-                    console.log(`Event ${event} received with value ${val}`);
-                    if (scope.guest !== rec.name) {
-                      $rootScope.$broadcast(configService.constants.guestNameChangedEvent, {oldName: scope.guest, newName: rec.name}); 
-                      scope.guest = rec.name;
-                    }                  
-                    scope.$apply();
-                }).catch((err) => {
-                    scope.err = err;
-                    scope.hasErr = true;
-                    console.error(err);
-                });
+              dashboard.getGuestById(val).then((rec) => {
+                if (gRec === 1) {
+                  scope.rvm.guest1rec = rec;
+                } else {
+                  scope.rvm.guest2rec = rec;
+                }
+                console.log(`Event ${event} received with value ${val}`);
+                if (scope.guest !== rec.name) {
+                  $rootScope.$broadcast(configService.constants.guestNameChangedEvent, { oldName: scope.guest, newName: rec.name });
+                  scope.guest = rec.name;
+                }
+                scope.$apply();
+              }).catch((err) => {
+                scope.err = err;
+                scope.hasErr = true;
+                console.error(err);
+              });
             }
-        }
+          }
         });
         /**
          * 

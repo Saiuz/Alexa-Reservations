@@ -10,20 +10,20 @@
  */
 define(['./module'], function (directives) {
   'use strict';
-  directives.directive('axStandardBill', ['$rootScope','$filter', 'configService', 'convert', 'modals', 'dashboard',
+  directives.directive('axStandardBill', ['$rootScope', '$filter', 'configService', 'convert', 'modals', 'dashboard',
     function ($rootScope, $filter, configService, convert, modals, dashboard) {
       var linker = function (scope, element, attrs) {
         console.log("axStandardBill linker fired");
         //define which items appear in which section of the bill_dec32
         var c = configService.constants,
-            unterItems = [c.bcRoom, c.bcPackageItem, c.bcExtraRoom],
-            kurtax = [c.bcKurTax],
-            other = [c.bcDrink, c.bcFood, c.bcMeals, c.bcPlanDiverses, c.bcKur, c.bcResources, c.bcDienste],
-            haveAttributes = false,
-            calcResult,
-            room,
-            rmObj,
-            detailedPage;
+          unterItems = [c.bcRoom, c.bcPackageItem, c.bcExtraRoom],
+          kurtax = [c.bcKurTax],
+          other = [c.bcDrink, c.bcFood, c.bcMeals, c.bcPlanDiverses, c.bcKur, c.bcResources, c.bcDienste],
+          haveAttributes = false,
+          calcResult,
+          room,
+          rmObj,
+          detailedPage;
 
         scope.txt = configService.loctxt;
         scope.tax7 = configService.constants.get('roomTax');
@@ -43,77 +43,68 @@ define(['./module'], function (directives) {
             scope.ktax = convert.roundp(configService.constants.get("cityTax") * scope.rvm.res.nights, 2);
             room = scope.rvm.res.rooms[0].number;
             scope.showEdits = scope.rvm.canCheckOut(room);
-            scope.guest = scope.rvm.res.guest.name; //Todo may want to get name without salutation or change res to store name without salutation.
+            scope.guest = scope.rvm.res.guest.name; // original name from res
             rmObj = scope.rvm.generatePlanRoomString(room, scope.guest);
             detailedPage = newvals[1];
             // build 'vocabulary' that expense display strings may need.
             extras['planName'] = rmObj.displayText;
             extras['planPrice'] = scope.rvm.planPrice;
-            extras['perPerson'] =  scope.rvm.res.occupants === 2 ? configService.loctxt.forTwoPeople : '';
+            extras['perPerson'] = scope.rvm.res.occupants === 2 ? configService.loctxt.forTwoPeople : '';
             extras['roomType'] = scope.rvm.res.rooms[0].room_type;
             extras['guestCnt'] = scope.rvm.res.occupants;
             updateData(extras);
           }
         });
 
-        let model = modals.getModelEnum().guest;
-        let dataObjR = {data: undefined, extraData: undefined};
         scope.edit = function () {
-            dataObjR.data = scope.guestId;
-            modals.update(model, dataObjR); //no callback
+          let dataObjR = { data: scope.guestId, extraData: undefined };
+          modals.update(modals.getModelEnum().guest, dataObjR); //no callback
         };
 
         // Respond to guest edited event update the guest record properties of the VM
         scope.$on(configService.constants.resGuestEditedEvent, (event, val) => {
-            if (scope.rvm) {
-                let gRec = (scope.rvm.guest1rec.id === val ? 1 : scope.rvm.guest2rec.id === val ? 2 : 0) || {}; 
-                if (gRec > 0) {
-                    dashboard.getGuestById(val).then((rec) => {
-                        if (gRec === 1) {
-                            scope.rvm.guest1rec = rec;
-                        } else {
-                            scope.rvm.guest2rec = rec;
-                        }
-                        console.log(`Event ${event} received with value ${val}`);
-                        if (scope.guest !== rec.name) {
-                          $rootScope.$broadcast(configService.constants.guestNameChangedEvent, {oldName: scope.guest, newName: rec.name}); 
-                          scope.guest = rec.name;
-                          scope.rvm.res.billing_name = rec.name;
-                        }
-                        updateAddress();
-                    }).catch((err) => {
-                        scope.err = err;
-                        scope.hasErr = true;
-                        console.error(err);
-                    });
-                }
-            }
+          if (scope.rvm) {
+            dashboard.getGuestById(val).then((rec) => {
+              scope.rvm.guest1rec = rec;
+              console.log(`Event ${event} received for guest ${rec.name}`);
+              if (scope.guest !== rec.name) {
+                $rootScope.$broadcast(configService.constants.guestNameChangedEvent, { oldName: scope.guest, newName: rec.name });
+                scope.guest = rec.name;
+                scope.rvm.res.billing_name = rec.name;
+              }
+              updateAddress();
+            }).catch((err) => {
+              scope.err = err;
+              scope.hasErr = true;
+              console.error(err);
+            })
+          }
         });
 
         var updateAddress = function () {
-            let gRec = (scope.rvm.guest1rec.name == scope.guest ? scope.rvm.guest1rec : scope.rvm.guest2rec) || {};
-            scope.guestId = gRec._id;
-            scope.address1 = gRec.address1;
-            scope.address2 = gRec.address2;
-            scope.post_code = gRec.post_code;
-            scope.city = gRec.city;
-            scope.country = gRec.country;
+          let gRec = scope.rvm.guest1rec.name;
+          scope.guestId = gRec._id;
+          scope.address1 = gRec.address1;
+          scope.address2 = gRec.address2;
+          scope.post_code = gRec.post_code;
+          scope.city = gRec.city;
+          scope.country = gRec.country;
         }
 
-        var updateData =  function(extras) {
-          var ktext =  scope.rvm.oneBill ? configService.loctxt.aggregatePersonDisplayString : '',
-              aggObj = [];
+        var updateData = function (extras) {
+          var ktext = scope.rvm.oneBill ? configService.loctxt.aggregatePersonDisplayString : '',
+            aggObj = [];
           updateAddress();
 
           if (haveAttributes) {
-            scope.rvm.getBillNumber(room, scope.guest).then( function (bnum) {
-                  scope.billNumber = bnum;
-                }
+            scope.rvm.getBillNumber(room, scope.guest).then(function (bnum) {
+              scope.billNumber = bnum;
+            }
             );
-            scope.rvm.generateBillingName().then(() => {}); //need empty function to get $apply to fire from $q promise
+            scope.rvm.generateBillingName().then(() => { }); //need empty function to get $apply to fire from $q promise
 
             // get the total bill and taxes taxes
-            calcResult = scope.rvm.calculateTotals([],room, scope.guest); //total everything
+            calcResult = scope.rvm.calculateTotals([], room, scope.guest); //total everything
             scope.sectionTotal = {
               page_title: "Rechnung",
               section_title: "",
@@ -145,9 +136,9 @@ define(['./module'], function (directives) {
             };
             calcResult = scope.rvm.calculateTotals(other, room, scope.guest);
             aggObj = [
-              {code: c.bcDrink, text: "Getränke"},
-              {code: c.bcFood, text: "Speisen"},
-              {code: c.bcKur, text: "Dienste"}
+              { code: c.bcDrink, text: "Getränke" },
+              { code: c.bcFood, text: "Speisen" },
+              { code: c.bcKur, text: "Dienste" }
             ];
             scope.hasDetails = calcResult.detail.length > 0;
             scope.section3 = {
@@ -172,9 +163,9 @@ define(['./module'], function (directives) {
         };
 
         // creates an array used by UI to add blank rows to the table. Contents of array don't matter
-        function _padRows (lines, maxRows) {
+        function _padRows(lines, maxRows) {
           var p = [];
-          for (var i = maxRows ; i > lines ; i--) {
+          for (var i = maxRows; i > lines; i--) {
             p.push(i);
           }
           return p;
