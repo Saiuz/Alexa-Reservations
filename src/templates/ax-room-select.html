@@ -4,7 +4,7 @@
             Zimmer {{room.number}} ({{room.room_type}}) <i>{{room.guest}}</i> <i ng-if="room.guest2">/{{room.guest2}}</i> {{room.price | currency: '€'}}
         </li>
         <li  ng-if="oneRoomB" ng-repeat="room in prooms">
-            Zimmer {{room.number}} ({{room.room_type}}) {{room.price | currency: '€'}} <i ng-if="planPrice">({{txt.perPersonAbrv}})</i>
+            Zimmer {{room.number}} ({{room.room_type}}) {{room.price | currency: '€'}} <i ng-if="hasPlan">({{txt.perPersonAbrv}})</i>
         </li>
     </ul>
     <span ng-show="!rooms.length">{{selectTitle}}</span>
@@ -26,7 +26,7 @@
                                 ng-options="r.display_name for r in roomList | filter:filterAlreadySelected"></select>
                     </td>
                 </tr>
-                <tr ng-show="roomSelect.number  && (!oneRoomB || (roomSelect.max_occupants == 2 && roomData.guest_count === 1 && planPrice))">
+                <tr ng-show="roomSelect.number  && (!oneRoomB || (roomSelect.max_occupants == 2 && roomData.guest_count === 1 && hasPlan))">
                     <th ng-if="!secondGuestB">{{txt.guest}}&nbsp;&nbsp; <span ng-if="roomData.showOneCnt"><input type="checkbox" ng-model="roomData.oneInDZ" ng-change="onOneInDZ()" /> {{txt.onlyOneInRoom}}</span></th>
                     <th ng-if="secondGuestB">{{txt.guests}}&nbsp;&nbsp; <span ng-if="roomData.showOneCnt"><input type="checkbox" ng-model="roomData.oneInDZ" ng-change="onOneInDZ()" /> {{txt.onlyOneInRoom}}</span></th>
                 </tr>
@@ -50,11 +50,11 @@
                     </td>
                 </tr>
                 <tr ng-show="roomSelect.number">
-                    <th>{{txt.price}} <i ng-if="planPrice">({{txt.perPersonAbrv}})</i> {{txt.priceSymbol}}</th>
+                    <th>{{txt.price}} <i ng-if="hasPlan">({{txt.perPersonAbrv}})</i> {{txt.priceSymbol}}</th>
                 </tr>
                 <tr ng-show="roomSelect.number">
                     <td>
-                        <input class="col-xs-4" type="text" ng-readonly="planPrice" ng-model="roomData.price" ax-de-number/>&nbsp;
+                        <input class="col-xs-4" type="text" ng-readonly="hasPlan" ng-model="roomData.price" ax-de-number/>&nbsp;
                         <button ng-click="addRoom()">{{txt.add}}</button>
                     </td>
                 </tr>

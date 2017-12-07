@@ -50,7 +50,7 @@ define(['./module'], function (directives) {
 
       scope.editFirm = function () {
         var model = modals.getModelEnum().firm,
-            dataObj = {data: scope.selectedFirm ? scope.selectedFirm.id : 0, extraData: undefined};
+            dataObj = {data: scope.selectedFirm ? scope.selectedFirm.id : 0, extraData: {}};
 
         modals.update(model, dataObj, function (result) {
           console.log("Modal returned: " + result);
@@ -134,7 +134,7 @@ define(['./module'], function (directives) {
 
       scope.newFirm = function () {
         var model = modals.getModelEnum().firm,
-            dataObj = {data: scope.axfirm ? scope.axfirm : '', extraData: undefined};
+            dataObj = {data: scope.axfirm ? scope.axfirm : '', extraData: {}};
         //if the name in the input field is in the db then ignore the button click
         if (names.length !== 0 && scope.axfirm) {
           return;

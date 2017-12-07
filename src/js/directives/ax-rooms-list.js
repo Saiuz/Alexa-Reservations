@@ -34,7 +34,7 @@ define(['./module'], function (directives) {
         var dataObj =
             {
               data: undefined,
-              extraData: undefined
+              extraData: {}
             },
             model = modals.getModelEnum().room;
 

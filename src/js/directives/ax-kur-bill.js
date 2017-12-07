@@ -78,7 +78,7 @@ define(['./module'], function (directives) {
           let  guestID = (scope.guest === scope.rvm.guest1rec.name) ? 
                     scope.rvm.guest1rec._id : (scope.rvm.guest2rec && (scope.guest === scope.rvm.guest2rec.name)) ? scope.rvm.guest2rec._id : null;
           if (guestID) {
-            let dataObjR = {data: guestID, extraData: undefined};
+            let dataObjR = {data: guestID, extraData: {}};
             modals.update(modals.getModelEnum().guest, dataObjR); //no callback
           }
         };

@@ -197,7 +197,7 @@ define(['./module'], function (controllers) {
 
             modals.create(model, dataObjI, function (plan) {
               // add new plan to list
-              dashboard.getRoomPlanList().then(function (plans) {
+              dashboard.getRoomPlanList(true).then(function (plans) {
                     $scope.planObjects = plans;
                     $scope.selectedPlanItems = []; // the plan will have no items yet
                     $scope.setSelected(plan.name); //select the new plan
@@ -282,10 +282,10 @@ define(['./module'], function (controllers) {
 
           // *** Private methods
           //
-          // retrieve all accommodation plans
+          // retrieve all accommodation plans except "deleted" plans
           function _getAllPlans() {
             $scope.working = true;
-            dashboard.getRoomPlanList().then(function (plans) {
+            dashboard.getRoomPlanList(true).then(function (plans) {
                   $scope.planObjects = plans;
                   $scope.working = false;
                   $scope.$apply();

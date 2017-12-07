@@ -56,8 +56,8 @@ define(['./module'], function (directives) {
           }
         });
 
-        scope.edit = function () {
-          let dataObjR = { data: scope.guestId, extraData: undefined };
+        scope.editGuest = function () {
+          let dataObjR = { data: scope.guestId, extraData: {} };
           modals.update(modals.getModelEnum().guest, dataObjR); //no callback
         };
 
@@ -82,7 +82,7 @@ define(['./module'], function (directives) {
         });
 
         var updateAddress = function () {
-          let gRec = scope.rvm.guest1rec.name;
+          let gRec = scope.rvm.guest1rec;
           scope.guestId = gRec._id;
           scope.address1 = gRec.address1;
           scope.address2 = gRec.address2;

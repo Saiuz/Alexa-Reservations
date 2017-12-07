@@ -44,11 +44,12 @@ define(['./module'], function (controllers) {
     'modalParams',
     'RoomPlan',
     'AppConstants',
+    'Reservation',
     'configService',
     'modalUtility',
     'dbEnums',
     'convert',
-    function ($scope, $modalInstance, modalParams, RoomPlan, AppConstants, configService, utility, dbEnums, convert) {
+    function ($scope, $modalInstance, modalParams, RoomPlan, AppConstants, Reservation, configService, utility, dbEnums, convert) {
       console.log("RoomPlanFormModal controller fired");
       const mode = modalParams.mode.substring(0, 1).toLowerCase();
       const qry = {
@@ -198,13 +199,27 @@ define(['./module'], function (controllers) {
       // Delete btn handler
       $scope.delete = function () {
         let id = $scope.roomPlan._id;
-        $scope.roomPlan.remove().then(() => {
+        _deletePlan(id).then(() => {
           let msg = configService.loctxt.expenseItem + configService.loctxt.success_deleted;
           helpers.autoClose(msg, id);
         }).catch((err) => helpers.showSaveError(err));
       };
 
       //#region - private functions
+      async function _deletePlan(planId) {
+        try {
+          let resCnt = await Reservation.count({plan_code: planId});
+          if (resCnt > 0) {
+            $scope.roomPlan.name = `${$scope.roomPlan.name} - gelöscht`
+            $scope.roomPlan.deleted = true;
+            await $scope.roomPlan.save()
+          } else {
+            await $scope.roomPlan.remove();
+          }
+        } catch (err) {
+          throw err;
+        }
+      }
       /**
        * Updates open reservations with a new name. that contain the old name
        * @param {Guest} guest 

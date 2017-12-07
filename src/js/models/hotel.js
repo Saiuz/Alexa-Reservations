@@ -6,7 +6,7 @@ define(['./module'], function (model) {
 
   // ** enums used to control fields in various schemas **
   // Salutaion enum for Guest
-  var salutationEnum = ['Herrn', 'Frau', 'Familie', 'Herrn Dr.', 'Dr.','Herr', 'Damen', 'Prof. Dr.', 'Herrn Pfarrer', 'Gräfin']; // provides display order
+  var salutationEnum = ['', 'Herrn', 'Frau', 'Familie', 'Herrn Dr.', 'Dr.','Herr', 'Damen', 'Prof. Dr.', 'Herrn Pfarrer', 'Gräfin']; // provides display order
   var salutationSearchOrder = [6,7,0,1,2,3,4,5,8];// order to search for salutations (two word salutations first)
   // item type enum used in ExpenseItem and ItemType schema
   var itemTypeEnum =['Plan', 'Allgemein', 'Speisen', 'Getränke', 'Dienste', 'VDAK', 'AOK & Andere', 'Privat'];
@@ -337,7 +337,7 @@ define(['./module'], function (model) {
         first_name: { type: String, default: '' },
         last_name: { type: String, required: true, index: true },
         partner_name: String, // name of spouse or significant other. First name or full name if different last name
-        salutation: { type: String, enum: salutationEnum},
+        salutation: { type: String, enum: salutationEnum, default: ''},
         birthday: Date,
         birthday_partner: Date,
         email: { type: String}  ,
@@ -480,7 +480,8 @@ define(['./module'], function (model) {
       duration: Number, //Number of days the plan covers
       display_string: String, //Formatted string that is displayed on the bill for the plan. (special formatting)
       required_items: [ExpenseItem], // A list of required expense items that are associated with a room plan.
-      display_order: Number //Used to display values in a particular order
+      display_order: {type: Number, default: 1}, //Used to display values in a particular order
+      deleted: {type: Boolean, default: false} //If true then plan will not be displayed in lists. Plans that are used in res. are not deleted permanently
     });
 
     // Builds a default properties object for the ExpenseItem schema that can be used by the UI
@@ -691,7 +692,7 @@ define(['./module'], function (model) {
       resource_type: {type: String, enum: resourceTypeEnum, required: true},
       display_order: Number, // to allow specific sorting (e.g. by type)
       display_name: {type: String, required: true}, // Abreviated name that displays on the Zimmer plan.
-      price: Number
+      price: {type: Number, default: 0}
     });
 
     return dbConfig.db.model('resource', schema);

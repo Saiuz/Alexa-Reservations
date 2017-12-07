@@ -48,6 +48,7 @@ define(['./module'], function (directives) {
                         scope.ktax = convert.roundp(configService.constants.get("cityTax") * scope.rvm.res.nights, 2);
                         room = Number(newvals[1]);
                         scope.guest = newvals[2];
+                        scope.showEdits = scope.rvm.canCheckOut(room);
                         rmObj = scope.rvm.generatePlanRoomString(room, scope.guest);
                         detailedPage = newvals[3];
                         // build 'vocabulary' that expense display strings may need.
@@ -61,8 +62,8 @@ define(['./module'], function (directives) {
                 });
 
                 let model = modals.getModelEnum().guest;
-                let dataObjR = {data: undefined, extraData: undefined};
-                scope.edit = function () {
+                let dataObjR = {data: undefined, extraData: {}};
+                scope.editGuest = function () {
                     dataObjR.data = scope.guestId;
                     modals.update(model, dataObjR); //no callback
                 };

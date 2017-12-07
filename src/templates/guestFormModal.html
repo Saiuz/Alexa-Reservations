@@ -75,10 +75,10 @@
         </div>
         <div class="form-group">
             <label class="control-label col-xs-4">{{txt.firm}}</label>
-            <div class="col-xs-8" ng-show="!edit">
+            <div class="col-xs-8" ng-show="!edit || disableFirm">
                 <p class="form-control-static">{{guest.firm}}</p>
             </div>
-            <div class="col-xs-8" ng-show="edit">
+            <div class="col-xs-8" ng-show="edit && !disableFirm">
                 <ax-lookup-firm firm="guest.firm" firm-price="firmPrice"></ax-lookup-firm>
             </div>
         </div>

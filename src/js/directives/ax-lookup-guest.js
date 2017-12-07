@@ -51,7 +51,7 @@ define(['./module'], function (directives) {
 
       scope.editGuest = function () {
         var model = modals.getModelEnum().guest,
-            dataObj = {data: scope.selectedGuest ? scope.selectedGuest.id : 0, extraData: undefined};
+            dataObj = {data: scope.selectedGuest ? scope.selectedGuest.id : 0, extraData: {}};
 
         modals.update(model, dataObj, function (result) {
           console.log("Modal returned: " + result);

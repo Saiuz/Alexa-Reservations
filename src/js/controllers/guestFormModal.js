@@ -58,7 +58,7 @@ define(['./module'], function (controllers) {
       $scope.confirmed = false;
       $scope.bdate1 = undefined;
       $scope.bdate2 = undefined;
-
+      $scope.disableFirm = modalParams.extraData.disableFirm || false;
       $scope.firmPrice = 0; // required by firm lookup but not used in this form.
       $scope.salutations = dbEnums.getSalutationEnum();
 
@@ -76,8 +76,8 @@ define(['./module'], function (controllers) {
           $scope.title = configService.loctxt.guest_titleCreate;
           $scope.edit = true;
           $scope.guest = new Guest();
-          if (modalParams.extraData) {
-            $scope.guest.firm = modalParams.extraData;
+          if (modalParams.extraData.firm) {
+            $scope.guest.firm = modalParams.extraData.firm;
           }
           switch (modalParams.data.length) { //pre-populate name fields from input parameters
             case 1:
@@ -204,10 +204,10 @@ define(['./module'], function (controllers) {
       $scope.save = function () {
         $scope.err = new utility.ErrObj();
         //perform the pre save form validation here
-        // if the salutation contains '' then set the salutation field to undefined
-        if (!$scope.guest.salutation || $scope.guest.salutation === '') {
-          $scope.err.push(configService.loctxt.val_invalidSalutation);
-        }
+        // 12/17 - Now allowing for no salutation 
+        // if (!$scope.guest.salutation || $scope.guest.salutation === '') {
+        //   $scope.err.push(configService.loctxt.val_invalidSalutation);
+        // }
         if (!$scope.guest.last_name) { //Must have a last name at least
           $scope.err.push(configService.loctxt.val_invalidLastName)
         }

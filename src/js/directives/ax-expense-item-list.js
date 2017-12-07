@@ -91,7 +91,7 @@ define(['./module'], function (directives) {
         // We have edited an expense simply save reservation to lock it in.
         scope.updateExpense = function (id) {
           var item = scope.rvm.res.expenses.id(id),
-              price = scope.textPrice['_'+ id.id];
+              price = scope.textPrice['_'+ id];
 
               item.price = convert.deNumberToDecimal(price, true);
            _updateRes(id);

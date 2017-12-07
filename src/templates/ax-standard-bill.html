@@ -3,7 +3,7 @@
         <table class="table-bill-page">
             <thead>
             <tr>
-                <td ng-if="showEdits"><a href="#" editable-text="rvm.res.billing_name" onaftersave="rvm.updateBillingNameSave()">{{rvm.res.billing_name}}</a> <i class="glyphicon glyphicon-edit no-print" ng-click="edit()"></i></td>
+                <td ng-if="showEdits"><a href="#" editable-text="rvm.res.billing_name" onaftersave="rvm.updateBillingNameSave()">{{rvm.res.billing_name}}</a> <i class="glyphicon glyphicon-edit no-print" ng-click="editGuest()"></i></td>
                 <td ng-if="!showEdits">{{rvm.res.billing_name}}</td>
                 <td></td>
             </tr>

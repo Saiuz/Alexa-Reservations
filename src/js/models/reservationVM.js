@@ -120,6 +120,11 @@ define(['./module'], function (model) {
         console.log("Reservation type changed to " + this.res.type);
         //_removeAllEmbeddedDocs(that.res.rooms);
         _removeAllEmbeddedDocs(that.res.expenses);
+        if (this.res.type === dbEnums.getReservationTypeEnum()[3]) {
+          this.res.occupants = 0;
+          _removeAllEmbeddedDocs(that.res.rooms);
+        }
+
         _filterRoomPlans(this.res.type, undefined);
         //if there is a pre-selected plan, not the default, then execute the roomPlanChanged method
         //if (this.selectedPlan.value) {
@@ -206,10 +211,10 @@ define(['./module'], function (model) {
             loadExisting = false;
           }
           else {
-            if (this.double_only && this.res.occupants === 1) {
+            if (this.double_only && this.res.occupants  !== 2) {
               this.res.occupants = 2;
             }
-            else if (this.single_only && this.res.occupants > 1) {
+            else if (this.single_only && (this.res.occupants > 1 || this.res.occupants === 0)) {
               this.res.occupants = 1;
             }
           }
@@ -685,6 +690,15 @@ define(['./module'], function (model) {
           // clean dates - this is needed to deal with time zone changes
           this.res.start_date = datetime.dateOnly(new Date(this.res.start_date));
           this.res.end_date = datetime.dateOnly(new Date(this.res.end_date));
+
+          // generate title (required field)
+          if (this.res.firm) {
+            this.res.title = this.res.firm + ' (' + this.res.guest.name + ')';
+          }
+          else {
+            this.res.title = this.res.guest.name
+                + (this.res.guest2 && this.res.guest2.name ? ' / ' + this.res.guest2.name : '');
+          }
 
           // If we have insurance, check if the plan requires a prescription fee. If so then set the
           // res prescripton_charges flag.
@@ -2603,7 +2617,8 @@ define(['./module'], function (model) {
 
       // filters the room plan list based on the reservation type provided
       // if curPlanCode provided then it will also set the selectedPlan property
-      // to the current plan. Else it will set it to default value
+      // to the current plan. Else it will set it to default value. It will filter
+      // out deleted plans
       function _filterRoomPlans(resType, curPlanCode) {
         var firstItem = {value: 0, name: that.roomPlanFirstText};
         var errorItem = {value: 0, name: '*** ERROR ***'};
@@ -2617,7 +2632,7 @@ define(['./module'], function (model) {
           that.roomPlansAll.forEach(function (plan) {
             if (plan.resTypeFilter.indexOf(resType) !== -1) {
               var pobj = {value: plan._id, name: plan.name};
-              rPlans.push(pobj);
+              if (!plan.deleted) rPlans.push(pobj);
               if (typeof(curPlanCode) === 'object' && pobj.value.toString() === curPlanCode.toString()) {
                 selected = pobj;
               }
@@ -2703,7 +2718,7 @@ define(['./module'], function (model) {
             end = datetime.isDate(endDate) ? datetime.dateOnly(endDate) : datetime.dateOnly(new Date(), 1);
 
         try { // get a unique reservation number and create the Reservation model with defaults
-          let roomPlanList = await dashboard.getRoomPlanList();         
+          let roomPlanList = await dashboard.getRoomPlanList(true);         
           let itemTypeList = await dashboard.getItemTypeList();
           let resNo = await  dashboard.getNewReservationNumber();
           let reservation = new Reservation();

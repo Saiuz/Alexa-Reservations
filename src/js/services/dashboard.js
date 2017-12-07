@@ -924,13 +924,15 @@ define(['./module'], function (services) {
           }
         },
         /**
-         * Retrieve all room plan types. Filtering will be done in the vm or UI
+         * Retrieve all room plan types. Filtering will be done in the vm or UI. Do not
+         * retrieve any that are marked deleted.
          */
-        getRoomPlanList: async function () {
+        getRoomPlanList: async function (hideDeleted = false) {
           try {
-            return RoomPlan.find()
+            let qry = hideDeleted ? {deleted: false} : {};
+            return RoomPlan.find(qry)
               .sort({
-                display_order: 1
+                display_order: 1, name: 1
               })
               .exec();
           } catch (err) {

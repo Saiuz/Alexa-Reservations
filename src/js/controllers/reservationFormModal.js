@@ -197,7 +197,7 @@ define(['./module'], function (controllers) {
               // we may not collect the correct information for the second person so remove all guests from the
               // reservation.
 
-              if ($scope.rvm.single_only && $scope.rvm.res.occupants === 2) {
+              if ($scope.rvm.single_only && $scope.rvm.res.occupants > 1) {
                 $scope.rvm.res.occupants = 1;
                 oldvars[3] = 1;
                 break;

@@ -11,7 +11,7 @@ define(['./module'], function (directives) {
       let linker = function (scope, element, attrs, modelCtrl) {
       let modechar = attrs.mode.toLowerCase().charAt(0),
           isGuest = modechar === 'a' || modechar === 'g',
-          dataObjR = {data: undefined, extraData: undefined},
+          dataObjR = {data: undefined, extraData: {}},
           model;
 
       scope.items = [];

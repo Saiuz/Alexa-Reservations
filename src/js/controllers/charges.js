@@ -50,7 +50,7 @@ define(['./module'], function (controllers) {
                 $scope.pTitle = configService.loctxt.charges;
                 $scope.showCharges = true;
                 $scope.room = newval.room;
-                $scope.guest = newval.guest;
+                $scope.guest = newval.guest || resVM.res.guest.name;
                 $scope.gRooms = [];
                 var rmObj = resVM.generatePlanRoomString(newval.room, newval.guest);
                 $scope.roomGuest1 = rmObj.roomGuest1;
