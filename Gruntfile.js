@@ -29,9 +29,9 @@ const appDir = "~//Alexa-Reservations";  //hard wired todo - figure out how to g
 let nwExec = "";
 
 if (!isMac32 && !isMac64)
-    nwExec = `cd cache/${nwVer}-${flavor}/${os} && nw ../../../src`;
+    nwExec = `cd cache/${nwVer}-${flavor}/${os} && nw ../../../src dev`;
 else
-    nwExec = `${appDir}/cache/${nwVer}-${flavor}/${os}/nwjs.app/Contents/MacOS/nwjs ${appDir}/src`;
+    nwExec = `${appDir}/cache/${nwVer}-${flavor}/${os}/nwjs.app/Contents/MacOS/nwjs ${appDir}/src dev`;
 
 
 console.log("OS: " + os);

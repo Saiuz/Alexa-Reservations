@@ -1,5 +1,10 @@
-var win = nw.Window.get();
-win.showDevTools();
+//show dev tools if any argument is passed in on the command line
+let args = nw.App.argv;
+if (args && args.length > 0) {
+    var win = nw.Window.get();
+    win.showDevTools();
+}
+
 /**
  * configure RequireJS
  * prefer named modules to long paths, especially for version mgt

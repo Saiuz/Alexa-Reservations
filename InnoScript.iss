@@ -37,6 +37,8 @@ OutputDir="{#MyBaseDir}\releases\inno32"
 OutputBaseFilename=Alexa_Reservierungen_setup_{#MyAppVersion}
 Compression=lzma
 SolidCompression=yes
+ArchitecturesInstallIn64BitMode=x64
+ArchitecturesAllowed=x64
 
 [Languages]
 Name: "german"; MessagesFile: "compiler:Languages\German.isl"
@@ -54,7 +56,11 @@ Type: files; Name: "{app}\pdf.dll"
 ;Type: filesandordirs; Name: "{app}\lib"
 
 [Files]
-Source: "{#NwSourcePath}\*"; DestDir: "{app}"; Flags: ignoreversion
+Source: "{#NwSourcePath}\*"; Excludes: "{#NwSourcePath}\nw.exe"; DestDir: "{app}"; Flags: ignoreversion
+Source: "{#NwSourcePath}\nw.exe"; DestDir: "{app}"; DestName: "Alexa.exe"; Flags: ignoreversion
+Source: "{#NwSourcePath}\locales\*"; DestDir: "{app}\locales"; Flags: ignoreversion
+Source: "{#NwSourcePath}\pnacl\*"; DestDir: "{app}\pnacl"; Flags: ignoreversion
+Source: "{#NwSourcePath}\swiftshader\*"; DestDir: "{app}\swiftshader"; Flags: ignoreversion
 Source: "{MyBaseDir}\..\src\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "{MyBaseDir}\..\extra\mongodump*"; DestDir: "{app}"; Flags: ignoreversion
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
