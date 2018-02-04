@@ -171,7 +171,8 @@ define(['./module'], function (directives) {
           var rowItems = [];
           for (let i = 0; i < guests.length; i++) {
             let g = guests[i];
-            let rCnt = await Reservation.count({$or: [{"guest.id": g._id},{"gust2.id": g._id}]})
+            //let rCnt = await Reservation.count({$or: [{"guest.id": g._id},{"gust2.id": g._id}]});
+            let rCnt = await Reservation.count({"guest.id": g._id});
             let tds = {id: g._id, cols: g.toDisplayObj(scope.withFirm, rCnt)};
             rowItems.push(tds);
           }

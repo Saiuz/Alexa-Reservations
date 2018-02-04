@@ -11,9 +11,9 @@ define(['./module'], function (services) {
 
   services.service('importExport',
       ['$q', 'appConstants', '$filter', 'Itemtype', 'RoomPlan', 'Firm', 'Guest', 'Room', 'Resource', 'Event',
-        'Reservation', 'TaxItem', 'configService', 'fileExecUtil',
+        'Reservation', 'TaxItem', 'configService', 'fileExecUtil', 'datetime',
         function ($q, appConstants, $filter, Itemtype, RoomPlan, Firm, Guest, Room, Resource, Event, Reservation,
-                  TaxItem, configService, fileExecUtil) {
+                  TaxItem, configService, fileExecUtil, datetime) {
 
           var fs = require('fs'),
               decomp = require('decompress'),
@@ -343,13 +343,15 @@ define(['./module'], function (services) {
                 outStream, stringifier, transformer;
 
             // build heading columns
-            props.push('Gast');
-            props.push('Addresse');
+            props.push('MC');
+            props.push('Name1');
+            props.push('Name2');
+            props.push('Strasse');
             props.push('Platz');
             props.push('Ort');
-            props.push('Land');
+            props.push('AnredeU');
+            props.push('Letzter Aufenthalt');
             props.push('Email');
-            props.push('Firma');
 
             // now set up the csv and file items for piping
             outStream = fs.createWriteStream(outPath);
@@ -371,46 +373,50 @@ define(['./module'], function (services) {
 
             // Transform the record. Extract the name and address info.
             transformer = csv.transform(function (record, callback){
-              var arec = {},
-                  name, addr;
-              
-              if (record.salutation) {
-                name = record.salutation + " " + record.first_name + " " + record.last_name;
-              } else {
-                name =  record.first_name + " " + record.last_name;
+              let arec = {};
+             
+              let name =  `${record.first_name || ' '} ${record.last_name || ' '}`.replace(/\s\s+/g, ' ').trim();
+              let addr = `${record.address1 || ' '} ${record.address2 || ' '}`.replace(/\s\s+/g, ' ').trim();
+          
+              if (addr && /^[0-9]*$/g.test(record.post_code)) {
+              arec[props[0]] = record.last_name;
+              arec[props[1]] = name;
+              arec[props[2]] = record.partner_name;
+              arec[props[3]] = addr;
+              arec[props[4]] = postPad(record.post_code, 5);
+              arec[props[5]] = record.city;
+              arec[props[6]] = record.salutation;
+              arec[props[7]] = datetime.toDeDateString(record.last_stay);
+              arec[props[8]] = record.email;
+            } else {
+                arec = null;
               }
-              
-              if (record.address2) {
-                addr = record.address1 + ' ' + record.addres2;
-              } else {
-                addr = record.address1;
-              }
-              
-              arec[props[0]] = name;
-              arec[props[1]] = addr;
-              arec[props[2]] = record.post_code;
-              arec[props[3]] = record.city;
-              arec[props[4]] = record.country;
-              arec[props[5]] = record.email;
-              arec[props[6]] = record.firm;
               recCnt++;
               callback(null, arec);
             }, {parallel: 10});
-            
+
+            //pads number with leading zeros and returns a quoted string for Excel to interpret as a string
+            function postPad(num, size)  { 
+              num = num || 0;
+              let s = String(num);
+              while (s.length < (size || 2)) {s = "0" + s;}
+              return `="${s}"`;
+            };
+
             transformer.on('error', function (err) {
               deferred.reject('Transformer Error:' + err);
             });
             transformer.on('finish',function() {console.log('TRANSFORMER FINISHED ' + recCnt + ' records')});
 
-            // Query addresses-find all addresses include firms.
-            Guest.find({})
-                .sort({last_name: 1})
+            // Query addresses-find all addresses without firms and that have postcodes.
+            let gQry = {$and: [{firm: ''},{post_code: {$exists: true}},{$or:[{country: {$exists: false}},{country: ''}, {country: 'Deutschland'}]}]};
+            Guest.find(gQry)
+                .sort({post_code: 1, last_name: 1})
                 .lean()
                 .stream()
                 .pipe(transformer)
                 .pipe(stringifier)
                 .pipe(outStream);
-
             return deferred.promise;
           };
 

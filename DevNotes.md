@@ -117,3 +117,9 @@ NEW BUGS FOUND During testing
 
 **NOTE** Whenever a $q promise is replaced with a native promise then the controller or directive calling the method may need to manually call $scope.$apply()!!!
 
+NEW Features:
+
+Address export
+   .. For eastern germany, leading zeros are needed on address list.
+   .. Export format separate lines for salutation, name, address. 
+

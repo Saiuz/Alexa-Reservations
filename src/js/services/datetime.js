@@ -229,6 +229,8 @@ define(['./module'], function (services) {
         m = dateVal.getMonth() + 1,
         d = dateVal.getDate();
         return d + '.' + m + '.' + y;
+      } else {
+        return '';
       }
     }
     //#endregion
