@@ -148,6 +148,10 @@ define(['./module'], function (directives) {
         });
       };
 
+      scope.showStay = function (id) {
+        modals.guestStayShow(id, scope.isGuest);
+      };
+
       // Method to retrieve and transform the Guest data. If firm search is true then the guests returned are
       // those that are associated with the firms that match the qryRegex
       async function _getGuests (qryRegex, firmSearch, altRegex) {
@@ -199,7 +203,8 @@ define(['./module'], function (directives) {
           for (let i = 0; i < firms.length; i++) {
             let g = firms[i];
             let gCnt = await Guest.count({firm: g.firm_name});
-            let cols = g.toDisplayObj(gCnt);
+            let rCnt = await Reservation.count({firm: g.firm_name});
+            let cols = g.toDisplayObj(gCnt, rCnt);
             cols[priceCol] = $filter('currency')(cols[priceCol]);
             let tds = {id: g._id, cols: cols};
             rowItems.push(tds);

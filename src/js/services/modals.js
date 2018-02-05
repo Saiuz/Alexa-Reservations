@@ -7,7 +7,7 @@ define(['./module'], function (services) {
   services.service('modals', ['$q', '$modal', '$document', function ($q, $modal, $document) {
     // define the Mongoose Models the service knows about and the modal form - also other utility modals
     // templates and controllers.
-    var models = ['Reservation', 'Guest', 'Firm', 'Event', 'ItemType', 'DocItemType', 'Room', 'Resource', 'RoomPlan', 'YesNo', 'Bill'],
+    var models = ['Reservation', 'Guest', 'Firm', 'Event', 'ItemType', 'DocItemType', 'Room', 'Resource', 'RoomPlan', 'YesNo', 'Bill','GuestStay'],
         templates = ['./templates/reservationFormModal.html',
                      './templates/guestFormModal.html',
                      './templates/firmFormModal.html',
@@ -18,7 +18,8 @@ define(['./module'], function (services) {
                      './templates/resourceFormModal.html',
                      './templates/roomPlanFormModal.html',
                      './templates/yesNoFormModal.html',
-                     './templates/billDisplayModal.html'],
+                     './templates/billDisplayModal.html',
+                     './templates/guestStayDisplayModal.html'],
         controllers = ['ReservationFormModalCtrl',
                        'GuestFormModalCtrl',
                        'FirmFormModalCtrl',
@@ -29,8 +30,9 @@ define(['./module'], function (services) {
                        'ResourceFormModalCtrl',
                        'RoomPlanFormModalCtrl',
                        'YesNoFormModalCtrl',
-                       'BillDisplayModalCtrl'],
-        formSize = ['lg', 'lg', 'lg', 'lg', 'lg', 'lg', 'lg', 'lg', 'lg', 'sm', 'lg'], // size of modal
+                       'BillDisplayModalCtrl',
+                       'GuestDisplayModalCtrl'],
+        formSize = ['lg', 'lg', 'lg', 'lg', 'lg', 'lg', 'lg', 'lg', 'lg', 'sm', 'lg','lg'], // size of modal
         mode = {c: 0, r: 1, u: 2, d: 3}, // CRUD mode object
         modeStr = ['c', 'r', 'u', 'd'];
 
@@ -47,7 +49,8 @@ define(['./module'], function (services) {
         resource: 7,
         roomPlan: 8,
         yesNo: 9,
-        bill: 10
+        bill: 10,
+        guestStay: 11
       }
     };
 
@@ -127,7 +130,28 @@ define(['./module'], function (services) {
         bodyRef.removeClass('ovh');
       });
     };
+    this.guestStayShow = function (guestId, isGuest) {
+      var bodyRef = angular.element( $document[0].body),
+          modeParams = {entityID: guestId, isGuest: isGuest},
+          mModel = this.getModelEnum().guestStay,
+          modalInstance;
 
+      bodyRef.addClass('ovh'); //This is supposed to take care of a scrolling bug in modal.
+      modalInstance = $modal.open({
+        templateUrl: templates[mModel],
+        controller: controllers[mModel],
+        size: formSize[mModel],
+        resolve: {
+          modalParams: function () {
+            return modeParams;
+          }
+        }
+      });
+
+      modalInstance.result.then(function(result) {
+        bodyRef.removeClass('ovh');
+      });
+    };
     // launches the modal form
     function _executeModal(mModel, mode, dataObj, callback) {
       var bodyRef = angular.element( $document[0].body),

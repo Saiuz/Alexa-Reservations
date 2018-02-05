@@ -1,0 +1,55 @@
+<div class="modal-header">
+  <h4>{{title}}</h4>
+</div>
+<div class="modal-body">
+  <div class="form-group" ng-show="firm !== ''">
+    <label class="">{{txt.firm}}:</label>
+    <p class="">{{firm}}</p>
+  </div>
+  <div ng-show="!hasErr">
+    <tabset justified="true">
+      <tab heading="Reservierungen:">
+        <div class="tbox">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>{{txt.res_num}}</th>
+                <th>{{txt.from}}</th>
+                <th>{{txt.until}}</th>
+                <th>{{txt.nights}}</th>
+                <th>{{txt.room}}</th>
+                <th>{{txt.type}}</th>
+                <th>{{txt.total}}</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr ng-repeat="r in resDetails">
+                <td>{{r.resNum}}</td>
+                <td>{{r.from}}</td>
+                <td>{{r.until}}</td>
+                <td>{{r.nights}}</td>
+                <td>{{r.rooms}}</td>
+                <td>{{r.type}}</td>
+                <td>{{r.total | currency}}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </tab>
+      <tab heading="Gäste" ng-if="!isGuest">
+        <div class="tbox">
+          <ul>
+            <li ng-repeat="g in guestList">{{g.name}}</li>
+          </ul>
+        </div>
+      </tab>
+    </tabset>
+  </div>
+  <div class="alert alert-danger" ng-show="hasErr">
+    <h3>ERROR!</h3>
+    <span>{{err}}</span>
+  </div>
+</div>
+<div class="modal-footer">
+  <button class="btn btn-primary" ng-click="close()">{{txt.close}}</button>
+</div>

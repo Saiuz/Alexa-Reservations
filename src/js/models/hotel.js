@@ -520,7 +520,7 @@ define(['./module'], function (model) {
                                                             // collection list, used for non-group plans that require separate bills
                                                             // for each guest in a double room. For Kur reservation, This
                                                             // will contain the partner name field for the main guest
-      firm: String,
+      firm: { type: String, index: true},
       start_date: { type: Date, required: true},
       end_date: { type: Date, required: true},
       checked_in: Date, // set when all rooms in this reservation have been checked in.
@@ -617,20 +617,21 @@ define(['./module'], function (model) {
       return addr.trim().replace("  ", " ");
     });
 
-    // Model method to convert the model's schema properties to an object with German Property names suitable for
-    // displaying in the UI. This object uses the name field instead of first_name and last_name. If withFirm is true
-    // then it contains the firm name but not the address fields since they are contained in the firm collection.
-    schema.methods.toDisplayObj = function (guestCount) {
+    /**
+     * Model method to convert the model's schema properties to an object with German Property 
+     * names suitable for displaying in the UI.
+     */
+    schema.methods.toDisplayObj = function (guestCount, resCount) {
         return {
           'Firma': this.firm_name, 'Zimmer Preis': this.room_price, 'Addresse': this.full_address,
-          'Kontakt Name': this.contact_name, 'Nr. Gäste': guestCount, 'Kontakt E-Mail': this.contact_email,
+          'Kontakt Name': this.contact_name, 'Nr. Gäste': guestCount, 'Nr. Res.': resCount, 'Kontakt E-Mail': this.contact_email,
           'Bemerkung': this.comments
         };
     };
 
     schema.statics.toDisplayObjHeader = function () {
       return ['Firma', 'Zimmer Preis', 'Addresse', 'Kontakt Name',
-              'Nr. Gäste','Kontakt E-Mail','Bemerkung'];
+              'Nr. Gäste','Nr. Res.','Kontakt E-Mail','Bemerkung'];
     };
 
     return dbConfig.db.model('firm', schema);
