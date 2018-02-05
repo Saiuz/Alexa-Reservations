@@ -10,8 +10,8 @@
  */
 define(['./module'], function (directives) {
   'use strict';
-  directives.directive('axTourBill', ['$filter', 'configService',
-    function ($filter, configService) {
+  directives.directive('axTourBill', ['$rootScope','$filter', 'configService', 'modals', 'dashboard',
+    function ($rootScope, $filter, configService, modals, dashboard) {
       var linker = function (scope, element, attrs) {
         console.log("axTourBill linker fired");
         //define which items appear in which section of the bill_dec32
@@ -34,16 +34,18 @@ define(['./module'], function (directives) {
         // build the local select list from the expenseItemArray
         // filter the list by the itemType property. Note we must wait until
         // both properties have been set during the compile phase of the hosting page
-        scope.$watchCollection('[reservationVm]', function (newvals) {
+        scope.$watchCollection('[reservationVm, pauschale]', function (newvals) {
           var extras = {};
 
           if (newvals[0] !== undefined) {
             console.log("axTourBill watch fired with all parameters " + newvals[1]);
             haveAttributes = true;
             scope.rvm = newvals[0]; // same as reservationVM just less typing
-            room = Number(newvals[1]);
+            scope.showEdits = scope.rvm.canCheckOut(scope.rvm.res.rooms[0].number);
+            scope.guest = scope.rvm.res.guest.name; //original guest name
+            //room = Number(newvals[1]);
             rmObj = scope.rvm.generatePlanRoomString(scope.rvm.res.rooms[0].number, scope.rvm.res.rooms[0].guest);
-            busPachale = newvals[3];
+            busPachale = newvals[1];
             // build 'vocabulary' that expense display strings may need.
             extras['planName'] = rmObj.displayText;
             extras['planPrice'] = scope.rvm.planPrice;
@@ -54,7 +56,72 @@ define(['./module'], function (directives) {
           }
         });
 
+        
+        scope.editFirm = function () {
+          let dataObjR = {data: scope.firm, extraData: {}};
+          modals.update(modals.getModelEnum().firm, dataObjR); //no callback
+        };
+
+        scope.editGuest = () => {
+          let guestID = scope.rvm.res.guest.id;
+          if (guestID) {
+            let dataObjR = {data: guestID, extraData: {disableFirm: true}};
+            modals.update(modals.getModelEnum().guest, dataObjR); //no callback
+          }
+        };
+        /**
+         * Respond to firm edited event update the firm/address info in the current
+         * reservation in the VM. Note we don't need to update the reservation since
+         * it was updated by the firm edit modal.
+         */
+        scope.$on(configService.constants.firmEditedEvent, (event, firm) => {
+          if (scope.rvm && firm) {
+            updateAddress(firm);
+            scope.$apply();
+            console.log(`Event ${event.name} received with firm ${firm.firm_name}`);
+          }
+        });
+        /**
+         * Respond to the guest edited event. Update the name of the guest and save
+         * the new information in the reservation VM (Guest name gets updated)
+         */
+        scope.$on(configService.constants.resGuestEditedEvent, (event, val) => {
+          if (scope.rvm) {
+            dashboard.getGuestById(val).then((rec) => {
+              scope.rvm.guest1rec = rec;
+              console.log(`Event ${event} received for guest ${val.name}`);
+              if (scope.guest !== rec.name) {
+                $rootScope.$broadcast(configService.constants.guestNameChangedEvent, { oldName: scope.guest, newName: rec.name });
+                scope.guest = rec.name;
+              }
+              scope.$apply();
+            }).catch((err) => {
+              scope.err = err;
+              scope.hasErr = true;
+              console.error(err);
+            });
+          }
+        });
+
+      var updateAddress = function (firm) {
+        if (firm) {
+          scope.firm = firm.firm_name;
+          scope.address1 = firm.address1;
+          scope.address2 = firm.address2;
+          scope.post_code = firm.post_code;
+          scope.city = firm.city;
+          scope.country = firm.country;
+        } else {
+          scope.firm = scope.rvm.res.firm;
+          scope.address1 = scope.rvm.res.address1;
+          scope.address2 = scope.rvm.res.address2;
+          scope.post_code = scope.rvm.res.post_code;
+          scope.city = scope.rvm.res.city;
+          scope.country = scope.rvm.res.country;
+        }
+      }
         var updateData =  function(extras) {
+          updateAddress();
           var roomBills = [],
               ktext =  scope.rvm.oneBill ? configService.loctxt.aggregatePersonDisplayString : '',
               bill;
@@ -66,7 +133,7 @@ define(['./module'], function (directives) {
                 }
             );
 
-            calcResult = scope.rvm.calculateTotals(unterItems, null, null, extras, true, ktext);
+            calcResult = scope.rvm.calculateTotals(unterItems, null, null, extras, true, ktext, busPachale);
             scope.section1 = {
               page_title: "Rechnung",
               section_title: "Unterkunft:",
@@ -114,7 +181,8 @@ define(['./module'], function (directives) {
         link: linker,
         templateUrl: './templates/ax-tour-bill.html',
         scope: {
-          reservationVm: '='
+          reservationVm: '=',
+          pauschale: '='
         }
       };
     }]);

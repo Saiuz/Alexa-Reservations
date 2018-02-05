@@ -10,324 +10,92 @@ define(['./module'], function (services) {
   'use strict';
 
   services.service('importExport',
-      ['$q', 'appConstants', '$filter', 'db', 'Itemtype', 'RoomPlan', 'Firm', 'Guest', 'Room', 'Resource', 'Event',
-        'Reservation', 'TaxItem', 'configService',
-        function ($q, appConstants, $filter, db, Itemtype, RoomPlan, Firm, Guest, Room, Resource, Event, Reservation,
-                  TaxItem, configService) {
+      ['$q', 'appConstants', '$filter', 'Itemtype', 'RoomPlan', 'Firm', 'Guest', 'Room', 'Resource', 'Event',
+        'Reservation', 'TaxItem', 'configService', 'fileExecUtil', 'datetime',
+        function ($q, appConstants, $filter, Itemtype, RoomPlan, Firm, Guest, Room, Resource, Event, Reservation,
+                  TaxItem, configService, fileExecUtil, datetime) {
 
           var fs = require('fs'),
-              path = require('path'),
-              archiver = require('archiver'),
               decomp = require('decompress'),
               sys = require('sys'),
-              exec = require('child_process').exec,
               csv = require('csv'),
               byLine = require('byline'),
               that = this,
               validModels = [Guest, Firm, Room, RoomPlan, Resource, Event, Itemtype]; //models available for import/export
 
-          // This replaces the existing database files with the files in the referenced zip archive.
-          // It first backs up the existing database files in the same directory. The name and
-          // location of the zip file is specified in the fpath argument.
-          // Note: The archiver module used to zip the data can;t unzip. For that we need to
-          // call an external program to do it. For windows we use the command line version of 7-zip.
+          /**
+           * DEPRECATED method, imports not allowed with MongoDB
+           * via the app.
+           */
           this.importAll = function (fpath) {
             var deferred = $q.defer();
-
+            deferred.resolve(0);
             // First archive existing files in place, then restore by overwriting
-            this.exportAll(this.getDefaultExportFilePath('db')).then(function () {
-              db.dbDisconnect(function () {  //once closed, extract files
-                decomp(fpath,appConstants.dbPath).then(function(f) {
-                  db.dbReconnect(); // Reconnect no matter what.
-                  console.log('Done. Extracted db files: ' + f.length);
-                  deferred.resolve(f.length);
-                }, function(err) {
-                  deferred.reject('Error: ' + err);
-                });
-              });
-            }, function (err) {
-              db.dbReconnect(); // Reconnect no matter what.
-              deferred.reject(err);
-            });
+            // this.exportAll(this.getDefaultExportFilePath('db')).then(function () {
+            //   db.dbDisconnect(function () {  //once closed, extract files
+            //     decomp(fpath,appConstants.dbPath).then(function(f) {
+            //       db.dbReconnect(); // Reconnect no matter what.
+            //       console.log('Done. Extracted db files: ' + f.length);
+            //       deferred.resolve(f.length);
+            //     }, function(err) {
+            //       deferred.reject('Error: ' + err);
+            //     });
+            //   });
+            // }, function (err) {
+            //   db.dbReconnect(); // Reconnect no matter what.
+            //   deferred.reject(err);
+            // });
 
             return deferred.promise;
           };
 
-          // This exports all existing database files into a zip archive. The name and
-          // location of the created zip file is specified in the fpath argument. Note:
-          // zip files can be easily created with the archiver module but this is
-          // one way only, no unzip function.
-          this.exportAll = function (outPath) {
-            var deferred = $q.defer(),
-                files = fs.readdirSync(appConstants.dbPath),
-                srcPaths = [];
-
-            // find the db files in the directory read results and add full path to names
-            files.forEach(function (f) {
-              if (f.indexOf('.') === -1) {
-                var fname = path.join(appConstants.dbPath, f);
-                srcPaths.push(fname);
-              }
-            });
-
-            if (srcPaths.length) {
-              _zipFiles(srcPaths,outPath).then(function (result) {
-                deferred.resolve(result);
-              }, function (err) {
-                deferred.reject(err);
-              });
+          /**
+           * This uses the MongoDB utility 'mongodump' to export the complete database in 
+           * binary format into a single archive file. It requires that the MongoDB utility be part of this apps distribution
+           * and will execute the utility in a child process. The user gets to specifiy the directory
+           * the archive file will be placed in but not the file name.
+           */
+          this.exportAll = async function (outPath) {
+            try {
+              console.log('Exporting complete database...')
+              let results = await fileExecUtil.execCmd(appConstants.dbDumpCmd(outPath));
+              console.log('DB dump output: ' + results);
+              console.log(`Export Done`);
+              return 0;
+            } catch (err) {
+              throw err;
             }
-            else {
-              deferred.reject("No database files found"); //todo-move string to config.loctxt
-            }
-
-            return deferred.promise;
           };
 
+          /**
+           * DEPRECATED METHOD, imports not allowed with MongoDB via the app.
+           */
           // imports a CSV file into the specified Mongoose Model. It will make a Zip backup before importing.
           // Parameters: inPath - full path to the CSV file that will be imported.
           //             model - an integer representing the Mongoose model to import to. This value can be obtained
           //                     from the getAvailableModels method that can be used by the UI to populate a dropdown.
           this.importFromCSV = function (inPath, model) {
-            var deferred = $q.defer(),
-                invalidModel = false,
-                recCnt = 0,
-                vmodels = this.getAvailableModels(),
-                mgModel, srcPathArr, destPath, input, parser, transformer, qryFld, qry;
-
-            switch (model) {
-              case 0: //Guest
-                qryFld = 'unique_name';
-                break;
-              case 1: //Firm
-                qryFld = 'firm_name';
-                break;
-              case 2: //Room
-                qryFld = 'number';
-                break;
-              case 3: //RoomPlan
-                qryFld = 'name';
-                break;
-              case 4: //Resource
-                qryFld = 'name';
-                break;
-              case 5: //Event
-                qryFld = 'title,start_date';
-                break;
-              case 6: //ItemType
-                qryFld = 'name,category';
-                break;
-              default:
-                invalidModel = true;
-                break;
-            }
-
-            if (invalidModel) {
-              deferred.reject(model + ' is not a valid database model.');
-            }
-            else {
-              mgModel = validModels[model]; //specify model
-              // first archive file
-              srcPathArr = [path.join(appConstants.dbPath, vmodels[model].model_name)];
-              destPath = this.getDefaultExportFilePath('db',vmodels[model].model_name,false);
-
-              _zipFiles(srcPathArr,destPath).then(function (result) {
-                // Now add records to the model collection
-                input = fs.createReadStream(inPath);
-                input.setEncoding('utf8');
-                input.on('error', function (err) {
-                  deferred.reject('Input Error: ' + err);
-                });
-
-                // set up parser
-                parser = csv.parse({columns: true});
-                parser.on('error', function (err) {
-                  deferred.reject('{Parse Error: ' + err);
-                });
-
-                // Set up transformer:
-                // Clean up empty fields in the objects and store record in db. The CSV export will have all fields
-                // present even if they are null or empty. It is more efficient to store the record in the DB by
-                // removing any empty fields
-                transformer = csv.transform(function (record, callback) {
-                 // var qry = useGuest ? {unique_name: record.unique_name} : {firm_name: record.firm_name};
-                  qry = _buildQry(qryFld, record);
-
-                  //Remove empty properties
-                  for (var p in record) {
-                    if(record.hasOwnProperty(p)) {
-                      if (typeof(record[p]) !== "number" && !record[p]) { //don't test number properties
-                        delete record[p];
-                      }
-                    }
-                  }
-
-                  //Save record
-                  mgModel.findOneAndUpdate(qry, record, {upsert: true}, function (err, doc) {
-                    if (err) {
-                      console.log(err);
-                      deferred.reject('Find-Update Error: ' + err);
-                    }
-                    else {
-                      recCnt++;
-                      callback(null); //record stops here
-                    }
-                  });
-                });
-
-                // we will resolve promise when the process completes
-                transformer.on('finish', function () {
-                  deferred.resolve(recCnt); //return the record count
-                });
-                transformer.on('error', function (err) {
-                  deferred.reject('Transformer Error: ' + err);
-                });
-
-                // Now start the import
-                input.pipe(parser).pipe(transformer);
-
-              }, function (err) {  // error for zip
-                deferred.reject(err);
-              });
-
-
-            }
-
+            let deferred = $q.defer();
+            deferred.resolve(0);
             return deferred.promise;
           };
 
+          /**
+           * DEPRECATED Method
+           */
           // imports a JSON file into the specified Mongoose Model. It will make a Zip backup before importing.
           // Parameters: inPath - full path to the JSON file that will be imported.
           //             model - an integer representing the Mongoose model to import to. This value can be obtained
           //
           this.importFromJSON = function (inPath, model) {
-            var deferred = $q.defer(),
-                invalidModel = false,
-                recCnt = 0,
-                vmodels = this.getAvailableModels(),
-                mgModel, srcPathArr, destPath, input, byline, transformer, qryFld, qry;
-
-            switch (model) {
-              case 0: //Guest
-                qryFld = 'unique_name';
-                break;
-              case 1: //Firm
-                qryFld = 'firm_name';
-                break;
-              case 2: //Room
-                qryFld = 'number';
-                break;
-              case 3: //RoomPlan
-                qryFld = 'name';
-                break;
-              case 4: //Resource
-                qryFld = 'name';
-                break;
-              case 5: //Event
-                qryFld = 'title,start_date';
-                break;
-              case 6: //ItemType
-                qryFld = 'name,category';
-                break;
-              default:
-                invalidModel = true;
-                break;
-            }
-
-            if (invalidModel) {
-              deferred.reject(model + ' is not a valid database model.');
-            }
-            else {
-              mgModel = validModels[model]; //specify model
-              // first archive file
-              srcPathArr = [path.join(appConstants.dbPath, vmodels[model].model_name)];
-              destPath = this.getDefaultExportFilePath('db',vmodels[model].model_name,false);
-
-              _zipFiles(srcPathArr,destPath).then(function (result) {
-                // Now add records to the model collection
-                input = fs.createReadStream(inPath);
-                input.setEncoding('utf8');
-                input.on('error', function (err) {
-                  deferred.reject('Input Error: ' + err);
-                });
-
-                // set up the byLine stream
-                byline = byLine.createStream(input);;
-                byline.on('error', function (err) {
-                  deferred.reject('{Line Reader Error: ' + err);
-                });
-
-                // Set up transformer:
-                // Clean up empty fields in the objects and store record in db. The CSV export will have all fields
-                // present even if they are null or empty. It is more efficient to store the record in the DB by
-                // removing any empty fields
-                transformer = csv.transform(function (record, callback) {
-                  var newRec;
-                  try {
-                    newRec= JSON.parse(record);
-                  }
-                  catch (err) {
-                    console.log(err);
-                    deferred.reject('JSON Read Error: ' + err);
-                  }
-
-                  qry = _buildQry(qryFld, newRec);
-
-                  //Save record
-                  mgModel.findOneAndUpdate(qry, newRec, {upsert: true}, function (err, doc) {
-                    if (err) {
-                      console.log(err);
-                      deferred.reject('Find-Update Error: ' + err);
-                    }
-                    else {
-                      recCnt++;
-                      callback(null); //record stops here
-                    }
-                  });
-                });
-
-                // we will resolve promise when the process completes
-                transformer.on('finish', function () {
-                  deferred.resolve(recCnt); //return the record count
-                });
-                transformer.on('error', function (err) {
-                  deferred.reject('Transformer Error: ' + err);
-                });
-
-                // Now start the import
-                byline.pipe(transformer);
-
-              }, function (err) {  // error for zip
-                deferred.reject(err);
-              });
-            }
-
+            let deferred = $q.defer();
+            deferred.resolve(0);    
             return deferred.promise;
           };
 
           this.importFromFile = function (inPath, model, fileType) {
-            var deferred = $q.defer();
-
-            fileType = fileType.toLowerCase();
-            if (fileType !== 'csv' && fileType !== 'json') {
-              deferred.reject('Import Error: Invalid file type - ' + fileType);
-            }
-            else {
-              if (fileType === 'csv') {
-                that.importFromCSV(inPath, model).then(function (result) {
-                  deferred.resolve(result)
-                }, function (err) {
-                  deferred.reject(err)
-                });
-              }
-              else {
-                that.importFromJSON(inPath, model).then(function (result) {
-                  deferred.resolve(result)
-                }, function (err) {
-                  deferred.reject(err)
-                });
-              }
-            }
+            let deferred = $q.defer();
+            deferred.resolve(0);    
             return deferred.promise;
           };
 
@@ -575,13 +343,15 @@ define(['./module'], function (services) {
                 outStream, stringifier, transformer;
 
             // build heading columns
-            props.push('Gast');
-            props.push('Addresse');
+            props.push('MC');
+            props.push('Name1');
+            props.push('Name2');
+            props.push('Strasse');
             props.push('Platz');
             props.push('Ort');
-            props.push('Land');
+            props.push('AnredeU');
+            props.push('Letzter Aufenthalt');
             props.push('Email');
-            props.push('Firma');
 
             // now set up the csv and file items for piping
             outStream = fs.createWriteStream(outPath);
@@ -603,80 +373,75 @@ define(['./module'], function (services) {
 
             // Transform the record. Extract the name and address info.
             transformer = csv.transform(function (record, callback){
-              var arec = {},
-                  name, addr;
-              
-              if (record.salutation) {
-                name = record.salutation + " " + record.first_name + " " + record.last_name;
-              } else {
-                name =  record.first_name + " " + record.last_name;
+              let arec = {};
+             
+              let name =  `${record.first_name || ' '} ${record.last_name || ' '}`.replace(/\s\s+/g, ' ').trim();
+              let addr = `${record.address1 || ' '} ${record.address2 || ' '}`.replace(/\s\s+/g, ' ').trim();
+          
+              if (addr && /^[0-9]*$/g.test(record.post_code)) {
+              arec[props[0]] = record.last_name;
+              arec[props[1]] = name;
+              arec[props[2]] = record.partner_name;
+              arec[props[3]] = addr;
+              arec[props[4]] = postPad(record.post_code, 5);
+              arec[props[5]] = record.city;
+              arec[props[6]] = record.salutation;
+              arec[props[7]] = datetime.toDeDateString(record.last_stay);
+              arec[props[8]] = record.email;
+            } else {
+                arec = null;
               }
-              
-              if (record.address2) {
-                addr = record.address1 + ' ' + record.addres2;
-              } else {
-                addr = record.address1;
-              }
-              
-              arec[props[0]] = name;
-              arec[props[1]] = addr;
-              arec[props[2]] = record.post_code;
-              arec[props[3]] = record.city;
-              arec[props[4]] = record.country;
-              arec[props[5]] = record.email;
-              arec[props[6]] = record.firm;
               recCnt++;
               callback(null, arec);
             }, {parallel: 10});
-            
+
+            //pads number with leading zeros and returns a quoted string for Excel to interpret as a string
+            function postPad(num, size)  { 
+              num = num || 0;
+              let s = String(num);
+              while (s.length < (size || 2)) {s = "0" + s;}
+              return `="${s}"`;
+            };
+
             transformer.on('error', function (err) {
               deferred.reject('Transformer Error:' + err);
             });
             transformer.on('finish',function() {console.log('TRANSFORMER FINISHED ' + recCnt + ' records')});
 
-            // Query addresses-find all addresses include firms.
-            Guest.find({})
-                .sort({last_name: 1})
+            // Query addresses-find all addresses without firms and that have postcodes.
+            let gQry = {$and: [{firm: ''},{post_code: {$exists: true}},{$or:[{country: {$exists: false}},{country: ''}, {country: 'Deutschland'}]}]};
+            Guest.find(gQry)
+                .sort({post_code: 1, last_name: 1})
                 .lean()
                 .stream()
                 .pipe(transformer)
                 .pipe(stringifier)
                 .pipe(outStream);
-
             return deferred.promise;
           };
 
           this.getDefaultTaxFilePath = function(startDate, endDate) {
-           return  appConstants.defExportPath + '\\' + $filter('date')(startDate, 'yyMMdd') + '_'
-                   + $filter('date')(endDate, 'yyMMdd') + '_steuern.csv'
+            let name = `Steuern_${$filter('date')(startDate, 'yyyyMMdd')}_${$filter('date')(endDate, 'yyyyMMdd')}.csv`;
+           return  fileExecUtil.pathJoin(appConstants.defExportPath,name);
           };
 
           this.getDefaultMailingListPath = function() {
-            return  appConstants.defExportPath + '\\' + $filter('date')(new Date(), 'yyyy_MM_dd_HHmmss') + '_'
-                + '_Adressenliste.csv'
+            let name = `Adressliste_${$filter('date')(new Date(), 'yyyyMMdd')}.csv`;
+            return  fileExecUtil.pathJoin(appConstants.defExportPath,name);
           };
 
-          this.getDefaultExportFilePath = function (mode, model, fileType) {
-            var prefix = appConstants.defExportPath + '\\' + $filter('date')(new Date(), 'yyyy_MM_dd_HHmmss') + '_',
-                dbPrefix = appConstants.dbPath + '\\' + $filter('date')(new Date(), 'yyyy_MM_dd_HHmmss') + '_',
-                ftype = fileType ? '.' + fileType : '.zip',
-                path;
+          this.getDbExportFilePath = (dirPath) => {
+            let name = `${appConstants.dbName}_${$filter('date')(new Date(), 'yyyyMMdd')}.archive`;
+            return fileExecUtil.pathJoin(dirPath,name);
+          }
 
-            mode = (mode || 'all').toLowerCase();
-            model = (model || 'dbBackup');
+          this.getDefaultExportFilePath = function (model, ext) {
 
-            switch (mode) {
-              case 'all':
-                path = prefix + 'AlexaBck.zip';
-                break;
-              case 'db':
-                path = dbPrefix + model + ftype;
-                break;
-              default:
-                path = prefix + model + ftype;
-            }
-
-            return path;
+            model = (model || appConstants.dbName);
+            ext = (ext || 'archive');
+            ext = ext.startsWith('.') ? ext : '.' + ext;
+            let name = `${model}_${$filter('date')(new Date(), 'yyyyMMdd')}${ext}`;
+            return fileExecUtil.pathJoin(appConstants.defExportPath,name);
           };
 
           this.getDefaultImportDirectory = function (model) {
@@ -699,34 +464,7 @@ define(['./module'], function (services) {
           };
 
           // private methods
-          // Zip up files and store the archive in the specified path. Expects an array of input file paths
-          function _zipFiles(sourceArr, destPath) {
-            var deferred = $q.defer();
-            if (sourceArr && sourceArr.length && destPath) {
-                var zipArchive = archiver('zip');
-                var output = fs.createWriteStream(destPath);
 
-                console.log('Zipping files');
-                output.on('close', function () {
-                  console.log('Archived ' + sourceArr.length + ' files, ' + zipArchive.pointer() + ' total bytes');
-                  deferred.resolve('Archived ' + sourceArr.length + ' files, (' + zipArchive.pointer() + ' total bytes) to ' + destPath);
-                });
-
-                zipArchive.on('error', function (err) {
-                  deferred.reject(err); // reject promise
-                });
-
-                zipArchive.pipe(output);
-                zipArchive.bulk({src: sourceArr, expand: true, flatten: true});
-                zipArchive.finalize();
-
-              }
-            else {
-              deferred.reject('Invalid parameters for zipFiles method');
-            }
-
-            return deferred.promise;
-          }
 
           // Removes _id and __v fields from record. Traverses complex documents within the record
           function _removeSpecialProperties(obj) {

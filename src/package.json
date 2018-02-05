@@ -2,24 +2,19 @@
   "main": "index.html",
   "name": "AlexaReservierungen",
   "description": "Hotel Reservation Manager for a German Kur Hotel. Desktop application developed using AngularJS. Powered by NW.js",
-  "version": "0.3.0",
+  "version": "1.4.0",
   "author": {
     "name": "Bob Vogel",
     "url": "https://github.com/vogelrh"
   },
-  "contributors": [
-    {
-      "name": "Tom Lawson",
-      "url": "https://github.com/talss89"
-    },
-    {
-      "name": "Joel Grenon",
-      "url": "https://github.com/jgrenon"
-    }
-  ],
   "repository": {
     "type": "git",
     "url": "https://github.com/vogelrh/Alexa-Reservations"
+  },
+  "db": {
+    "host": "192.168.1.230",
+    "port": "27017",
+    "database": "AlexaDB"
   },
   "window": {
     "toolbar": true,
@@ -28,16 +23,15 @@
     "icon": "./images/AlexaLogo2014.png"
   },
   "dependencies": {
-    "archiver": "^1.0.0",
-    "byline": "~4.2.1",
-    "csv": "~1.1.0",
-    "decompress": "^4.0.0",
+    "archiver": "^2.1.0",
+    "byline": "^5.0.0",
+    "child-process-promise": "^2.2.1",
+    "csv": "^1.1.0",
+    "decompress": "^4.2.0",
+    "fs-extra": "^4.0.2",
     "jade": "~1.11.0",
-    "moment": "~2.10.6",
-    "mongoose": "~3.8.7",
-    "querystring": "~0.2.0",
-    "shortid": "~2.2.2",
-    "tungus": "~0.0.2"
+    "moment": "^2.10.6",
+    "mongoose": "^4.12.3"
   },
   "scripts": {
     "postinstall": "node ../etc/scripts/postinstall.js"

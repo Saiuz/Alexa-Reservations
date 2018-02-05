@@ -1,20 +1,19 @@
 /**
  * Defines the Mongoose data models for the hotel reservation application
  */
-
 define(['./module'], function (model) {
   'use strict';
-  console.log('Creating hotel model');
+
   // ** enums used to control fields in various schemas **
   // Salutaion enum for Guest
-  var salutationEnum = ['Herrn', 'Frau', 'Familie', 'Dr.','Herr', 'Damen', 'Prof. Dr.', 'Herrn Pfarrer', 'Gräfin']; // provides display order
+  var salutationEnum = ['', 'Herrn', 'Frau', 'Familie', 'Herrn Dr.', 'Dr.','Herr', 'Damen', 'Prof. Dr.', 'Herrn Pfarrer', 'Gräfin']; // provides display order
   var salutationSearchOrder = [6,7,0,1,2,3,4,5,8];// order to search for salutations (two word salutations first)
   // item type enum used in ExpenseItem and ItemType schema
   var itemTypeEnum =['Plan', 'Allgemein', 'Speisen', 'Getränke', 'Dienste', 'VDAK', 'AOK & Andere', 'Privat'];
   // enums used in Room and ReservedRoom schemas
   var roomTypeEnum = ['Einzelzimmer', 'Doppelzimmer', 'Suite'];
   var roomTypeAbbrEnum = ['EZ', 'DZ', 'SU', ''];
-  var roomClassEnum = ['Economy', 'Standart', 'Komfort', 'Balkon', ''];
+  var roomClassEnum = ['Economy', 'Standard', 'Komfort', 'Balkon', ''];
   var roomClassAbbrEnum=['Econ', 'Std', 'Komf', 'BK', ''];
   // enums used in Reservation Schema
   var resStatusEnum = ['Sicher', 'Vorreservation'];
@@ -76,8 +75,9 @@ define(['./module'], function (model) {
   // Model for constants collection. This collection contains constants that are used throughout the application but
   // the UI will expose the values so that the user can update the values. The UI should not let the user add or delete
   // constants. A constant can have either a numeric value or string value.
-  model.factory('AppConstants', function(db) {
-    var schema = new db.db.Schema({
+  model.factory('AppConstants', function(dbConfig) {
+    console.log('Creating AppConstants model');
+    var schema = new dbConfig.db.Schema({
       name: {type: String, required: true, unique: true },
       display_name: String,
       nvalue: Number,
@@ -85,14 +85,15 @@ define(['./module'], function (model) {
       units: String
     });
 
-    return db.db.model('AppConstants', schema);
+    return dbConfig.db.model('AppConstants', schema);
   });
 
   // define a child schema for expense_items. Used in RoomPlan and Reservation models as embedded document properties.
   // The schema is also used in the ExpenseType model.
   // This schema is very similar to the ExpenseType's schema.
-  model.factory('ExpenseItem', function (db, convert, configService, dbEnums){
-    var expenseItem = new db.db.Schema({
+  model.factory('ExpenseItem', function (dbConfig, convert, configService, dbEnums){
+    console.log('Creating ExpenseItem model');
+    var expenseItem = new dbConfig.db.Schema({
       name: {type: String, required: true },  //Name of item type, often used to display on bill
       category: {type: String, enum: itemTypeEnum},  // the expense item type category
       bill_code: {type: Number, required: true }, // groups expense items into categories for display on bill. Each category has 10 bill_code values,
@@ -127,7 +128,7 @@ define(['./module'], function (model) {
                              // value of price is used in the tax calculation.
       single_price: Number, // ditto to double_price
       credit: Number, //If an item is credited e.g. plan item not available, the credited amount is stored here.
-      price: Number, //either single item/unit price or total price if one_count true.
+      price: {type: Number, default: 0}, //either single item/unit price or total price if one_count true.
       count: Number   //number of days or item count or the default count value in the case of the ExpenseType collection.
     });
 
@@ -260,8 +261,9 @@ define(['./module'], function (model) {
   });
 
   // Define a child schema for a reserved room. Used in Reservation schema
-  model.factory('ReservedRoom', function (db){
-    var schema = new db.db.Schema({
+  model.factory('ReservedRoom', function (dbConfig){
+    console.log('Creating ReservedRoom model');
+    var schema = new dbConfig.db.Schema({
       number: Number, // the room number
       room_type: String, //the room type from the room table
       room_class: String, //the room class from the room table
@@ -289,8 +291,9 @@ define(['./module'], function (model) {
   });
 
   // define a child schema for a reserved resource such as a parking spot. Used in Reservation schema
-  model.factory('ReservedResource', function (db){
-    return new db.db.Schema({
+  model.factory('ReservedResource', function (dbConfig){
+    console.log('Creating ReservedResource model');
+    return new dbConfig.db.Schema({
       name: String, // the resource name (unique)
       resource_type: String, //the resource type from the resource table
       display_name: String,
@@ -301,8 +304,9 @@ define(['./module'], function (model) {
   });
 
   // define a subdocument schema for the taxes associated with a reservation
-  model.factory('TaxItem', function (db){
-    return new db.db.Schema({
+  model.factory('TaxItem', function (dbConfig){
+    console.log('Creating TaxItem model');
+    return new dbConfig.db.Schema({
       room_number: Number,
       guest: String,
       net7: Number,
@@ -317,8 +321,9 @@ define(['./module'], function (model) {
   });
 
   // defines a subdocument for bill numbering for each bill associated with a reservation
-  model.factory('BillNumber', function(db) {
-    return new db.db.Schema({
+  model.factory('BillNumber', function (dbConfig) {
+    console.log('Creating BillNumber model');
+    return new dbConfig.db.Schema({
       room_number: Number,
       guest: String,
       billNo: Number
@@ -326,33 +331,35 @@ define(['./module'], function (model) {
   });
 
   // Guest Schema
-  model.factory('Guest', function(db, dbEnums, $filter) {
-
-    var schema = new db.db.Schema({
-        first_name: { type: String},
+  model.factory('Guest', function (dbConfig, dbEnums, $filter) {
+    console.log('Creating Guest model');
+    var schema = new dbConfig.db.Schema({
+        first_name: { type: String, default: '' },
         last_name: { type: String, required: true, index: true },
         partner_name: String, // name of spouse or significant other. First name or full name if different last name
-        salutation: { type: String, enum: salutationEnum},
+        salutation: { type: String, enum: salutationEnum, default: ''},
         birthday: Date,
         birthday_partner: Date,
         email: { type: String}  ,
-        firm: String, //unique name from Firm schema
+        firm: { type: String, default: '', index: true }, //unique name from Firm schema
         address1: String,
         address2: String,
-        city: String,
+        city: { type: String, default: '' },
         post_code: String,
         country: String,
         telephone: String,
         comments: String,
-        unique_name: {type: String, unique: true} //NOTE this field should not be exposed as an editable field on a UI form. It is generated on save.
+        last_stay: Date,
+        unique_name: {type: String, unique: true, index: true} //NOTE this field should not be exposed as an editable field on a UI form. It is generated on save.
     });
     // Virtual fields
     schema.virtual('name').get(function() {
-      if (this.salutation) {
-        return this.salutation + " " + this.first_name + " " + this.last_name;
-      } else {
-        return this.first_name + " " + this.last_name;
-      }
+      let n = `${this.salutation} ${this.first_name} ${this.last_name}`
+      return n.replace(/\s\s+/g, ' ').trim();
+    });
+    schema.virtual('full_address').get(function() {
+      let addr = `${(this.address1 || "--")} ${(this.address2 || "")} ${(this.post_code || "--")} ${(this.city || "--")} ${(this.country || "")}`
+      return addr.replace(/\s\s+/g, ' ').trim();
     });
     // if partner then generate the partner name
     schema.virtual('partner').get(function () {
@@ -403,54 +410,54 @@ define(['./module'], function (model) {
     // Note there is no equivalent function for update. Unique name does not get updated
     // when say the firm name is changed and the guests firm fields are updated with an update command.
     schema.pre('save', function(next) {
-      var nam = this.salutation ? this.salutation : '';
-      nam = this.first_name ? nam.length > 0 ? nam + ' ' + this.first_name : this.first_name : nam;
-      nam = nam.length > 0 ? nam + ' ' + this.last_name : this.last_name; //last name always there
-      nam = this.city ? nam + ' ('  + this.city + ')' : this.firm ? nam + ' [' + this.firm + ']' : nam;
-      this.unique_name = nam;
+      let up = this.firm ? `[${this.firm}]` : this.city ? `(${this.city})` : `(${this.last_name})`;
+      let un = `${this.salutation} ${this.first_name ? this.first_name : ''} ${this.last_name} ${up}`
+      this.unique_name = un.replace(/\s\s+/g, ' ').trim();
       next();
     });
 
     // Model method to convert the model's schema properties to an object with German Property names suitable for
     // displaying in the UI. This object uses the name field instead of first_name and last_name. If withFirm is true
     // then it contains the firm name but not the address fields since they are contained in the firm collection.
-    schema.methods.toDisplayObj = function (withFirm) {
+    schema.methods.toDisplayObj = function (withFirm, resCount) {
       if (withFirm) {
         return {
-          'Name': this.name, 'Firma': this.firm, 'Telefon': this.telephone, 'Email': this.email,
-          'Bemerkung': this.comments
+          'Name': this.name, 'Firma': this.firm, 'Telefon': this.telephone, 'Email': this.email, 
+          'Letzter Aufenthalt': $filter('date')( this.last_stay, 'shortDate'), 'Nr. Res.': resCount, 'Bemerkung': this.comments
         };
       }
       else {
         return {
-          'Name': this.name, 'Partner': this.partner_name, 'Geburtstag': $filter('date')( this.birthday, 'shortDate'),
-          'Addresse 1': this.address1, 'Addresse 2': this.address2,
-          'PLZ': this.post_code, 'Ort': this.city, 'Land': this.country, 'Telefon': this.telephone, 'Email': this.email,
-          'Bemerkung': this.comments
+          'Name': this.name, 'Partner': this.partner_name, 'Addresse': this.full_address,
+          'Telefon': this.telephone, 'Email': this.email,
+          'Letzter Aufenthalt': $filter('date')( this.last_stay, 'shortDate'), 
+          'Nr. Res.': resCount, 'Bemerkung': this.comments
         };
       }
     };
     schema.statics.toDisplayObjHeader = function (withFirm) {
       if (withFirm) {
-        return ['Name','Firma','Telefon','Email','Bemerkung'];
+        return ['Name','Firma','Telefon','Email','Letzter Aufenthalt','Nr. Res.','Bemerkung'];
       }
       else {
-        return ['Name','Partner', 'Geburtstag','Addresse 1','Addresse 2','PLZ','Ort','Land','Telefon','Email','Bemerkung'];
+        return ['Name','Partner', 'Addresse','Telefon','Email','Letzter Aufenthalt','Nr. Res.','Bemerkung'];
       }
     };
 
     // Instantiating the guest model instance
-    return db.db.model('guest', schema);
+    return dbConfig.db.model('guest', schema);
   });
 
   // ItemTypes Model - Based on the ItemList schema that define expense item types
   // This collection will be populated with the allowed expense item types.
-  model.factory('Itemtype', function(db, ExpenseItem) {
-    return db.db.model('itemtype', ExpenseItem);
+  model.factory('Itemtype', function (dbConfig, ExpenseItem) {
+    console.log('Creating ItemType model');
+    return dbConfig.db.model('itemtype', ExpenseItem);
   }) ;
 
-  model.factory('RoomPlan', function (db, dbEnums, ExpenseItem) {
-    var schema = new db.db.Schema({
+  model.factory('RoomPlan', function (dbConfig, dbEnums, ExpenseItem) {
+    console.log('Creating RoomPlan model');
+    var schema = new dbConfig.db.Schema({
       name: {type: String, required: true, unique: true },
       resTypeFilter: [String], //A string array of allowed reservation types for this plan.
       is_default: Boolean, // True if plan is the default plan pre selected from the list of plans within same type
@@ -472,7 +479,9 @@ define(['./module'], function (model) {
       double_room_price: Number, // For a package, the per person room price for a double room
       duration: Number, //Number of days the plan covers
       display_string: String, //Formatted string that is displayed on the bill for the plan. (special formatting)
-      required_items: [ExpenseItem] // A list of required expense items that are associated with a room plan.
+      required_items: [ExpenseItem], // A list of required expense items that are associated with a room plan.
+      display_order: {type: Number, default: 1}, //Used to display values in a particular order
+      deleted: {type: Boolean, default: false} //If true then plan will not be displayed in lists. Plans that are used in res. are not deleted permanently
     });
 
     // Builds a default properties object for the ExpenseItem schema that can be used by the UI
@@ -497,21 +506,21 @@ define(['./module'], function (model) {
       };
     };
 
-    return db.db.model('roomplan', schema);
+    return dbConfig.db.model('roomplan', schema);
   });
 
   // Reservation schema
-  model.factory('Reservation', function(db, ExpenseItem, TaxItem, BillNumber, ReservedRoom, ReservedResource, datetime){
-    var schema = new db.db.Schema({
+  model.factory('Reservation', function (dbConfig, ExpenseItem, TaxItem, BillNumber, ReservedRoom, ReservedResource, datetime){
+    console.log('Creating Reservation model');
+    var schema = new dbConfig.db.Schema({
       reservation_number: {type: Number, required: true, unique: true, index: true},   //generated by app contains the year as part of the number e.g.1400001
       type: {type: String, enum: resTypeEnum},  // determines if business, standard, group etc.
-      title: { type: String, required: true}, //name of reservation - individual or firm
-      guest: {name: String, id: db.db.Schema.Types.ObjectId}, //primary guest or contact from Address collection list
-      guest2: {name: String, id: db.db.Schema.Types.ObjectId}, //optional second guest in a double room from Address
+      guest: {name: {type: String}, id: {type: dbConfig.db.Schema.Types.ObjectId, index: true}}, //primary guest or contact from Address collection list
+      guest2: {name: {type: String}, id: {type: dbConfig.db.Schema.Types.ObjectId, index: true}}, //optional second guest in a double room from Address
                                                             // collection list, used for non-group plans that require separate bills
                                                             // for each guest in a double room. For Kur reservation, This
                                                             // will contain the partner name field for the main guest
-      firm: String,
+      firm: { type: String, index: true},
       start_date: { type: Date, required: true},
       end_date: { type: Date, required: true},
       checked_in: Date, // set when all rooms in this reservation have been checked in.
@@ -521,7 +530,7 @@ define(['./module'], function (model) {
       resources: [ReservedResource],  //such as parking spots
       status: {type: String, enum: resStatusEnum},
       plan: String,  //Name of selected plan
-      plan_code: Number,   //id of selected plan
+      plan_code: dbConfig.db.Schema.Types.ObjectId,   //id of selected plan
       insurance: {type: String, enum: resInsuranceEnum} ,
       insurance2: {type: String, enum: resInsuranceEnum} ,
       prescription_charges: Boolean, // set based on insurance plan. Some plans require copay - only Private does not.
@@ -549,7 +558,16 @@ define(['./module'], function (model) {
       this.last_update = new Date();
       next();
     });
-
+    // virtual field to return the reservation title.
+    schema.virtual('title').get(function(){
+      if (this.firm) {
+        return this.firm + ' (' + this.guest.name + ')';
+      }
+      else {
+        return this.guest.name
+            + (this.guest2 && this.guest2.name ? ' / ' + this.guest2.name : '');
+      }
+    });
     // virtual field to return the number of nights stayed
     schema.virtual('nights').get(function() {
        return datetime.getNightsStayed(this.start_date, this.end_date);
@@ -573,12 +591,13 @@ define(['./module'], function (model) {
       return [{rate: 0, total: 0}];
     });
 
-    return db.db.model('reservation', schema);
+    return dbConfig.db.model('reservation', schema);
   });
 
   // Schema for a business firm
-  model.factory('Firm', function(db) {
-    var schema = new db.db.Schema({
+  model.factory('Firm', function (dbConfig) {
+    console.log('Creating Firm model');
+    var schema = new dbConfig.db.Schema({
       firm_name: {type: String, required: true, unique: true},
       address1: String,
       address2: String,
@@ -593,30 +612,35 @@ define(['./module'], function (model) {
       comments: String
     });
 
-    // Model method to convert the model's schema properties to an object with German Property names suitable for
-    // displaying in the UI. This object uses the name field instead of first_name and last_name. If withFirm is true
-    // then it contains the firm name but not the address fields since they are contained in the firm collection.
-    schema.methods.toDisplayObj = function () {
+    schema.virtual('full_address').get(function() {
+      let addr = `${(this.address1 || "--")} ${(this.address2 || "")} ${(this.post_code || "--")} ${(this.city || "--")} ${(this.country || "")}`
+      return addr.trim().replace("  ", " ");
+    });
+
+    /**
+     * Model method to convert the model's schema properties to an object with German Property 
+     * names suitable for displaying in the UI.
+     */
+    schema.methods.toDisplayObj = function (guestCount, resCount) {
         return {
-          'Firma': this.firm_name, 'Zimmer Preis': this.room_price, 'Addresse 1': this.address1,
-          'Addresse 2': this.address2, 'PLZ': this.post_code, 'Ort': this.city, 'Land': this.country,
-          'Kontakt Name': this.contact_name, 'Kontakt Tf': this.contact_telephone, 'Kontakt E-Mail': this.contact_email,
+          'Firma': this.firm_name, 'Zimmer Preis': this.room_price, 'Addresse': this.full_address,
+          'Kontakt Name': this.contact_name, 'Nr. Gäste': guestCount, 'Nr. Res.': resCount, 'Kontakt E-Mail': this.contact_email,
           'Bemerkung': this.comments
         };
     };
 
     schema.statics.toDisplayObjHeader = function () {
-      return ['Firma', 'Zimmer Preis', 'Addresse 1','Addresse 2','PLZ','Ort','Land', 'Kontakt Name',
-              'Kontakt Tf','Kontakt E-Mail','Bemerkung'];
+      return ['Firma', 'Zimmer Preis', 'Addresse', 'Kontakt Name',
+              'Nr. Gäste','Nr. Res.','Kontakt E-Mail','Bemerkung'];
     };
 
-    return db.db.model('firm', schema);
+    return dbConfig.db.model('firm', schema);
   });
 
   //Schema for room resource
-  model.factory('Room', function(db) {
-
-    var schema = new db.db.Schema({
+  model.factory('Room', function (dbConfig) {
+    console.log('Creating Room model');
+    var schema = new dbConfig.db.Schema({
       number: {type: Number, required: true, unique: true},
       room_type: {type: String, enum: roomTypeEnum, required: true},
       room_class: {type: String, enum: roomClassEnum, required: true},
@@ -658,25 +682,27 @@ define(['./module'], function (model) {
       this.display_order = roomTypeEnum.indexOf(this.room_type) + 1;
       next();
     });
-    return db.db.model('room', schema);
+    return dbConfig.db.model('room', schema);
   });
 
   //Schema for other reservable resources (parking, conference room etc)
-  model.factory('Resource', function(db) {
-    var schema = new db.db.Schema({
+  model.factory('Resource', function (dbConfig) {
+    console.log('Creating Resource model');
+    var schema = new dbConfig.db.Schema({
       name: {type: String, required: true, unique: true},
       resource_type: {type: String, enum: resourceTypeEnum, required: true},
       display_order: Number, // to allow specific sorting (e.g. by type)
       display_name: {type: String, required: true}, // Abreviated name that displays on the Zimmer plan.
-      price: Number
+      price: {type: Number, default: 0}
     });
 
-    return db.db.model('resource', schema);
+    return dbConfig.db.model('resource', schema);
   });
 
   //Schema for Events Calendar
-  model.factory('Event', function (db, datetime) {
-    var schema = new db.db.Schema({
+  model.factory('Event', function (dbConfig, datetime) {
+    console.log('Creating Event model');
+    var schema = new dbConfig.db.Schema({
       title: {type: String, required: true},
       start_date: {type: Date, required: true},
       end_date:  {type: Date, required: true},
@@ -688,22 +714,18 @@ define(['./module'], function (model) {
       return datetime.getNightsStayed(this.start_date, this.end_date) + 1;
     });
 
-    return db.db.model('event', schema);
+    return dbConfig.db.model('event', schema);
   });
 
   //Schema for counters (unique numbers such as bill number
-  model.factory('Counters', function (db, datetime) {
-    var schema = new db.db.Schema({
+  model.factory('Counters', function (dbConfig, datetime) {
+    console.log('Creating Counters model');
+    var schema = new dbConfig.db.Schema({
       counter: {type: String, required: true, unique: true},
       seq: Number
     });
 
-    // virtual field to return the number of days duration of the event
-    schema.virtual('duration').get(function() {
-      return datetime.getNightsStayed(this.start_date, this.end_date) + 1;
-    });
-
-    return db.db.model('counters', schema);
+    return dbConfig.db.model('counters', schema);
   });
 
 }); //module end

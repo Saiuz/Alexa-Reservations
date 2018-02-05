@@ -6,181 +6,251 @@ define(['./module'], function (services) {
 
   services.factory('datetime', function () {
 
-    var millisecondsPerDay = 86400000;
+    const millisecondsPerDay = 86400000;
 
-    var _dateParseDeF = function (dateStr) {
+    //#region - functions
+    /**
+     * Parses a date string that is in German format (DD.MM.YYYY) and returns a valid
+     * date object. The method expects just a date string (no time part)
+     * @param {string} dateStr - date string in German format (date only)
+     */
+    const _dateParseDeF = (dateStr) => {
       if (!dateStr) {
         return undefined;
       }
-      var dparts = dateStr.split('.');
+      let dparts = dateStr.split('.');
       if (dparts.length < 2) { //must have at least two parts so we can infer the year
         return undefined;
       }
 
-      var day = Number(dparts[0]);
-      var month = Number(dparts[1]) - 1;
-      var curYear = new Date().getFullYear();
-      var year = dparts.length === 3 ? Number(dparts[2]) : curYear;
-      if (year < 100) {
-        year = year + 2000;
-      }
+      let d = Number(dparts[0]);
+      let m = Number(dparts[1]) - 1;
+      let curYear = new Date().getFullYear();
+      let y = dparts.length === 3 ? Number(dparts[2]) : curYear;
+      y = (y < 100) ? y + 2000 : y;
 
-      //Check for valid numeric values
-      if ((day && day > 0 && day < 32) && (month && month > 0 && month < 13) && (year && year > 0)) {
-        return new Date(year, month, day);
-      }
-      else {
-        return undefined;
-      }
+      return ((d && d > 0 && d < 32) && (m >= 0 && m < 12) && (y && y > 0)) ? new Date(Date.UTC(y, m, d)) : undefined;
     }
-
-    var _isDate = function (dateval) {
-      var adate = false;
-      if (dateval) {
-        if (Object.prototype.toString.call(dateval) === "[object Date]") {
-          return true;
-        }
-        else if (typeof dateval === 'string') {
-          var x = Date.parse(dateval);
-          var y = _dateParseDeF(dateval);
-          return x || y ? true : false;
-        }
+    /**
+     *  Checks that the parameter is a date object with a valid date contents.
+     * NOTE: tryied (dateVal instanceof Date) instead of calling prototype.toString
+     * however this always returned false in NW.js!!!
+     * @param {Date} dateVal 
+     */
+    const _isDate = (dateVal) => {
+      return ((Object.prototype.toString.call(dateVal) === "[object Date]") && !isNaN(dateVal.valueOf()));
+    }
+    /**
+     * Checks that the parameter is a string that can be parsed into 
+     * a valid date. Handles US and DE date formats
+     * @param {string} dateStr 
+     */
+    const _isDateString = (dateStr) => {
+      console.log("***** _isDateString");
+      if (typeof dateval === 'string') {
+        let x = Date.parse(dateval);
+        let y = _dateParseDeF(dateval);
+        return x || y ? true : false;
       }
-      return adate;
-    };
-
-    // resets time on the specified date to 00:00 and applies an optional day offset
-    var _dateOnly = function (dateval, daysOffset) {
-      if (dateval instanceof Date && !isNaN(dateval.valueOf())) {
-        var d = new Date(dateval.getFullYear(), dateval.getMonth(), dateval.getDate(),0,0,0);
-        if ((Object.prototype.toString.call(daysOffset) !== '[object Array]') && daysOffset - parseFloat(daysOffset) >= 0) {
-          d.setDate(d.getDate() + daysOffset);
-        }
+      return false;
+    }
+    /**
+     * Takes a valid date object and converts it to a new date object with the time component
+     * set to 00:00:00.000. It can apply an optional day offset to the original date. If the dateVal
+     * parameter is not a valid date it simply returns the dateVal parameter.
+     * @param {Date} dateVal - valid date object
+     * @param {Number / String} daysOffset - optional days offset that will be applied to the date. Can
+     *  be a string that will parse to a integer.
+     */
+    const _dateOnly =  (dateVal, daysOffset = 0) => {
+      if (_isDate(dateVal)) {
+        let offset = (typeof daysOffset === "number") ? Math.floor(daysOffset) : 
+          (typeof daysOffset === "string") ? isNaN(parseInt(daysOffset)) ? 0 : parseInt(daysOffset) : 0;
+        let d = new Date(dateVal.getFullYear(), dateVal.getMonth(), (dateVal.getDate() + offset),0,0,0);
+        d.setHours(0)
         return d;
       }
       else
-        return dateval;
-    };
-    //NOTE: Bug in original code using getTime - timezone dependent!
-    // find milliseconds from UTC date to stard of epoch then round up if current timezone is not UTC
-    var _daysSinceEpoch = function (dateval) {
-      if (_isDate(dateval)) {
-        var offset = dateval.getTimezoneOffset() * 60000;
-        var ms =  Date.UTC(dateval.getFullYear(), dateval.getMonth(), dateval.getDate(), 0, 0, 0) + offset;
-        return Math.floor(ms / millisecondsPerDay) + (offset === 0 ? 0 : 1); //UTC time zone, no rounding
+        return dateVal;
+    }
+    /**
+     * Returns UTC date (milliseconds since Unix Epoch) of the date specified.
+     * It will only consider the date part and ignore the HMS. It can be
+     * used to query MongoDB date fields. It can apply an optional day offset to the original date. If the dateVal
+     * parameter is not a valid date it simply returns the parameter.
+     * @param {date} dateVal 
+     * @param {Number / String} daysOffset - optional days offset that will be applied to the date. Can
+     *  be a string that will parse to a integer.
+     */
+    const _dateOnlyUTC = (dateVal, daysOffset = 0) => {
+      if (_isDate(dateVal)) {
+        let offset = (typeof daysOffset === "number") ? Math.floor(daysOffset) : 
+        (typeof daysOffset === "string") ? isNaN(parseInt(daysOffset)) ? 0 : parseInt(daysOffset) : 0;
+        return Date.UTC(dateVal.getFullYear(), dateVal.getMonth(), dateVal.getDate() + offset, 0, 0, 0);
+      } else {
+        return dateVal;
+      }
+    }
+
+    /**
+     * Returns the days in the month of the specified date. If the date is not specified returns
+     * days in the month of the current month.
+     * @param {*} dateval - reference date
+     */
+    const _daysInMonthOfDate = (dateval) => {
+      if (!_isDate(dateval)) {
+        let cdate = new Date();
+        return new Date(cdate.getFullYear(), cdate.getMonth() + 1, 0).getDate();
+      } else if (_isDate(dateval)) {
+        return new Date(dateval.getFullYear(), dateval.getMonth() + 1, 0).getDate();
+      } else {
+        return 0;
+      }
+    }
+    /**
+     * Converts a Date object to a UTC date (milliseconds since Unix epoch) that represents
+     * the last millisecond of the the day of the date provided. It can apply an optional 
+     * day offset to the original date.
+     * @param {Date} dateVal - date to convert
+     * @param {Number / String} daysOffset - optional days offset that will be applied to the date. Can
+     *  be a string that will parse to a integer.
+     */
+    const __lastSecondUTC = (dateVal, daysOffset = 0) => {
+      if (_isDate(dateVal)) {
+        let offset = (typeof daysOffset === "number") ? Math.floor(daysOffset) : 
+        (typeof daysOffset === "string") ? isNaN(parseInt(daysOffset)) ? 0 : parseInt(daysOffset) : 0;
+        return Date.UTC(dateVal.getFullYear(), dateVal.getMonth(), dateVal.getDate() + offset, 23, 59, 59, 999);
+      } else {
+        return dateVal;
+      }
+    }
+    /**
+     * Converts an integer value that represents the days
+     * since Unix epoch to a date value. Returns the date
+     * with a 00:00:00.000 time part.
+     * @param {number} dseVal 
+     */
+    const _dseToDate = (dseVal) => {
+      let d = new Date();
+      let adjust = d.getTimezoneOffset() * 60000;
+      return new Date(dseVal * millisecondsPerDay + adjust);
+    }
+    /**
+     * Given a date (which defaults to current date), find the start and end of the month the date falls in. Returns
+     * an object with the start of month date (monthStart) and the end of the month date (monthEnd).
+     * @param {*} date - reference date.
+     */
+    const _findMonthDates = (date) => {
+      if (!_isDate(date)) {
+        date = new Date();
+      }
+      return {
+        monthStart: new Date(date.getFullYear(), date.getMonth(), 1),
+        monthEnd: new Date(date.getFullYear(), date.getMonth() + 1, 0)
+      };
+    }
+    /**
+     * Given a date, find the start and end of the week that the date is in. Weeks can start on Sunday or Monday
+     * The default is monday. If no date is provided then the current date is chosen.
+     * Returns an object with three properties: weekStart, weekEnd, currentDay.
+     * The currentDay represents the current day of the week that the specified date represents, but the first
+     * day of the week is 1 and the last day of the week is 7.
+     * @param {*} theDate - the reference date
+     * @param {*} startSunday - boolean true if week starts on a Sunday
+     */
+    const _findWeek = (theDate, startSunday = false) => {
+      let startDay = startSunday ? 0 : 1; //0=sunday, 1=monday
+      let curDate = theDate ? new Date(theDate) : new Date();
+      curDate.setHours(0, 0, 0, 0);
+      let d = curDate.getDay(); //get the day
+      let weekStart = new Date(curDate.valueOf() - (d <= 0 ? 7 - startDay : d - startDay) * millisecondsPerDay); //rewind to start day
+      let weekEnd = new Date(weekStart.valueOf() + 6 * millisecondsPerDay); //add 6 days to get last day
+      let curDay = d - startDay;
+      curDay = (curDay < 0 ? 6 : curDay) + 1; //Returns current day from 1 to 7 instead of 0 to 6
+      return {
+        weekStart: weekStart,
+        weekEnd: weekEnd,
+        currentDate: curDate,
+        currentDay: curDay
+      }
+    }
+    /**
+     * Returns the number of days since the Unix Epoch, Jan. 1, 1970. 
+     * It ignores any time component.
+     * @param {Date} dateVal 
+     */
+    const _daysSinceEpoch = (dateVal) => {
+      if (_isDate(dateVal)) {
+        let ms =  Date.UTC(dateVal.getFullYear(), dateVal.getMonth(), dateVal.getDate(), 0, 0, 0);
+        return Math.floor(ms / millisecondsPerDay);
       }
       else {
         return 0;
       }
-    };
+    }
+    /**
+     * Calculate the number of nights stayed between the two dates
+     * @param {*} startDate 
+     * @param {*} endDate 
+     */
+    const _getNightsStayed = (startDate, endDate) => {
+      return _daysSinceEpoch(endDate) - _daysSinceEpoch(startDate);
+    }
+    /**
+     * Returns the day of the year for the specified date
+     * @param {*} dateval - date to find day of year
+     */
+    const _dayOfYear = (dateval) => {
+      if (_isDate(dateval)) {
+        let oneJ = new Date(dateval.getFullYear(), 0, 0);
+        return Math.floor((dateval - oneJ) / millisecondsPerDay);
+      } else {
+        return 0;
+      }
+    }
+    /**
+     * Compare two dates (dates only, no times)
+     * returns a negative value if A is less than B, 0 if they are equal, 
+     * positive value if A is greater than B
+     * @param {date} dateA 
+     * @param {date} dateB 
+     */
+    const _dateCompare = (dateA, dateB) => {
+      return _daysSinceEpoch(dateA) - _daysSinceEpoch(dateB);
+    }
+    /**
+     * Converts a date object to a Date string 
+     * in the German format. It ignores the time part.
+     * @param {Date} dateVal 
+     */
+    const _toDeDateString = (dateVal) => {
+      if (_isDate(dateVal)) {
+        let y = dateVal.getFullYear(),
+        m = dateVal.getMonth() + 1,
+        d = dateVal.getDate();
+        return d + '.' + m + '.' + y;
+      } else {
+        return '';
+      }
+    }
+    //#endregion
 
     return {
-      // Strip time value off a Date object and optionally changes the date
-      // by the specified number of days (+ or -). Function returns a new
-      // date object, or the original object if the original object is not a Date
-      // object.
-      // NOTE: this function will not work correctly with the TingoDB / Mongoose Date objects. To get around the
-      // issue, you can wrap the Mongoose date object in a new JS date object, e.g. new Date(schema.date_field)
+      dateOnlyUTC: _dateOnlyUTC,
+      lastSecondUTC: __lastSecondUTC,
       dateOnly: _dateOnly,
-
-      // Given a date (which defaults to current date), find the start and end of the month the date falls in. Returns
-      // an object with the start of month date (monthStart) and the end of the month date (monthEnd).
-      findMonthDates: function (date) {
-        if (!_isDate(date)) {
-          date = new Date();
-        }
-        return  {
-          monthStart:  new Date(date.getFullYear(), date.getMonth(), 1),
-          monthEnd:  new Date(date.getFullYear(), date.getMonth() + 1, 0)
-        };
-      },
-
-      // Given a date, find the start and end of the week that the date is in. Weeks can start on Sunday or Monday
-      // The default is monday. If no date is provided then the current date is chosen.
-      // Returns an object with three properties: weekStart, weekEnd, currentDay.
-      // The currentDay represents the current day of the week that the specified date represents, but the first
-      // day of the week is 1 and the last day of the week is 7.
-      findWeek: function (theDate, startSunday) {
-        var startDay = startSunday ? 0 : 1; //0=sunday, 1=monday
-        var currdate = theDate ? new Date(theDate) : new Date();
-        currdate.setHours(0, 0, 0, 0);
-        var d = currdate.getDay(); //get the day
-        var weekStart = new Date(currdate.valueOf() - (d<=0 ? 7-startDay:d-startDay)*millisecondsPerDay); //rewind to start day
-        var weekEnd = new Date(weekStart.valueOf() + 6*millisecondsPerDay); //add 6 days to get last day
-        var curDay = d - startDay;
-        curDay = (curDay < 0 ? 6 : curDay) + 1; //Returns current day from 1 to 7 instead of 0 to 6
-        return { weekStart: weekStart, weekEnd: weekEnd, currentDate: currdate, currentDay: curDay }
-      },
-
-      //Calculate the number of nights stayed between the two dates
-      getNightsStayed:  function(startDate, endDate) {
-        function treatAsUTC(date){
-          var result = new Date(date);
-          result.setMinutes(result.getMinutes() - result.getTimezoneOffset());
-          return result;
-        }
-        if (startDate && endDate) {
-          return (treatAsUTC(endDate) - treatAsUTC(startDate)) / millisecondsPerDay;
-        } else {
-          return 0;
-        }
-      },
-      // function parses a date string in the German format: dd.MM.yyyy and returns a date object
+      findMonthDates: _findMonthDates,
+      findWeek: _findWeek,
+      getNightsStayed: _getNightsStayed,
       dateParseDe: _dateParseDeF,
-      // determine if a variable is a valid date object or string representation of a date object.
-      // handles US and German dd.MM.yyyy format
+      isDateString: _isDateString,
       isDate: _isDate,
-      // returns the days in the month of the specified date. If the date is not specified returns
-      // days in the month of the current month.
-      daysInMonthOfDate: function (dateval) {
-        if (!_isDate(dateval)) {
-          var cdate = new Date();
-          return new Date(cdate.getFullYear(), cdate.getMonth() + 1, 0).getDate();
-        }
-        else if (_isDate(dateval)) {
-          return new Date(dateval.getFullYear(), dateval.getMonth() + 1, 0).getDate();
-        }
-        else {
-          return 0;
-        }
-      },
-      // returns the day of the year for the specified date
-      dayOfYear: function (dateval){
-        if (_isDate(dateval)) {
-          var oneJ = new Date(dateval.getFullYear(), 0, 0);
-          return Math.floor( (dateval-oneJ) / millisecondsPerDay);
-        }
-        else {
-          return 0;
-        }
-      },
-      // compare two dates (dates only, no times)
-      // returns a negative value if A is less than B, 0 if they are equal, positive value if A is greater than B
-      dateCompare: function (dateA, dateB) {
-         return _daysSinceEpoch(dateA) - _daysSinceEpoch(dateB);
-      },
-      // returns the number of days since Jan. 1, 1970
+      daysInMonthOfDate: _daysInMonthOfDate,
+      dayOfYear: _dayOfYear,
+      dateCompare: _dateCompare,
       daysSinceEpoch: _daysSinceEpoch,
-      // converts a days since Jan. 1 1970 value to a date. Note the conversion must
-      // account for time zone by subtracting the TZ offset
-      dseToDate: function (dseval) {
-        var d = new Date();
-        var adjust = d.getTimezoneOffset() * 60000;
-        var d2 = new Date(dseval * millisecondsPerDay - adjust);
-        return _dateOnly(d2);
-      },
-      // converts a date to a string (no time) in the german format dd.MM.YYYY
-      toDeDateString: function (dateval) {
-        if (dateval) {
-          var y = dateval.getFullYear(),
-              m = dateval.getMonth() + 1,
-              d = dateval.getDate();
-
-          return d + '.' + m + '.' + y;
-        }
-    }
-
+      dseToDate: _dseToDate,
+      toDeDateString: _toDeDateString
     };
   });
-
 });

@@ -12,7 +12,7 @@
  *
  *
  * The form is activated, and the returned result is handled by the following code:
- *        var modalInstance = $modal.open({
+ *        let modalInstance = $modal.open({
  *                     templateUrl: './templates/eventFormModal.html',
  *                     controller: 'EventFormModalCtrl',
  *                     size: size,
@@ -42,8 +42,7 @@ define(['./module'], function (controllers) {
           $scope.noButton = modalParams.no ? modalParams.no : configService.loctxt.noNeg;
           $scope.bgClass = 'alert-info';
           if (modalParams.level) {
-            var cls = modalParams.level.substr(0,1).toLowerCase();
-            switch (cls) {
+            switch (modalParams.level.substr(0,1).toLowerCase()) {
               case 's':
                 $scope.bgClass = 'alert-success';
                 break;

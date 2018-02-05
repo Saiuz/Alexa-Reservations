@@ -18,7 +18,7 @@
  */
 define(['./module'], function (model) {
   'use strict';
-  model.factory('ReservationVM', function ($q, Reservation, Itemtype, TaxItem, dbEnums, dashboard, datetime, configService, utility, convert) {
+  model.factory('ReservationVM', function ($q, Reservation, Itemtype, TaxItem, dbEnums, dashboard, datetime, configService, modalUtility, convert) {
     console.log("Invoking ReservationVM");
 
     // ******* Define the View Model object
@@ -26,8 +26,11 @@ define(['./module'], function (model) {
     var reservationVM = function (reservation, roomPlanList, itemTypeList, loadExisting) {
       var that = this; // for internal function reference
 
-      // *** public properties assigned to VM and initialization code
+      //#region - public properties assigned to VM and initialization code
+
       this.res = reservation; // The Reservation (Mongoose model) that this ViewModel works with.
+      this.guest1rec = null; // Holds complete guest record
+      this.guest2rec = null; // Holds complete guest2 record
       this.roomPlanFirstText = '<' + configService.loctxt.selectRoomPlan + '>'; // default text for first item in room plan list
       this.roomPlansAll = roomPlanList; // The list of available room plans for the reservation. This list is filtered based on
       // reservation type and the filtered list is placed in the roomPlans array.
@@ -91,8 +94,9 @@ define(['./module'], function (model) {
           lastInsurance1,
           lastInsurance2;
       var planRequiredItems = []; //used by pre-save code stores required items of current plan.
+      //#endregion
 
-      // *** Public methods assigned to VM ***
+      //region *** Public methods assigned to VM ***
 
       // Utility method to return a room type abbreviation from a reservedRoom item
       this.generateRoomAbbrv = function (rrObj) {
@@ -116,6 +120,11 @@ define(['./module'], function (model) {
         console.log("Reservation type changed to " + this.res.type);
         //_removeAllEmbeddedDocs(that.res.rooms);
         _removeAllEmbeddedDocs(that.res.expenses);
+        if (this.res.type === dbEnums.getReservationTypeEnum()[3]) {
+          this.res.occupants = 0;
+          _removeAllEmbeddedDocs(that.res.rooms);
+        }
+
         _filterRoomPlans(this.res.type, undefined);
         //if there is a pre-selected plan, not the default, then execute the roomPlanChanged method
         //if (this.selectedPlan.value) {
@@ -167,7 +176,7 @@ define(['./module'], function (model) {
           planRequiredItems =  plan.required_items;// used by methods that manage reservation expense items
           // Update reservation fields with plan information
           this.res.plan = plan.name;
-          this.res.plan_code = plan._id.id;
+          this.res.plan_code = plan._id;
           this.res.individualBill = !plan.one_bill;
           // Set public boolean properties based on plan
           this.showFirm = plan.needs_firm;
@@ -179,7 +188,7 @@ define(['./module'], function (model) {
           this.isPackage = plan.is_plan;
           this.oneRoom = plan.one_room;
           this.isStandard = this.res.type === dbEnums.getReservationTypeEnum()[0];
-          this.isBusiness = (this.res.type === dbEnums.getReservationTypeEnum()[1]) || (this.res.type === dbEnums.getReservationTypeEnum()[3] && !plan.one_bill);
+          this.isBusiness = (this.res.type === dbEnums.getReservationTypeEnum()[1]) || (this.res.type === dbEnums.getReservationTypeEnum()[3] && plan.bus_breakfast);
           this.isKur = (this.res.type === dbEnums.getReservationTypeEnum()[2]);
           this.isTour = (this.res.type === dbEnums.getReservationTypeEnum()[3] && plan.one_bill && plan.needs_firm);
           this.isPrivateGroup = (this.res.type === dbEnums.getReservationTypeEnum()[3] && plan.one_bill && !plan.needs_firm);
@@ -202,10 +211,10 @@ define(['./module'], function (model) {
             loadExisting = false;
           }
           else {
-            if (this.double_only && this.res.occupants === 1) {
+            if (this.double_only && this.res.occupants  !== 2) {
               this.res.occupants = 2;
             }
-            else if (this.single_only && this.res.occupants > 1) {
+            else if (this.single_only && (this.res.occupants > 1 || this.res.occupants === 0)) {
               this.res.occupants = 1;
             }
           }
@@ -236,7 +245,7 @@ define(['./module'], function (model) {
           this.single_only = false;
           this.double_only = false;
           this.res.plan = '';
-          this.res.plan_code = 0;
+          this.res.plan_code = null;
         }
       };
 
@@ -404,7 +413,7 @@ define(['./module'], function (model) {
             pid = planID ? planID : that.selectedPlan.value;
 
         that.roomPlansAll.forEach(function (plan) {
-          if (plan._id.id === pid) {
+          if (plan._id === pid) {
             curPlan = plan;
           }
         });
@@ -432,11 +441,11 @@ define(['./module'], function (model) {
           rmObj = that.getRoomInReservation(roomNum);
           result.roomGuest1 = rmObj.guest;
           result.roomGuest2 = rmObj.guest2;
-          if (that.isGroup && !that.oneBill) { //group business reservation
+          if (that.isGroup && !that.oneBill) { //group business reservation //This mode is deprecated
             extras = {nights: that.res.nights, roomType: rmObj.room_type, roomPrice: rmObj.price};
             result.displayText = convert.formatDisplayString(plan, extras, instructions);
           }
-          else if (that.isGroup && that.oneBill) { //group tour and private group reservation.
+          else if (that.isGroup && that.oneBill) { //group business, tour and private reservation.
             extras = {nights: that.res.nights, occupants: that.res.occupants, roomCnt: that.res.rooms.length};
             result.displayText = convert.formatDisplayString(plan, extras, instructions);
 
@@ -477,7 +486,7 @@ define(['./module'], function (model) {
             allCheckedIn = true,
             msg;
 
-        if (that.isGroup && that.oneBill) {  //travel group reservation
+        if (that.isGroup && that.oneBill) {  // group reservation
           that.res.rooms.forEach(function (rm) {
             rm.isCheckedIn = true;
           });
@@ -528,80 +537,99 @@ define(['./module'], function (model) {
       };
 
       // method that implements the check-out logic. The reservation is checked out by room for most reservations.
-      // The current exception is for travel group reservations, for this type, all rooms are checked out at once.
+      // The current exception is for group reservations, for this type, all rooms are checked out at once.
       // The method excepts a room number parameter. This parameter is only used for multi-room, individual bill
       // reservations. For all other types, the parameter is ignored.
+      // Prior to saving the reservation we will update the address just incase the main guest or the firm
+      // address has been edited. The checked out reservation captures the state of things at the time of
+      // checkout only.
       // The method returns a promise since it saves the reservation after updating..
-      this.checkOut = function (roomNum, guest) {
-        var deferred = $q.defer(),
-            room,
+      this.checkOut = async function (roomNum, guest) {
+        let room,
             allCheckedOut = true,
             msg, cr;
+      
+        try {
 
-        if (that.isGroup && that.oneBill) {  //travel group reservation
-          that.res.rooms.forEach(function (rm) {
-            rm.isCheckedOut = true;
-          });
-          if (that.res.rooms.length) {
-            that.res.checked_out = new Date();
-          }
-          _addTaxItem(roomNum, guest)
-        }
-        else if (that.oneRoom && that.oneBill) {  //single bill one room res. only check that a room exists
-          if (that.res.rooms.length) {
-            that.res.rooms[0].isCheckedOut = true;
-            that.res.checked_out = new Date();
-            _addTaxItem(that.res.rooms[0].number, that.res.rooms[0].guest);
-          }
-          else {
-            msg = configService.loctxt.errorBold + ' ' + configService.loctxt.noRoom;
-            deferred.reject(msg);
-          }
-
-        }
-        else { //All other reservations
-          room = that.getRoomInReservation(roomNum);
-          if (room) {
-            room.isCheckedOut = true;
+          if (that.isGroup && that.oneBill) {  // group reservation
             that.res.rooms.forEach(function (rm) {
-              if (!rm.isCheckedOut) {
-                allCheckedOut = false;
-              }
+              rm.isCheckedOut = true;
             });
-            if (allCheckedOut) {
+            if (that.res.rooms.length) {
               that.res.checked_out = new Date();
             }
-            _addTaxItem(roomNum, guest);
-            // If we have someone else in the room with their own bill, they will also be checked out
-            // at the same time, so add the taxes for the second bill. todo-this is an issue!!!
-            if (room.guest_count === 2) {
-              _addTaxItem(roomNum, room.guest2);
+            _addTaxItem(roomNum, guest)
+          }
+          else if (that.oneRoom && that.oneBill) {  //single bill one room res. only check that a room exists
+            if (that.res.rooms.length) {
+              that.res.rooms[0].isCheckedOut = true;
+              that.res.checked_out = new Date();
+              _addTaxItem(that.res.rooms[0].number, that.res.rooms[0].guest);
+            }
+            else {
+              msg = configService.loctxt.errorBold + ' ' + configService.loctxt.noRoom;
+              throw new Error(msg);
+            }
+
+          }
+          else { //All other reservations
+            room = that.getRoomInReservation(roomNum);
+            if (room) {
+              room.isCheckedOut = true;
+              that.res.rooms.forEach(function (rm) {
+                if (!rm.isCheckedOut) {
+                  allCheckedOut = false;
+                }
+              });
+              if (allCheckedOut) {
+                that.res.checked_out = new Date();
+              }
+              _addTaxItem(roomNum, guest);
+              // If we have someone else in the room with their own bill, they will also be checked out
+              // at the same time, so add the taxes for the second bill. 
+              if (room.guest_count === 2) {
+                _addTaxItem(roomNum, room.guest2);
+              }
+            }
+            else { //error couldn't find room.
+              msg = configService.loctxt.errorBold + ' ' + configService.loctxt.room + ' ' + roomNum + ' ' +
+                  configService.loctxt.notFound;
+              throw new Error(msg);
             }
           }
-          else { //error couldn't find room.
-            msg = configService.loctxt.errorBold + ' ' + configService.loctxt.room + ' ' + roomNum + ' ' +
-                configService.loctxt.notFound;
-            deferred.reject(msg);
+          //update the reservation address
+          if (that.res.firm) {
+            let f = await dashboard.getFirmByName(that.res.firm);
+            if (f) {
+              that.res.address1 = f.address1;
+              that.res.address2 = f.address2;
+              that.res.post_code = f.post_code;
+              that.res.city = f.city;
+              that.res.country = f.country;
+            }           
+          } else {
+            let g = await dashboard.getGuestById(that.res.guest.id);
+            if (g) {
+              that.res.address1 = g.address1;
+              that.res.address2 = g.address2;
+              that.res.post_code = g.post_code;
+              that.res.city = g.city;
+              that.res.country = g.country;
+            }
           }
+          await that.res.save()
+          await that.afterSave();
+        } catch (err) {
+          console.error("Checkout Error: " + err.message);
         }
-        that.res.save(function (err) {
-          if (err) {
-            deferred.reject(err);
-          }
-          else {
-            deferred.resolve();
-          }
-        });
-
-        return deferred.promise;
-      };
+    }
 
       // Method that returns a boolean that determines if a reservation / room can be checked in. It implements similar
       // logic used in the checkIn method.
       this.canCheckIn = function (roomNum) {
         var room;
 
-        if (that.isGroup && that.oneBill) {  //travel group reservation
+        if (that.isGroup && that.oneBill) {  // group reservation
           return that.res.canCheckIn; // uses the reservation model's virtual property
         }
         else if (that.oneRoom && that.oneBill) {  //single bill one room res. also check that a room exists
@@ -623,16 +651,18 @@ define(['./module'], function (model) {
       this.canCheckOut = function (roomNum) {
         var room;
 
-        if (that.isGroup && that.oneBill) {  //travel group reservation
+        if (that.isGroup && that.oneBill) {  // group reservation
           return that.res.canCheckOut; // uses the reservation model's virtual property
         }
         else if (that.oneRoom && that.oneBill) {  //single bill one room res. also check that a room exists
           return (that.res.canCheckOut && that.res.rooms.length);
         }
-        else { //All individual bill reservations, look only at room
+        else { //All individual bill reservations: NOTE: this logic has changed since we only have
+          // single room, individual bill reservations.
           room = that.getRoomInReservation(roomNum);
           if (room) { //Handle case where a single room res is checked in but the room property is not set
-            return ((room.isCheckedIn && !room.isCheckedOut) || (that.oneRoom && that.res.checked_in));
+            return (that.oneRoom && datetime.isDate(that.res.checked_in) && !datetime.isDate(that.res.checked_out)) ? true : (room.isCheckedIn && !room.isCheckedOut);
+            //return ((room.isCheckedIn && !room.isCheckedOut) || (that.oneRoom && datetime.isDate(that.res.checked_in)));
           }
           else {
             return false;
@@ -699,20 +729,49 @@ define(['./module'], function (model) {
 
               deferred.resolve();
             //}, function (err) {
-            //  deferred.reject(new utility.errObj(err));
+            //  deferred.reject(new utility.ErrObj(err));
             //});
           }, function (err) {
-            deferred.reject(new utility.errObj(err));
+            deferred.reject(new modalUtility.ErrObj(err));
           });
         }
 
         return deferred.promise;
       };
+      /**
+       * Called after reservation save. Updates the last_stay field
+       * of the guest(s) records.
+       */
+      this.afterSave = async function () {
+        try {
+          if (that.res.checked_out) {
+            let g1 = that.res.guest.id;
+            let g2 = that.res.guest2 ? that.res.guest2.id : undefined;
+            if (g1) {
+              let gst =  await dashboard.getGuestById(g1);
+              if (gst) {
+                gst.last_stay = that.res.checked_out;
+                await gst.save();
+              }
+            }
+
+            if (g2) {
+              let gst2 =  await dashboard.getGuestById(g2);
+              if (gst2) {
+                gst2.last_stay = that.res.checked_out;
+                await gst2.save();
+              }
+            }
+          }
+        } catch (err) {
+          throw new modalUtility.ErrObj(err);
+        }
+      }
 
       // Public convenience method to return a new error object similar to that returned by errors generated
       // by the beforeSave method
       this.getErrorObj = function (firstErr) {
-        return new utility.errObj(firstErr);
+        return new modalUtility.ErrObj(firstErr);
       };
       
       // Function that returns true if the person specified in the room has
@@ -1213,8 +1272,9 @@ define(['./module'], function (model) {
         aggArr = _aggregateItems(locItems);
         return aggArr;
       };
+      //#endregion
 
-      // ******* private methods  and constructor initialization *******
+      //#region ******* private methods  and constructor initialization *******
 
       // retrieves a specific expense item based on name gues and room
       function _getExpenseItem(name, roomNo, guest) {
@@ -1334,7 +1394,7 @@ define(['./module'], function (model) {
       // messages if the reservation is not valid.
       function _validate() {
         var res = that.res,
-            vObj = new utility.errObj(),
+            vObj = new modalUtility.ErrObj(),
             plan = that.getPlanInReservation(res.plan_code),
             privat = dbEnums.getReservationInsuranceEnum()[3],
             gcnt;
@@ -2093,6 +2153,8 @@ define(['./module'], function (model) {
 
         // now add any required items to the reservation
         items.forEach(function (item) {
+          // update price if it is a lookup
+            item.price = item.price_lookup ? configService.constants.get(item.price_lookup) : item.price;
           // Implement item for each room as needed or only to a single room
           if (singleRoom) {
             // add item or items if item needs to be duplicated.
@@ -2555,7 +2617,8 @@ define(['./module'], function (model) {
 
       // filters the room plan list based on the reservation type provided
       // if curPlanCode provided then it will also set the selectedPlan property
-      // to the current plan. Else it will set it to default value
+      // to the current plan. Else it will set it to default value. It will filter
+      // out deleted plans
       function _filterRoomPlans(resType, curPlanCode) {
         var firstItem = {value: 0, name: that.roomPlanFirstText};
         var errorItem = {value: 0, name: '*** ERROR ***'};
@@ -2568,9 +2631,9 @@ define(['./module'], function (model) {
           var selected = null;
           that.roomPlansAll.forEach(function (plan) {
             if (plan.resTypeFilter.indexOf(resType) !== -1) {
-              var pobj = {value: plan._id.id, name: plan.name};
-              rPlans.push(pobj);
-              if (curPlanCode && pobj.value === curPlanCode) {
+              var pobj = {value: plan._id, name: plan.name};
+              if (!plan.deleted) rPlans.push(pobj);
+              if (typeof(curPlanCode) === 'object' && pobj.value.toString() === curPlanCode.toString()) {
                 selected = pobj;
               }
               if (plan.is_default) {
@@ -2597,18 +2660,19 @@ define(['./module'], function (model) {
       function _findSelectedPlan() {
         var selPlan = undefined;
         that.roomPlansAll.forEach(function (plan) {
-          if (plan._id.id === that.selectedPlan.value) {
+          if (plan._id === that.selectedPlan.value) {
             selPlan = plan;
           }
         });
         return selPlan;
       }
+      //#endregion
 
-      // *** Constructor initialization ***
+      //#region *** Constructor initialization ***
       // Now that everything is defined, initialize the VM based on the reservation model
       // perform model setup actions
       if (reservation) {
-        lastPlanCode = reservation.plan_code ? reservation.plan_code : -1;
+        lastPlanCode = reservation.plan_code ? reservation.plan_code : "-1";
         lastGuest = reservation.guest ? reservation.guest.name : '';
         lastGuest2 = reservation.guest2 ? reservation.guest2.name : '';
         lastFirm = reservation.firm ? reservation.firm : '';
@@ -2633,90 +2697,74 @@ define(['./module'], function (model) {
         _filterRoomPlans(reservation.type, reservation.plan_code);
         this.nights = reservation.nights; //The reservation model's nights property is calculated and read only.
       }
-
+      //#endregion
     }; //End of VM class
 
-    // *** Start of ViewModel factory. Has methods to return the VM class with a new or existing VM.
-    return {
-      // Creates a new Reservation model and gets the new reservation number, Returns a view model containing the new
-      // Reservation model.
-      // The method will also initialize the start_date, end_date, nights and occupants properties of the reservation
-      // with default values. It will select the default reservation type of standard and a room plan of single room,
-      //
-      // NOTE: this method does not reserve the reservation number so it only works in a single user environment.
-      newReservationVM: function (startDate, endDate) {
-        var deferred = $q.defer();
+    //#region *** Start of ViewModel factory. Has methods to return the VM class with a new or existing VM.
+    return { //exposes an object with the following methods to the application
+      /**
+       * Async function that creates a new Reservation model with a new reservation number, wraps the reservation
+       * in a new ViewModel and returns the view model.
+       * The method will also initialize the start_date, end_date, nights and occupants properties of the reservation
+       * with default values. It will select the default reservation type of standard and a room plan of single room.
+       * @param {date} startDate - reservation start date
+       * @param {date} endDate - reservation end date.
+       */
+      newReservationVM: async function (startDate, endDate) {
         // Create the VM and get the required data from other collections to populate various static lists
         // in the VM.
-        var rvm,
+        let rvm,
             start = datetime.isDate(startDate) ? datetime.dateOnly(startDate) : datetime.dateOnly(new Date()),
             end = datetime.isDate(endDate) ? datetime.dateOnly(endDate) : datetime.dateOnly(new Date(), 1);
-        dashboard.getRoomPlanList().then(function (roomPlanList) {
-          // get a unique reservation number and create the Reservation model
-          dashboard.getItemTypeList().then(function (itemTypeList) {
-            dashboard.getNewReservationNumber().then(function (val) {
-              var reservation = new Reservation();
-              reservation.reservation_number = val;
-              reservation.start_date = start;
-              reservation.end_date = end;
-              reservation.occupants = 1;
-              rvm = new reservationVM(reservation, roomPlanList, itemTypeList);
-              reservation.type = rvm.resTypeList[0]; //defaults to standard reservation
-              reservation.status = rvm.statusList[0];
-              reservation.source = rvm.sourceList[0];
-              rvm.reservationTypeChanged(); //force an update since we added a default type to the new reservation.
-              rvm.updateAvailableRoomsAndResources().then(function () {
-                console.log("Reservation " + reservation.reservation_number + " created");
-                return deferred.resolve(rvm);
-              }, function (err) {
-                return deferred.reject(new utility.errObj(err)); //pass error up the chain.
-              });
-            }, function (err) {
-              return deferred.reject(new utility.errObj(err)); //pass error up the chain.
-            });
-          }, function (err) {
-            return deferred.reject(new utility.errObj(err)); //pass error up the chain.
-          });
-        }, function (err) {
-          return deferred.reject(new utility.errObj(err)); //pass error up the chain.
-        });
 
-        return deferred.promise;
+        try { // get a unique reservation number and create the Reservation model with defaults
+          let roomPlanList = await dashboard.getRoomPlanList(true);         
+          let itemTypeList = await dashboard.getItemTypeList();
+          let resNo = await  dashboard.getNewReservationNumber();
+          let reservation = new Reservation();
+          reservation.reservation_number = resNo;
+          reservation.start_date = start;
+          reservation.end_date = end;
+          reservation.occupants = 1;
+          rvm = new reservationVM(reservation, roomPlanList, itemTypeList);
+          reservation.type = rvm.resTypeList[0]; //defaults to standard reservation
+          reservation.status = rvm.statusList[0];
+          reservation.source = rvm.sourceList[0];
+          rvm.reservationTypeChanged(); //force an update since we added a default type to the new reservation.
+          await rvm.updateAvailableRoomsAndResources();
+          console.log("Reservation " + reservation.reservation_number + " created");
+          return rvm;
+        } catch (err) {
+          throw new modalUtility.ErrObj(err);
+        }
       },
-
-      // Retrieves the specified reservation and returns a view model containing the reservation model.
-      // Parameter resnum is the reservation number of the reservation to retrieve.
-      // Parameter readOnly, if true then the reservation is retrieved but the available rooms list is not
-      // retrieved.
-      getReservationVM: function (resnum, readOnly) {
-        var deferred = $q.defer();
-        // Get the required data from other collections for the VM, retrieve the specified Reservation and
-        // create and return the VM with the reservation.
-        dashboard.getRoomPlanList().then(function (roomPlanList) {
-          dashboard.getItemTypeList().then(function (itemTypeList) {
-            dashboard.getReservationByNumber(resnum).then(function (reservation) {
-              console.log("Reservation " + reservation.reservation_number + " retrieved");
-              var rvm = new reservationVM(reservation, roomPlanList, itemTypeList, true);
-              if (readOnly) {
-                return deferred.resolve(rvm);
-              }
-              rvm.updateAvailableRoomsAndResources().then(function () {
-                return deferred.resolve(rvm);
-              }, function (err) {
-                return deferred.reject(new utility.errObj(err)); //pass error up the chain.
-              });
-            }, function (err) {
-              return deferred.reject(new utility.errObj(err)); //pass error up the chain.
-            });
-          }, function (err) {
-            return deferred.reject(new utility.errObj(err)); //pass error up the chain.
-          });
-        }, function (err) {
-          return deferred.reject(new utility.errObj(err)); //pass error up the chain.
-        });
-
-        return deferred.promise;
+      /**
+       * Async function that retrieves the specified reservation and returns a view model containing the 
+       * reservation model.
+       * @param {num} resnum - the reservation number of the reservation to retrieve.
+       * @param {bool} readOnly - if true then the reservation is retrieved but the available rooms list is not.
+       */
+      getReservationVM:  async function getReservationVM(resnum, readOnly) {
+        try {
+          let roomPlanList = await dashboard.getRoomPlanList();
+          let itemTypeList = await dashboard.getItemTypeList();
+          let reservation = await dashboard.getReservationByNumber(resnum);
+          let rvm = new reservationVM(reservation, roomPlanList, itemTypeList, true);
+          rvm.guest1rec = await dashboard.getGuestById(rvm.res.guest.id);
+          if(rvm.res.guest2) {
+            rvm.guest2rec = await dashboard.getGuestById(rvm.res.guest2.id);
+          }
+          
+          if (!readOnly) {
+            await rvm.updateAvailableRoomsAndResources();
+          }
+          console.log("Reservation " + reservation.reservation_number + " loaded");
+          return rvm;
+        } catch (err) {
+          throw new modalUtility.ErrObj(err);
+        }
       }
     }; //end of factory
+    //#endregion
   });
 });

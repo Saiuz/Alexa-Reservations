@@ -1,3 +1,10 @@
+//show dev tools if any argument is passed in on the command line
+let args = nw.App.argv;
+if (args && args.length > 0) {
+    var win = nw.Window.get();
+    win.showDevTools();
+}
+
 /**
  * configure RequireJS
  * prefer named modules to long paths, especially for version mgt
@@ -13,8 +20,10 @@ requirejs.config({
         'text': '../lib/requirejs-text/text',
         '_': '../lib/lodash/lodash',
         '$': '../lib/jquery/dist/jquery',
+        'chart': '../lib/chart.js/dist/Chart.bundle.min',
         'angular-bootstrap': '../lib/angular-bootstrap/ui-bootstrap-tpls',
-        'angular-xeditable': '../lib/angular-xeditable/dist/js/xeditable'
+        'angular-xeditable': '../lib/angular-xeditable/dist/js/xeditable',
+        'angular-chart': '../lib/angular-chart.js/dist/angular-chart'
     },
 
     /**
@@ -39,6 +48,9 @@ requirejs.config({
         },
         'angular-xeditable':{
           deps:['angular']
+        },
+        'chart.js': {
+            deps: ['angular', 'chart']
         }
     },
 

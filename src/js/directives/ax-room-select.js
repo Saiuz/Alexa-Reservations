@@ -5,7 +5,8 @@
  *     roomList - an array of Room objects the user can choose from
  *     rooms - the rooms array from a Reservation object. The array is of type ReservedRoom. This array is modified
  *             by the directive.
- *     guestCount - The number of guests associated with the reservation.
+ *     guestCount - The number of guests associated with the reservation. For group Reservations this value will be
+ *                  set by the room selection.
  *     guestLookup - If value is true then the guest must be in the database.
  *     name - If guestLookup is false then this is the default value to place in the guest field when a room is
  *            selected. If guestLookup is true then this parameter is ignored.
@@ -48,10 +49,10 @@ define(['./module'], function (directives) {
       scope.prooms = [];
 
       //private function to update the selectTitle and the roomCount values
-      var _updateTitle = function () {
+      let _updateTitle = () => {
         if (scope.rooms && scope.rooms.length) {
           // determine total number of guests in room and build guest count string.
-          var gcnt = 0;
+          let gcnt = 0;
           angular.forEach(scope.rooms, function (room) {
             gcnt = gcnt + room.guest_count;
           });
@@ -73,8 +74,8 @@ define(['./module'], function (directives) {
       };
 
       // private function that returns true if the specified room number is NOT in the available rooms list
-      var _roomNotInList = function (roomNumber) {
-        for (var i = 0; i < scope.roomList.length; i++) {
+      let _roomNotInList = (roomNumber) => {
+        for (let i = 0; i < scope.roomList.length; i++) {
           if (scope.roomList[i].number === roomNumber) {
             return false;
           }
@@ -82,8 +83,8 @@ define(['./module'], function (directives) {
         return true;
       };
 
-      var _findInPlist = function (roomNumber) {
-        var prm = null;
+      let _findInPlist =  (roomNumber) => {
+        let prm = null;
         scope.prooms.forEach(function (p) {
           if (p.number === roomNumber) {
             prm = p;
@@ -91,8 +92,9 @@ define(['./module'], function (directives) {
         });
         return prm;
       };
-      var _findInRooms = function (roomNumber) {
-        var rm = null;
+
+      let _findInRooms = (roomNumber) => {
+        let rm = null;
         scope.rooms.forEach(function (r) {
           if (r.number === roomNumber) {
             rm = r;
@@ -101,7 +103,7 @@ define(['./module'], function (directives) {
         return rm;
       };
 
-      var _clearSwap = function () {
+      let _clearSwap = () => {
         scope.prooms.forEach(function (p) {
           p.swapFlg = false;
           p.swapRoom = null;
@@ -111,9 +113,9 @@ define(['./module'], function (directives) {
         swapRoomNumber = 0;
       };
 
-      var _buildDisplayArray = function () {
-        var parray = [];
-        angular.forEach(scope.rooms, function (item) {
+      let _buildDisplayArray = () => {
+        let parray = [];
+        scope.rooms.forEach((item) => {
           parray.push({
             number: item.number,
             guest: item.guest,
@@ -130,7 +132,7 @@ define(['./module'], function (directives) {
         scope.prooms = parray;
       };
 
-      var _generateAbbr = function (robj) {
+      let _generateAbbr = (robj) => {
         return dbEnums.getRoomDisplayAbbr(robj);
       };
 
@@ -159,7 +161,7 @@ define(['./module'], function (directives) {
       var ignoreWatch = true; //on initialization, do not remove any rooms
 
       // for read only mode we just need to display the rooms that are found in the rooms array
-      scope.$watchCollection('[readOnly,rooms.length, guestLookup, oneRoom, secondGuest, editGuest]', function (newvals) {
+      scope.$watchCollection('[readOnly,rooms.length, guestLookup, oneRoom, secondGuest, editGuest, isGroup, planPrice]', function (newvals) {
         // create scope booleans from the attributes that take boolean values but are translated to the words 'true'
         // and 'false'
         scope.displayOnly = (newvals[0] === 'true');
@@ -167,6 +169,8 @@ define(['./module'], function (directives) {
         scope.oneRoomB = newvals[3] === 'true';
         scope.secondGuestB = newvals[4] === 'true';
         scope.editGuestB = newvals[5] === 'true';
+        scope.isGroupB = newvals[6] === 'true';
+        scope.hasPlan = newvals[7] !== '0';
 
         if (scope.displayOnly && newvals[1]) {
           _buildDisplayArray();
@@ -234,9 +238,20 @@ define(['./module'], function (directives) {
         if (scope.roomData.oneInDZ) {
           scope.roomData.name2 = '';
           scope.roomData.guest_count = 1;
+          if (! scope.oneRoomB) {
+            scope.roomData.name = `${scope.txt.guest} in Zr. ${scope.roomSelect.number}`;
+          }
         }
         else {
-          scope.roomData.name2 = scope.guestLookup === 'true' ? '' : scope.name2;
+          let name2;
+          if (scope.oneRoomB) {
+            name2 =  scope.name2 ? scope.name2 : configService.loctxt.roommate;
+          }
+          else {
+            scope.roomData.name = `${scope.txt.guests} 2 in Zr. ${scope.roomSelect.number}`;
+            name2 = "";
+          }
+          scope.roomData.name2 = scope.guestLookup === 'true' ? '' : name2;
           scope.roomData.guest_count = scope.roomSelect.max_occupants;
         }
       };
@@ -247,11 +262,26 @@ define(['./module'], function (directives) {
           var f = Number(scope.firmPrice);
           scope.roomData.price = f > 0 ? f : p > 0 ? p : scope.roomSelect.price;   //firmPrice then planPrice then room price
           scope.roomData.priceTxt = $filter('number')(scope.roomData.price, 2);
-          scope.roomData.name = lastDeleted.guest ? lastDeleted.guest : scope.guestLookup === 'true' ? '' : scope.name;
-          scope.roomData.name2 = lastDeleted.guest2 ? lastDeleted.guest2 : scope.guestLookup === 'true' ? '' : scope.name2 ? scope.name2 : scope.roomData.max_occupants > 1 ? configService.loctxt.roommate : '';
+          let name;
+          let name2;
+          if (scope.oneRoomB) {
+            name =  scope.name
+            name2 =  scope.name2 ? scope.name2 : scope.roomData.max_occupants > 1 ? configService.loctxt.roommate : '';
+          }
+          else {
+            name = scope.roomSelect.max_occupants > 1 ? `${scope.txt.guests} 2 in Zr. ${scope.roomSelect.number}` : `${scope.txt.guest} in Zr. ${scope.roomSelect.number}`;
+            name2 = '';
+          }
+          
+          scope.roomData.name = lastDeleted.guest ? lastDeleted.guest : scope.guestLookup === 'true' ? '' : name;
+          scope.roomData.name2 = lastDeleted.guest2 ? lastDeleted.guest2 : scope.guestLookup === 'true' ? '' : name2;
           scope.roomData.oneInDZ = false;
           scope.roomData.showOneCnt = scope.roomSelect.max_occupants > 1;
+          if (scope.oneRoom === "true") {
           scope.roomData.guest_count = scope.roomSelect.max_occupants > Number(scope.guestCount) ? Number(scope.guestCount) : scope.roomSelect.max_occupants;
+          } else {
+            scope.roomData.guest_count = scope.roomSelect.max_occupants;
+          }
           // display second guest name if asked for and selected room is not a single
           scope.secondGuestB = scope.secondGuest === 'true' && scope.roomSelect.room_type !== dbEnums.getRoomTypeEnum()[0];
         }
@@ -302,7 +332,7 @@ define(['./module'], function (directives) {
       };
       // function that adds room to the reservation.rooms array.
       scope.addRoom = function () {
-        var name = scope.roomData.name.name ? scope.roomData.name.name : scope.roomData.name;
+        var name = scope.roomData.name.name ? scope.roomData.name.name : scope.roomData.name ;
         var name2 = scope.roomData.name2.name ? scope.roomData.name2.name : scope.roomData.name2;
         var resRoom = {  // ReservedRoom schema object
           number: scope.roomSelect.number,
@@ -316,6 +346,7 @@ define(['./module'], function (directives) {
           isCheckedIn: lastDeleted.checkedIn
         };
 
+        if (scope.isGroupB) scope.guestCount += scope.roomData.guest_count; //new
         scope.rooms.push(resRoom);
         scope.prooms.push({
           number: scope.roomSelect.number,
@@ -353,6 +384,7 @@ define(['./module'], function (directives) {
             lastDeleted.guest2 = scope.rooms[ix].guest2;
             lastDeleted.checkedIn = scope.rooms[ix].isCheckedIn;
             var id = scope.rooms[ix]._id;
+            scope.guestCount -= scope.rooms[ix].guest_count;
             scope.rooms.id(id).remove(); //Mongoose sub doc remove
             break;
           }
@@ -421,7 +453,7 @@ define(['./module'], function (directives) {
       scope: {
         roomList: '=',
         rooms: '=',  //the rooms property from a reservation model
-        guestCount: '@', //the number of guest selected for the reservation.
+        guestCount: '=', //the number of guest selected for the reservation.
         name: '@',  // the name of the primary guest
         name2: '@',
         firm: '@',
@@ -431,7 +463,8 @@ define(['./module'], function (directives) {
         firmPrice: '@',
         readOnly: '@',
         secondGuest: '@',
-        editGuest: '@'
+        editGuest: '@',
+        isGroup: '@'
       }
     };
   }]);

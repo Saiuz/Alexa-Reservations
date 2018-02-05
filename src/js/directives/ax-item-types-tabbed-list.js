@@ -36,6 +36,7 @@ define(['./module'], function (directives) {
             });
             scope.tabs = tabarr;
             _getItems(0);
+            
           }
           else {
             scope.show = false;
@@ -60,9 +61,11 @@ define(['./module'], function (directives) {
             scope.hasErr = false;
             scope.tabs[tabIndex].txtPrice = _convertNumToText(items);
             scope.tabs[tabIndex].items = items;
+            scope.$apply();
           }, function (err) {
-            scope.errMsg = err;
+            scope.errMsg = err.message;
             scope.hasErr = true;
+            scope.$apply();
           });
         }
 
@@ -104,8 +107,9 @@ define(['./module'], function (directives) {
               if (item){
                 item.remove(function (err) {
                   if (err) {
-                    scope.errMsg = err;
+                    scope.errMsg = err.message;
                     scope.hasErr = true;
+                    scope.$apply();
                   }
                   else {
                     scope.hasErr = false;
@@ -121,7 +125,7 @@ define(['./module'], function (directives) {
           var txObj = {};
           ilist.forEach(function (i) {  //convert all numeric values to text
             if (i.price) {
-              txObj['_' + i._id.id] = $filter('number')(i.price, 2);
+              txObj['_' + i._id] = $filter('number')(i.price, 2);
             }
           });
           return txObj;
@@ -130,7 +134,7 @@ define(['./module'], function (directives) {
         function _findItem(id, ix) {
           var item;
           for (var j = 0; j < scope.tabs[ix].items.length; j++) {
-            if (scope.tabs[ix].items[j]._id.id === id){
+            if (scope.tabs[ix].items[j]._id === id){
               item = scope.tabs[ix].items[j];
               break;
             }

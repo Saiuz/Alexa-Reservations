@@ -160,6 +160,11 @@ body {
     font-weight: bold;
     width: 50px;
   }
+  tbody > tr > th {
+    vertical-align: middle;
+    text-align: center;
+    font-weight: bold;
+  }
   > tbody > tr > td > div {
     white-space: nowrap;
     width: inherit;
@@ -185,6 +190,9 @@ body {
   }
 }
 .zpSel {} //used as jquery selector
+.zpBlank {
+  overflow: hidden;
+}
 .zpRes {} //ditto
 .zpDate {} //ditto
 .zp-wkDiv {
@@ -224,7 +232,7 @@ body {
   background-color: @zp-dz-color;
 }
 .zp-DZ-Komf {
-  background-color: darken(spin(@zp-dz-color, -10), 10%);
+  background-color: darken(desaturate(spin(@zp-dz-color, 35.1669), 37.5510), 33.5294);
 }
 .zp-SU-Komf {
   background-color: @zp-su-color;
@@ -530,6 +538,9 @@ body {
     overflow-y: auto;
   }
 }
+.month-chart-container {
+  height: 400px;
+}
 @media screen and (min-height: 740px) and (max-height: 820px ) { //900
   .panel-body {
     padding: 5px;
@@ -709,7 +720,7 @@ body {
     background-color: @zp-dz-color;
   }
   .zp-DZ-Komf {
-    background-color: darken(spin(@zp-dz-color, -10), 10%);
+    background-color: darken(desaturate(spin(@zp-dz-color, 35.1669), 37.5510), 33.5294);
   }
   .zp-SU {
     background-color: @zp-su-color;
@@ -790,4 +801,10 @@ body {
 .tight {
   margin-top: 3px;
   margin-bottom: 3px;
+}
+.tbox {
+  border-left: 1px solid #ddd;
+  border-right: 1px solid #ddd;
+  border-bottom: 1px solid #ddd;
+  padding: 10px;
 }

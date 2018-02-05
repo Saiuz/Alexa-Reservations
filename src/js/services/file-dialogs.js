@@ -16,8 +16,7 @@ define(['./module'], function (services) {
     var dialogs = {};
 
     dialogs.saveAs = function(callback,  defaultFilename, acceptTypes) {
-      var dialog = document.createElement('input');
-      dialog.type = 'file';
+      let dialog =  _getDialog(); 
       dialog.nwsaveas = defaultFilename || '';
       if (angular.isArray(acceptTypes)) {
         dialog.accept = acceptTypes.join(',');
@@ -28,8 +27,7 @@ define(['./module'], function (services) {
     };
 
     dialogs.openFile = function(callback, workingDir, multiple, acceptTypes) {
-      var dialog = document.createElement('input');
-      dialog.type = 'file';
+      let dialog =  _getDialog(); 
       if (multiple) {
         dialog.multiple = 'multiple';
       }
@@ -44,13 +42,35 @@ define(['./module'], function (services) {
       callDialog(dialog, callback);
     };
 
-    dialogs.openDir = function(callback) {
-      var dialog = document.createElement('input');
-      dialog.type = 'file';
+    dialogs.openDir = function(callback, workingDir) {
+      let dialog =  _getDialog(); 
       dialog.nwdirectory = 'nwdirectory';
+      dialog.nwworkingdir = workingDir;
       callDialog(dialog, callback);
     };
 
+    /**
+     * gets the file input element on the document
+     * if it exists or it will create it.
+     * Resets a number of basic properties if it exists.
+     */
+    function _getDialog() {
+      let dialog =  document.getElementById('fileDialog'); 
+      if (!dialog) {
+        document = document.createElement('input');
+        dialog.type = 'file';
+        dialog.id = 'fileDialog';
+      } else { // reset existing properties
+        dialog.nwdirectory = '';
+        dialog.nwsaveas = '';
+        dialog.nwworkingdir = '';
+        dialog.multiple = false;
+        dialog.accept = '';
+        dialog.value = '';
+      }
+
+      return dialog;
+    }
     return dialogs;
   }]);
 });

@@ -30,17 +30,17 @@ define(['./module'], function (directives) {
 
       var linker = function (scope, element, attrs) {
         var wSpan, // = attrs.weekSpan ? Number(attrs.weekSpan) : 2,
-            sundayStart = attrs.startSunday === 'true',
-            startDate = attrs.startDate ? Date.parse(attrs.startDate) : new Date(),
-            rooms = [],
-            resources = [],
-            isMouseDown = false,
-            selStart = 0,
-            selRoom = -1, //needs to be < 0 since calendar items have a room of 0
-            selEnd = 0,
-            isHighlighted,
-            resResults;
-
+          sundayStart = attrs.startSunday === 'true',
+          startDate = attrs.startDate ? Date.parse(attrs.startDate) : new Date(),
+          rooms = [],
+          resources = [],
+          isMouseDown = false,
+          selStart = 0,
+          selRoom = -1, //needs to be < 0 since calendar items have a room of 0
+          selEnd = 0,
+          isHighlighted,
+          resResults;
+        scope.isLoading = true;
         scope.txt = configService.loctxt;
 
         //scope.weekStart;
@@ -54,60 +54,64 @@ define(['./module'], function (directives) {
 
         // Need to get rooms and resources list
         // Need room/resource number/name and for room type and class for color coding
-        dashboard.getRoomListInfo().then(function (rmResults) {
-              dashboard.getResourceListInfo().then(function (resResults) {
-                    resources = resResults;
-                    scope.resourceCnt = resResults.length;
-                    rooms = rmResults;
-                    scope.roomCnt = rmResults.length;
-                    scope.theDate = startDate;
-                    scope.dateInWeek = startDate;
-
-                  },
-                  function (err) {
-                    scope.hasErr = true;
-                    scope.errMsg = err;
-                  });
-            },
-            function (err) {
-              scope.hasErr = true;
-              scope.errMsg = err;
-            });
-
-        // Register events that this directive responds to. The first three events don't change the date
-        angular.forEach([configService.constants.reservationChangedEvent, configService.constants.appReadyEvent,
-          configService.constants.calEventChangedEvent], function (value) {
-          scope.$on(value, function (event, result) {
-            _buildCalendar();
+        dashboard.getRoomListInfo().then((rmResults) => {
+          dashboard.getResourceListInfo().then(function (resResults) {
+            resources = resResults;
+            scope.resourceCnt = resResults.length;
+            rooms = rmResults;
+            scope.roomCnt = rmResults.length;
+            scope.theDate = startDate;
+            scope.dateInWeek = startDate;
+            console.log("resources fetched")
+          }).catch((err) => {
+            scope.hasErr = true;
+            scope.errMsg = err.message;
+            scope.$apply();
           });
-        });
-        //This event responds to external code wanting to set the current date of the calendar
-        scope.$on(configService.constants.weekButtonsSetEvent, function (event, dateval) {
-           if (datetime.isDate(dateval)) {
-             console.log('WeekButtonsSetEvent: ' + dateval);
-             startDate = dateval;
-             scope.theDate = dateval;
-           }
+        }).catch((err) => {
+          scope.hasErr = true;
+          scope.errMsg = err.message;
+          scope.$apply();
         });
 
-        // respond to the appReady event, repaint calendar if we have a date
-        scope.$on(configService.constants.appReadyEvent, function (event) {
-            if (datetime.isDate(scope.theDate)) {
-              console.log('ax-room-plan responding to app ready event');
-              _buildCalendar(false);
+        // respond to the appReady event, set-up other event responses and
+        // repaint calendar if we have a date
+        scope.$on(configService.constants.appReadyEvent, (event) => {
+          //Register other events that this directive responds to. The first two events don't change the date
+          [configService.constants.reservationChangedEvent, configService.constants.calEventChangedEvent].forEach((value) => {
+            scope.$on(value, function (event, result) {
+              _buildCalendar();
+            });
+          });
+          //This event responds to external code wanting to set the current date of the calendar
+          scope.$on(configService.constants.weekButtonsSetEvent, function (event, dateval) {
+            if (datetime.isDate(dateval)) {
+              console.log('WeekButtonsSetEvent: ' + dateval);
+              startDate = dateval;
+              scope.theDate = dateval;
             }
+          });
+          $rootScope.firstTime = false;
+          if (datetime.isDate(scope.theDate)) {
+            scope.dates = datetime.findWeek(scope.theDate, sundayStart);
+            scope.dateInWeek = scope.theDate;
+            wSpan = scope.weekSpan || 1;
+            console.log('ax-room-plan responding to app ready event');
+            _buildCalendar(false);
+          }
         });
 
         scope.$watchCollection('[theDate,weekSpan]', function (newvals, oldvals) {
+          if ($rootScope.firstTime) return;
           // respond to change in calendar.
-          console.log('*** ax-room-plan watch fired ' + newvals + '|' + oldvals );
+          console.log('*** ax-room-plan watch fired ' + newvals + '|' + oldvals);
           if (newvals[1]) {
             wSpan = newvals[1];
           }
           else {
             wSpan = 1; //default if null or not specified
           }
-          
+
           if (newvals[0]) { //date selector directive value changed.
             scope.dates = datetime.findWeek(newvals[0], sundayStart);
             scope.dateInWeek = newvals[0];
@@ -116,7 +120,7 @@ define(['./module'], function (directives) {
         });
 
         // respond to a user clicking the "New Reservation" button
-        scope.newRes = function() {
+        scope.newRes = function () {
           var cObj = {
             start: datetime.dateOnly(new Date()),
             end: datetime.dateOnly(new Date(), 1),
@@ -176,7 +180,7 @@ define(['./module'], function (directives) {
         });
 
         // function to retrieve items to build calendar, calls _updateCalendar which does the heavy lifting
-        function _buildCalendar(paintOnly) {
+        function _buildCalendar(paintOnly = false) {
           var startCal, endCal, cols;
           scope.isLoading = true;
           if (scope.dates) {
@@ -188,18 +192,32 @@ define(['./module'], function (directives) {
               _updateCalendar(resResults, startCal, endCal, cols);
             }
             else {
-              dashboard.findReservationsByDateRange(startCal, endCal).then(function (results) {
-                dashboard.findEventsByDateRange(startCal, endCal).then(function (events) {
+              scope.calObj = {
+                dow: [],
+                mHeader: [],
+                cRooms: [],
+                cResources: [],
+                cEvents: []
+              };
+              dashboard.findReservationsByDateRange(startCal, endCal).then((results) => {
+                dashboard.findEventsByDateRange(startCal, endCal).then((events) => {
+                  console.log(`Reservations fetched ${startCal} --- ${endCal}`);
                   if (results) {
                     results.events = events;
                     resResults = results; //cache last query.
                     _updateCalendar(resResults, startCal, endCal, cols);
+                    _updateTdEvents()
                     scope.isLoading = false
                   }
-                }, function (err) {
+                }).catch((err) => {
                   scope.hasErr = true;
-                  scope.errMsg = err;
+                  scope.errMsg = err.message;
+                  scope.$apply();
                 });
+              }).catch((err) => {
+                scope.hasErr = true;
+                scope.errMsg = err.message;
+                scope.$apply();
               });
             }
           }
@@ -214,61 +232,93 @@ define(['./module'], function (directives) {
             cResources: _buildResourceBody(startCal, endCal, cols, resources, results.resources),
             cEvents: _buildEventsBody(startCal, endCal, cols, results.events)
           };
-
-          // use timeout kluge to map events to the table elements after it renders.
-          $timeout(function () {
-            if (element) {
-              var zpsel = $(element).find(".zpSel"); //broke out find, was getting occasional error on mousedown that "undefined is not a function"
-                  $(zpsel).mousedown(function () {
-                    if (selRoom < 0) {
-                      var sr = $(this).attr("cdat");
-                      if (sr) {
-                        isMouseDown = true;
-                        selRoom = sr.split('|')[0];
-                        selStart = Number(sr.split('|')[1]);
-                        $(this).toggleClass("zp-selColor");
-                        isHighlighted = $(this).hasClass("zp-selColor");
-                      }
-                    }
-                    return false; // prevent text selection
-                  })
-                  .mouseover(function () {
-                    if (isMouseDown) {
-                      var sr = $(this).attr("cdat");
-                      if (sr) {
-                        if (sr.split('|')[0] === selRoom) {
-                          selEnd = Number(sr.split('|')[1]);
-                          $(this).toggleClass("zp-selColor", isHighlighted);
-                        }
-                      }
-                    }
-                  })
-                  .bind("selectstart", function () {
-                    return false;
-                  });
-
-               var xpres = element.find(".zpRes"); //ditto with this find
-               $(xpres).each(function () {
-                var pw = $(this).parent().width();
-                $(this).width(pw);
-              });
-            }
-          }, 700);
+          console.log("room-plan build calendar completed.")
         }
 
+        /**
+         * Mousedown event handler
+         * @param {Event} event 
+         */
+        function _mouseDownHandler(event) {
+          if (selRoom < 0) {
+            let e = event.target;
+            let sr = e.getAttribute("cdat");
+            if (sr) {
+              isMouseDown = true;
+              selRoom = sr.split('|')[0];
+              selStart = Number(sr.split('|')[1]);
+              $(e).toggleClass("zp-selColor");
+              isHighlighted = $(e).hasClass("zp-selColor");
+            }
+          }
+          console.log("md event on " + selRoom)
+          return false; // prevent text selection
+        }
+        /**
+         * MouseOver event hanlder
+         * @param {Event} event 
+         */
+        function _mouseOverHandler(event) {
+          if (isMouseDown) {
+            let e = event.target;
+            var sr = e.getAttribute("cdat");
+            if (sr) {
+              if (sr.split('|')[0] === selRoom) {
+                selEnd = Number(sr.split('|')[1]);
+                $(e).toggleClass("zp-selColor", isHighlighted);
+              }
+            }
+          }
+        }
+        /**
+         * selectStart event handler
+         */
+        function _selectStartHandler() {
+          return false;
+        }
+        /**
+         * Method that adds event handlers to the blank TD cells after
+         * the table has completed rendering. The mousedown and mouseover events
+         * provide the blank column select functionality used to create a reservation
+         */
+        function _updateTdEvents() {
+          $timeout(function () {
+            if (element.length) {
+              let zpSel = element[0].querySelectorAll(".zpSel");
+              if (zpSel.length == 0) { //not done rendering yet try again later.
+                setTimeout(() => {
+                  _updateTdEvents();
+                }, 300);
+                return;
+              }
+
+              zpSel.forEach((e) => {
+                e.addEventListener('mousedown', _mouseDownHandler);
+                e.addEventListener('mouseover', _mouseOverHandler);
+                e.addEventListener('selectstart', _selectStartHandler);
+              });
+
+              let xPres = element[0].querySelectorAll(".zpRes"); //ditto with this find
+             xPres.forEach((e) => {
+                e.width = e.parentElement.width;
+              });
+              console.log(`roomplan timer fired: ${zpSel.length} tds updated`)
+            }
+          });
+        }
         function _buildMonthHeader(start, end, cols) {
           //[{span: 24, text: 'Dezember 2014', month: 11},{span: 11, text: 'Januar 2015', month: 0}]
           var curDate = start,
-              startMonth = start.getMonth(),
-              month = curDate.getMonth(),
-              year = curDate.getFullYear(),
-              daysInMonth = datetime.daysInMonthOfDate(curDate),
-              endMonth = end.getMonth(),
-              endDay = end.getDate(),
-              spanLeft = cols,
-              daysIM,
-              span,
-              mheader = [];
+            startMonth = start.getMonth(),
+            month = curDate.getMonth(),
+            year = curDate.getFullYear(),
+            daysInMonth = datetime.daysInMonthOfDate(curDate),
+            endMonth = end.getMonth(),
+            endDay = end.getDate(),
+            spanLeft = cols,
+            daysIM,
+            span,
+            mheader = [];
 
           do {
             if (month === startMonth) {
@@ -300,12 +350,12 @@ define(['./module'], function (directives) {
 
         function _buildDowArray(start, cols) {
           var dnow = [],
-              std = start.getDay(),
-              cDSE = datetime.daysSinceEpoch(start),
-              startDSE = datetime.daysSinceEpoch(scope.dates.weekStart),
-              endDSE = datetime.daysSinceEpoch(scope.dates.weekEnd),
-              dse = datetime.daysSinceEpoch(scope.dates.currentDate),
-              wknd = sundayStart ? 5 : 0;
+            std = start.getDay(),
+            cDSE = datetime.daysSinceEpoch(start),
+            startDSE = datetime.daysSinceEpoch(scope.dates.weekStart),
+            endDSE = datetime.daysSinceEpoch(scope.dates.weekEnd),
+            dse = datetime.daysSinceEpoch(scope.dates.currentDate),
+            wknd = sundayStart ? 5 : 0;
 
           for (var i = 0; i < cols; i++) {
             var dow = {
@@ -318,7 +368,7 @@ define(['./module'], function (directives) {
               dse: cDSE
             };
             dnow.push(dow);
-            
+
             std = (std === 6) ? 0 : std + 1;
             cDSE++;
           }
@@ -328,39 +378,39 @@ define(['./module'], function (directives) {
 
         function _buildRoomBody(start, end, cols, rooms, reservations) {
           var bodyArr = [],
-              sDSE = datetime.daysSinceEpoch(start),  //use date since epoch to avoid logic issues with day of year
-              eDSE = datetime.daysSinceEpoch(end),    //that occur at end of the year.
-              dDSE = datetime.daysSinceEpoch(scope.dates.currentDate);
+            sDSE = datetime.daysSinceEpoch(start),  //use date since epoch to avoid logic issues with day of year
+            eDSE = datetime.daysSinceEpoch(end),    //that occur at end of the year.
+            dDSE = datetime.daysSinceEpoch(scope.dates.currentDate);
 
           // for each room in rooms..
           //  find all reservations in reservations array for the specified room
           // build the table row - try first to span empty cells to see how it looks.
           rooms.forEach(function (room) {
             var resArr = _findRes(room.number, reservations),
-                bItem = {
-                  room: room.number,
-                  rclass: 'zp-' + room.display_abbr,
-                  rOccupants: room.max_occupants,
-                  resItems: []
-                };
+              bItem = {
+                room: room.number,
+                rclass: 'zp-' + room.display_abbr,
+                rOccupants: room.max_occupants,
+                resItems: []
+              };
 
             if (resArr.length === 0) {
               _addBlanks(cols, bItem.resItems, room.number, sDSE, dDSE);
             }
             else { // process all reservations for the room - assume they are in chronological order.
               var rix = 0,
-                  ixDSE = sDSE;
+                ixDSE = sDSE;
 
               while (rix < resArr.length && ixDSE < eDSE) {
                 var res = resArr[rix],
-                    blanks = 0;
+                  blanks = 0;
                 if (rix === 0 && res.start_dse < ixDSE && res.end_dse >= ixDSE) { //first res starts before calendar start
                   res.nights -= (ixDSE - res.start_dse);
                   res.start_dse = ixDSE;
                   ixDSE = _addResItem(res, _backToBack(resArr, rix), bItem.resItems, eDSE);
                 }
                 else if (rix === resArr.length - 1 && res.end_dse > eDSE) { // last res ends after calendar end
-                  res.nights -= (res.end_dse - eDSE-1);
+                  res.nights -= (res.end_dse - eDSE - 1);
                   res.end_dse = eDSE;
                   blanks = res.start_dse - ixDSE;
                   ixDSE += _addBlanks(blanks, bItem.resItems, room.number, ixDSE, dDSE);
@@ -395,30 +445,30 @@ define(['./module'], function (directives) {
 
         function _buildResourceBody(start, end, cols, resources, resc) {
           var bodyArr = [],
-              sDSE = datetime.daysSinceEpoch(start),  //use date since epoch to avoid logic issues with day of year
-              eDSE = datetime.daysSinceEpoch(end),    //that occur at end of the year.
-              dDSE = datetime.daysSinceEpoch(scope.dates.currentDate);
+            sDSE = datetime.daysSinceEpoch(start),  //use date since epoch to avoid logic issues with day of year
+            eDSE = datetime.daysSinceEpoch(end),    //that occur at end of the year.
+            dDSE = datetime.daysSinceEpoch(scope.dates.currentDate);
 
           // for each r in resources..
           //  find all reservations in reservations array for the specified room
           // build the table row - try first to span empty cells to see how it looks.
           resources.forEach(function (r) {
             var resArr = _findResc(r.name, resc),
-                bItem = {
-                  name: r.display_name,
-                  resItems: []
-                };
+              bItem = {
+                name: r.display_name,
+                resItems: []
+              };
 
             if (resArr.length === 0) {
               _addBlanks(cols, bItem.resItems, 0, sDSE, dDSE);
             }
             else { // process all reservations for the resource - assume they are in chronological order.
               var rix = 0,
-                  ixDSE = sDSE;
+                ixDSE = sDSE;
 
               while (rix < resArr.length && ixDSE < eDSE) {
                 var res = resArr[rix],
-                    blanks = 0;
+                  blanks = 0;
                 if (rix === 0 && res.start_dse < ixDSE && res.end_dse >= ixDSE) { //first res starts before calendar start
                   res.nights -= (ixDSE - res.start_dse);
                   res.start_dse = ixDSE;
@@ -460,11 +510,11 @@ define(['./module'], function (directives) {
 
         function _buildEventsBody(start, end, cols, events) {
           var bodyArr = [],
-              sDSE = datetime.daysSinceEpoch(start),  //use date since epoch to avoid logic issues with day of year
-              eDSE = datetime.daysSinceEpoch(end),    //that occur at end of the year.
-              dDSE = datetime.daysSinceEpoch(scope.dates.currentDate),
-              bins = [],
-              binEnd = [];
+            sDSE = datetime.daysSinceEpoch(start),  //use date since epoch to avoid logic issues with day of year
+            eDSE = datetime.daysSinceEpoch(end),    //that occur at end of the year.
+            dDSE = datetime.daysSinceEpoch(scope.dates.currentDate),
+            bins = [],
+            binEnd = [];
 
           // bin the events to avoid any overlap, each bin gets a calendar row
           events.forEach(function (event) {
@@ -485,11 +535,11 @@ define(['./module'], function (directives) {
             }
             else { // process all events in bin.
               var rix = 0,
-                  ixDSE = sDSE;
+                ixDSE = sDSE;
 
               while (rix < bin.length && ixDSE < eDSE) {
                 var evt = bin[rix],
-                    blanks = 0;
+                  blanks = 0;
                 if (rix === 0 && evt.start_dse < ixDSE && evt.end_dse >= ixDSE) { //first event starts before calendar start
                   evt.start_dse = ixDSE;
                   ixDSE = _addEventItem(evt, _backToBack(bin, rix), bItem.evtItems);
@@ -561,8 +611,8 @@ define(['./module'], function (directives) {
         // set the isWknd property.
         function _addBlanks(bcount, rArr, rnum, fDSE, dDSE) {
           var i,
-              std = datetime.dseToDate(fDSE).getDay(),
-              wknd = sundayStart ? 5 : 0;
+            std = datetime.dseToDate(fDSE).getDay(),
+            wknd = sundayStart ? 5 : 0;
 
           for (i = 0; i < bcount; i++) {
             var blank = {
@@ -588,18 +638,18 @@ define(['./module'], function (directives) {
         // Adds an event to the array
         function _addEventItem(evt, overlapEnd, eArr) {
           var evtItem = {
-                resNum: evt.id,
-                text: evt.title,
-                span: evt.end_dse - evt.start_dse + 1,
-                resCol: true,
-                endCol: false,
-                link: {number: evt.id, room: 0, guest: ''},
-                overLapCol: overlapEnd,
-                hoverTxt: '<b>' + evt.title + '<b><br />Von: ' + $filter('date')(evt.start_date, 'shortDate') + '<br />Bis: ' +
-                $filter('date')(evt.end_date, 'shortDate') + (evt.comments ? '<br />' + evt.comments : ''),
-                isBlank: false
-              },
-              nextDSE = evt.end_dse + 1;
+            resNum: evt.id,
+            text: evt.title,
+            span: evt.end_dse - evt.start_dse + 1,
+            resCol: true,
+            endCol: false,
+            link: { number: evt.id, room: 0, guest: '' },
+            overLapCol: overlapEnd,
+            hoverTxt: '<b>' + evt.title + '<b><br />Von: ' + $filter('date')(evt.start_date, 'shortDate') + '<br />Bis: ' +
+              $filter('date')(evt.end_date, 'shortDate') + (evt.comments ? '<br />' + evt.comments : ''),
+            isBlank: false
+          },
+            nextDSE = evt.end_dse + 1;
 
           eArr.push(evtItem);
 
@@ -609,37 +659,37 @@ define(['./module'], function (directives) {
         // Adds a reservation/resource item if not overlapEnd then add a checkout day
         function _addResItem(res, overlapEnd, rArr, edse) {
           var std = res.end_date.getDay(),
-              wknd = sundayStart ? 6 : 0;
+            wknd = sundayStart ? 6 : 0;
 
           var resItem = {
-                resNum: res.reservation_number,
-                text: res.resource_name ? configService.loctxt.roomAbrv + ' ' + res.room : res.title + ( !res.oneRoom ? ' - ' + res.guest + (res.guest2 ? ' / ' + res.guest2 : '') : ''),
-                span: res.nights,
-                start: datetime.daysSinceEpoch(res.start_date), //used to move calendar to start date of reservation when selected
-                resCol: true,
-                endCol: false,
-                link: {number: res.reservation_number, room: res.room, guest: res.guest},
-                overLapCol: overlapEnd && res.end_dse !== edse,
-                hoverTxt: '<b>' + res.title + ( !res.oneRoom ? ' - ' + res.guest : '') + '</b><br />Von: '
-                + $filter('date')(res.start_date, 'shortDate')
-                + '<br />Bis: ' + $filter('date')(res.end_date, 'shortDate')
-                + (res.resource_name ? '<br /> Zi. ' + res.room : '')
-                + (res.comments ? '<br />' + res.comments : ''),
-                isBlank: false
-              },
-              checkout = {
-                resNum: 0,
-                text: '',
-                span: 1,
-                resCol: false,
-                endCol: true,
-                overLapCol: false,
-                isBlank: true,
-                isWknd: (std === wknd),
-                dse: res.end_dse,
-                room: res.room
-              },
-              nextDSE = res.start_dse + res.nights;
+            resNum: res.reservation_number,
+            text: res.resource_name ? configService.loctxt.roomAbrv + ' ' + res.room : res.title + (!res.oneRoom ? ' - ' + res.guest + (res.guest2 ? ' / ' + res.guest2 : '') : ''),
+            span: res.nights,
+            start: datetime.daysSinceEpoch(res.start_date), //used to move calendar to start date of reservation when selected
+            resCol: true,
+            endCol: false,
+            link: { number: res.reservation_number, room: res.room, guest: res.guest },
+            overLapCol: overlapEnd && res.end_dse !== edse,
+            hoverTxt: '<b>' + res.title + (!res.oneRoom ? ' - ' + res.guest : '') + '</b><br />Von: '
+              + $filter('date')(res.start_date, 'shortDate')
+              + '<br />Bis: ' + $filter('date')(res.end_date, 'shortDate')
+              + (res.resource_name ? '<br /> Zi. ' + res.room : '')
+              + (res.comments ? '<br />' + res.comments : ''),
+            isBlank: false
+          },
+            checkout = {
+              resNum: 0,
+              text: '',
+              span: 1,
+              resCol: false,
+              endCol: true,
+              overLapCol: false,
+              isBlank: true,
+              isWknd: (std === wknd),
+              dse: res.end_dse,
+              room: res.room
+            },
+            nextDSE = res.start_dse + res.nights;
 
           rArr.push(resItem);
           if (!overlapEnd && (res.end_dse <= edse)) {

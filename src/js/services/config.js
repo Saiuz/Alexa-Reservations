@@ -1,41 +1,47 @@
 /*
  * Configuration service. Provides methods to get and set local storage variables. Also provides objects containing
- * global constants and text strings for the UI.
+ * global constants and text strings for the UI. Alexa MongoDB server ip ??? 192.168.178.44 ???
  */
+const mongoose = require('mongoose');
+
 define(['./module'], function (services) {
   'use strict';
 
-  // returns object with aplication specific constants
+  // returns object with application specific constants
   services.service('appConstants', [function () {
-    var pjson = require('./package.json'),
-        appName = 'Alexa Reservierungen',
-        dataSubPath = 'data2',
-        appTitle = 'Hotel Alexa Reservierungssystem',
-        tmpPath, dbPath, dbConnStr, defExportPath, zipCmdfn, execPath, basePath;
+    console.log('Defining constants...')
+    const pjson = require('./package.json'),
+          appName = 'Alexa Reservierungen',
+          dataSubPath = 'temp',
+          appTitle = 'Hotel Alexa Reservierungssystem';
 
-    // Determine the database path and the default export path based on the operating system (mac or windows).
+    let tmpPath, workPath, dbConnStr, defExportPath, execPath, basePath, host, port, database, dbDumpCmd, dbDumpPath;
+    // establish db info
+    host = pjson.db.host;
+    port = pjson.db.port || '27017';
+    database = pjson.db.database || 'AlexaDB';
+    dbConnStr = `mongodb://${host}:${port}/${database}`;
+
+    
+
+    // Determine the database export working directory and the default export path based on the operating system (mac or windows).
     if (/^win/.test(process.platform)) {
       tmpPath = process.env.TEMP;
       basePath = process.env.APPDATA + '\\' + appName.replace(' ', '-');
-      dbPath = basePath + '\\' + dataSubPath;
-      dbConnStr = 'tingodb://'+ dbPath;
+      workPath = basePath + '\\' + dataSubPath;
       defExportPath = process.env.HOMEDRIVE + process.env.HOMEPATH + '\\Desktop';
       execPath = process.execPath.replace('nw.exe','');
-      zipCmdfn = function (fpath) {
-        //execute 7-Zip command line version (in same folder as the nw.exe file. The zip options are as follows:
-        // e to expand archive, -aou to quietly add a copy of the expanded file if the old file exists. The
-        // copy has a _1 suffix. -o specifies the output path.
-        return execPath + '7za e ' + fpath + ' -aou -o' + dbPath;
-      }
+      dbDumpPath = `${workPath}\\${database}`
+      dbDumpCmd =  (outFile) => {return `${execPath}\extra\\mongodump.exe --host ${host} --port ${port} --gzip --archive="${outFile}"`;};
     }
     else { //assume mac
       tmpPath = process.env.TMPDIR;
       basePath = process.env.HOME + '/Library/Application Support/' + appName.replace(' ', '-');
-      dbPath = basePath + '/' + dataSubPath;
-      dbConnStr = 'tingodb://'+ dbPath;
+      workPath = basePath + '/' + dataSubPath;
       defExportPath = process.env.HOME + '/Desktop';
       execPath = process.env.PWD;
-      zipCmdfn = ''; //currently don't have an unzip option for the mac
+      dbDumpPath = `${workPath}/${database}`;
+      dbDumpCmd = (outFile) => {return `${execPath}/extra/mongodump --host ${host} --port ${port} --gzip  --archive="${outFile}"`;};
     }
 
     return {
@@ -44,17 +50,19 @@ define(['./module'], function (services) {
       version: pjson.version, //from package json
       tmpPath: tmpPath,
       basePath: basePath,
-      dbPath: dbPath,
+      workPath: workPath,
       execPath: execPath,
       dbConnStr: dbConnStr,
       defExportPath: defExportPath,
-      zipCommand: zipCmdfn
+      dbDumpCmd: dbDumpCmd,
+      dbDumpPath: dbDumpPath,
+      dbName: database
     };
   }]);
 
+  //Injects the Mongoose model "AppConstants", not the service "appConstants"
   services.service('configService', ['$q', 'AppConstants', function ($q, AppConstants) {
-    var _this = this;
-
+    let _this = this;
 
     // methods for accessing local storage
     this.get = function (key, defVal) {
@@ -78,13 +86,18 @@ define(['./module'], function (services) {
     // bill section.
     this.constants = {
       autoCloseTime: 2000,
+      errorDisplayTime: 5000,
       billNumberID: 'billNo', //used by Counters collection to identify the bill number counter
       billNoSeed: 10000, // value used to seed the counter if the entry doesn;t exist
+      resNumberID: 'resNo', //used by Counters collection to identify the reservation number counter 
       expensesChangedEvent: 'EXP_EVENT1',  // event names
       reservationChangedEvent: 'RES_EVENT1',
       roomPlanClickEvent: 'ZPLAN_EVENT1',
       calEventChangedEvent: 'CAL_EVENT_EVENT', // calendar event saved/deleted
       weekButtonsSetEvent: 'WEEK_BTN1',
+      resGuestEditedEvent: 'GUEST_EDITED_EVENT',
+      firmEditedEvent: 'FIRM_EDITED_EVENT',
+      guestNameChangedEvent: 'GUEST_NAME_CHANGE_EVENT',
       appReadyEvent: '', // broadcast when app.js finishes.
       bcRoom: 0,
       bcPackageItem: 1, // item is a required item for a standard package plan
@@ -103,6 +116,13 @@ define(['./module'], function (services) {
       // Method to retrieve an array of bill codes associated with package plans
       getPackageItemCodes: function (){
         return [1,10]; //bcPackageItem and bcKurPackageItem
+      },
+      /**
+       * Method that returns an array of excluded (fake rooms). These are not
+       * real rooms but just temporary placeholders for reservations.
+       */
+      getExcludedRooms: () => {
+        return [30,40];
       },
 
       // Method to retrieve value of the specified constant. (For programmatic retrieval of constant value.)
@@ -246,9 +266,11 @@ define(['./module'], function (services) {
       'insurance': 'Krankenkasse',
       'item': 'Artikel',
       'itemsFor': 'Artikel für',
+      'itemsSum': 'Artikel Summe',
       'item_notFound': 'Artikel nicht gefunden',
       'lastName': 'Nachname',
       'lastNameSearch': 'Nachnamen Suche...',
+      'lastStay': 'Letzter Aufenthalt',
       'leave': 'Abfahrt',
       'minus': 'Minus',
       'miscellaneous': 'Diverses',
@@ -286,6 +308,7 @@ define(['./module'], function (services) {
       'priceLookup': 'Preisabfrage',
       'priceSymbol': '€',
       'print': 'Drucken',
+      'privateAddress': 'Privat Adresse',
       'programRestart': 'Das Programm wird in 5 Sekunden neu starten',
       'recent': 'Kürzlich',
       'resource': 'Ressource',
@@ -307,6 +330,7 @@ define(['./module'], function (services) {
       'reservation_titleRead': 'Informationen zur Reservierung',
       'reservationType': 'Res. Typ',
       'reservationYearMonth': 'Reservierungen im Jahr / Monat',
+      'revenueStatistics': 'Umsatzstatistiken',
       'room': 'Zimmer',
       'room_titleCreate': 'Zimmer Informationen Erstellen',
       'room_titleDelete': 'Zimmer Informationen Löschen',
@@ -342,6 +366,7 @@ define(['./module'], function (services) {
       'singleRoomPriceAbr': 'EZ Preise',
       'singleSurchargeAbr': 'EZ Zuschlag',
       'source': 'Quelle',
+      'statistics': 'Statistiken',
       'status': 'Status',
       'start': 'Starten',
       'stay': 'Bleiben',
@@ -368,7 +393,9 @@ define(['./module'], function (services) {
       'val_invalidRoom': 'Mindestens ein Zimmer ist erforderlich',
       'val_invalidDates': 'Fehlende oder ungültige Reservierungsdaten',
       'val_invalidInsurance': 'Eine Versicherung muss ausgewählt werden',
+      'val_invalidLastName': 'Nachname ist erforderlich',
       'val_invalidPlanInsurance': 'Das Kur Plan erfordert "Private" Versicherung',
+      'val_invalidSalutation': 'Gast muss eine Anrede haben',
       'val_guestCountMismatch': 'Die Zahl der Gäste bei der Reservierung nicht die Anzahl der Gäste in den Zimmern entsprechen.',
       'wantToEdit': 'Diese Reservierung ist geschlossen. Sind Sie sicher, dass Sie sie bearbeiten möchten.?',
       'wantToCheckout': 'Das Ende der Reservierung ist in der Zunkunft. Jetzt wirklich auschecken? Der Endtermin für die Reservierung <b>wird nicht</b> geändert!',
@@ -387,7 +414,7 @@ define(['./module'], function (services) {
     // Kalendar month and day names and abbreviations
     this.calendarInfo = {
       months: ['Januar', 'Febuar', 'März', 'April', 'Mai', 'Juni', 'Juli', 'August', 'September', 'Oktober', 'November', 'Dezember'],
-      monthsAbrv: ['Januar', 'Febuar', 'März', 'April', 'Mai', 'Juni', 'Juli', 'August', 'September', 'Oktober', 'November', 'Dezember'],
+      monthsAbrv: ['Jan.', 'Feb.', 'März', 'Apr.', 'Mai', 'Juni', 'Juli', 'Aug.', 'Sept.', 'Okt.', 'Nov.', 'Dez.'],
       days: ['Sonntag','Montag','Dienstag','Mittwoch','Donnerstag','Freitag','Samstag'],
       daysAbrv: ['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa'],
       daysDe: ['Montag','Dienstag','Mittwoch','Donnerstag','Freitag','Samstag','Sonntag'],
@@ -396,21 +423,18 @@ define(['./module'], function (services) {
     // Constructor actions - populate the constants object with the constants defined in the AppConstants collection
     // This action gives precedence to the string value of a constant. If it is defined then it is choosen, else the
     // numeric value is chosen.
-    AppConstants.find()
-        .exec(function (err, constants) {
-          if (err) {
-            console.log("Failed to retrieve constants!"); //Major error program will not function correctly!!!
-          }
-          else {
-            angular.forEach(constants, function (constant){
-              if (constant.svalue) {
-                _this.constants[constant.name] = constant.svalue;
-              }
-              else {
-                _this.constants[constant.name] = constant.nvalue;
-              }
-            });
-          }
-        });
+    AppConstants.find().then((constants) => {
+      constants.forEach((constant) => {
+        if (constant.svalue) {
+          _this.constants[constant.name] = constant.svalue;
+        }
+        else {
+          _this.constants[constant.name] = constant.nvalue;
+        }
+      });
+    }).catch((err) => {
+      console.log("Failed to retrieve constants!"); //Major error program will not function correctly!!!
+      throw err;
+    });
   }]);
 });

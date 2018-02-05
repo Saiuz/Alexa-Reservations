@@ -17,14 +17,14 @@
                 </thead>
                 <tbody>
                 <tr ng-repeat="r in items">
-                    <td><i class="glyphicon glyphicon-remove" ng-click="delete(r._id.id)"></i></td>
-                    <td>{{r.number}}</td>
+                    <td><i class="glyphicon glyphicon-remove" ng-click="delete(r._id)"></i></td>
+                    <td class="zp-{{r.display_abbr}}">{{r.number}}</td>
                     <td><a href="#" editable-select="r.room_type" e-ng-options="s for s in roomTypes"
-                           onaftersave="update(r._id.id)">{{r.room_type}}</a></td>
+                           onaftersave="update(r._id)">{{r.room_type}}</a></td>
                     <td><a href="#" editable-select="r.room_class" e-ng-options="s for s in roomClasses"
-                           onaftersave="update(r._id.id)">{{r.room_class}}</a></td>
-                    <td><a href="#" editable-text="txtPrice['_'+r._id.id]"
-                           onaftersave="update(r._id.id)">{{r.price | currency}}</a></td>
+                           onaftersave="update(r._id)">{{r.room_class}}</a></td>
+                    <td><a href="#" editable-text="txtPrice[r._id.toString()]"
+                           onaftersave="update(r._id)">{{r.price | currency}}</a></td>
                 </tr>
                 </tbody>
             </table>

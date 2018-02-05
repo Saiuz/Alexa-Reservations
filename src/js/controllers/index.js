@@ -25,6 +25,8 @@ define([
     './eventFormModal',
     './yesNoFormModal',
     './billDisplayModal',
+    './guestStayDisplayModal',
     './export',
-    './import'
+    './import',
+    './statistics'
 ], function () {});

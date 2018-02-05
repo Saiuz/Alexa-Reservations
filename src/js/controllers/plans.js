@@ -197,17 +197,19 @@ define(['./module'], function (controllers) {
 
             modals.create(model, dataObjI, function (plan) {
               // add new plan to list
-              dashboard.getRoomPlanList().then(function (plans) {
+              dashboard.getRoomPlanList(true).then(function (plans) {
                     $scope.planObjects = plans;
                     $scope.selectedPlanItems = []; // the plan will have no items yet
                     $scope.setSelected(plan.name); //select the new plan
                     _calculatePlanPrice(); // update prices
+
                     plan.save(function (err) {
                       if (err) {
                         console.log(err);
                         $scope.working = false;
                         $scope.errShow = true;
                         $scope.errMsg = err;
+                        $scope.$apply();
                       }
                       else {
                         $scope.showExistingItems = false;
@@ -238,7 +240,7 @@ define(['./module'], function (controllers) {
               // replace old plan with new edits in local list
               $scope.planObjects.splice(localPlanIX, 1, plan);
               $scope.setSelected(plan.name); //incase the name was changed
-              _calculateUpdatePlanPrice(); // update prices
+              _calculatePlanPrice(); // update prices
               plan.save(function (err) {
                 if (err) {
                   console.log(err);
@@ -280,18 +282,20 @@ define(['./module'], function (controllers) {
 
           // *** Private methods
           //
-          // retrieve all accommodation plans
+          // retrieve all accommodation plans except "deleted" plans
           function _getAllPlans() {
             $scope.working = true;
-            dashboard.getRoomPlanList().then(function (plans) {
+            dashboard.getRoomPlanList(true).then(function (plans) {
                   $scope.planObjects = plans;
                   $scope.working = false;
+                  $scope.$apply();
                 },
                 function (err) {
                   console.log(err);
                   $scope.working = false;
                   $scope.errShow = true;
                   $scope.errMsg = err;
+                  $scope.$apply();
                 });
           }
 
@@ -300,13 +304,14 @@ define(['./module'], function (controllers) {
             $scope.working = true;
             dashboard.getPackagePlanItemTypes().then(function (items) {
                   $scope.planItemTypes = items;
-
                   $scope.working = false;
+                  $scope.$apply()
                 },
                 function (err) {
                   $scope.working = false;
                   $scope.errShow = true;
                   $scope.errMsg = err;
+                  $scope.$apply();
                 });
           }
 
@@ -326,7 +331,7 @@ define(['./module'], function (controllers) {
           function _findPlanInList(id) {
             var pix = -1;
             for (var i = 0; i < $scope.planObjects.length; i++) {
-              if ($scope.planObjects[i]._id.id === id) {
+              if ($scope.planObjects[i]._id === id) {
                 pix = i;
                 break;
               }
@@ -390,7 +395,7 @@ define(['./module'], function (controllers) {
                   name: p.name,
                   active: av,
                   disabled: !p.is_plan,
-                  id: p._id.id,
+                  id: p._id,
                   filterTypes: p.resTypeFilter
                 });
               }

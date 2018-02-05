@@ -35,6 +35,7 @@ define(['./module'], function (directives) {
           scope.loading = false;
           scope.notFound = (names.length === 0);
           scope.canClear = !scope.notFound;
+          scope.$apply();
           return names;
         });
       };
@@ -50,7 +51,7 @@ define(['./module'], function (directives) {
 
       scope.editGuest = function () {
         var model = modals.getModelEnum().guest,
-            dataObj = {data: scope.selectedGuest ? scope.selectedGuest.id : 0, extraData: undefined};
+            dataObj = {data: scope.selectedGuest ? scope.selectedGuest.id : 0, extraData: {}};
 
         modals.update(model, dataObj, function (result) {
           console.log("Modal returned: " + result);
@@ -117,6 +118,7 @@ define(['./module'], function (directives) {
                 scope.axguest = names[0].dname;
                 scope.notFound = false;
                 scope.canClear = true;
+                scope.$apply();
               }
             });
           }
@@ -127,7 +129,10 @@ define(['./module'], function (directives) {
 
       scope.newGuest = function (size) {
         var model = modals.getModelEnum().guest,
-            dataObj = {data: scope.axguest ? scope.axguest.split(' ') : [], extraData: undefined};
+            dataObj = {
+              data: scope.axguest ? scope.axguest.split(' ') : [], 
+              extraData: { firm: scope.firm}
+            };
 
         //if the name in the input field is in the db then ignore the button click
         if (names.length !== 0 && scope.axguest) {

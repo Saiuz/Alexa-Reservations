@@ -17,7 +17,8 @@ define(['./module'], function (controllers) {
         'datetime',
         'modals',
         function ($scope, $state, $rootScope, $stateParams, ReservationVM, dashboard, configService, datetime, modals) {
-          var currRoom;
+          let currRoom;
+          let resInURL = false;
 
           $scope.appTitle = $rootScope.appTitle;
           $scope.appBrand = $rootScope.appBrand;
@@ -73,19 +74,25 @@ define(['./module'], function (controllers) {
                 else {
                   $scope.secondPrivate = false;
                 }
+                $scope.$apply();
               }
-            },
-            function (err) {
-              $scope.err= err;
-              $scope.hasErr = true;
-            });
+            }).catch((err) => {
+                $scope.err= err;
+                $scope.hasErr = true;
+                console.error(err);
+              });
+          });
+
+          $scope.$on(configService.constants.guestNameChangedEvent, (event, val) => {
+            $scope.guest = val.newName;
           });
 
           // removes the selected marker on the reservation lists
           $scope.clearSelected = function() {
-            if ($scope.selected.reservation) {
+            if ($scope.selected.reservation && !resInURL) {
               $scope.selected.reservation = undefined;
             }
+            resInURL = false; //only check first time through
           };
 
           //print bill
@@ -109,6 +116,7 @@ define(['./module'], function (controllers) {
 
           // converts this person's bill from a business to a private bill. Adds kurtax.
           // or reverts a private bill back to a business bill and removes kurtax.
+          // Note we also must toggle address and take guest's address not firm's address
           $scope.toggleSecond = function () {
             if ($scope.secondPrivate) {
               $scope.rvm.addKurtaxForGuestInRoom($scope.guest, $scope.room).then( function () {
@@ -142,6 +150,7 @@ define(['./module'], function (controllers) {
                     $scope.canCheckOut = false;
                     $rootScope.$broadcast(configService.constants.reservationChangedEvent, {data: $scope.rvm.res.reservation_number});
                     $scope.clearSelected();
+                    $scope.$apply();
                   }, function (err) {
                     $scope.err = err;
                     $scope.hasErr = true;
@@ -154,6 +163,7 @@ define(['./module'], function (controllers) {
                 $scope.canCheckOut = false;
                 $rootScope.$broadcast(configService.constants.reservationChangedEvent, {data: $scope.rvm.res.reservation_number});
                 $scope.clearSelected();
+                $scope.$apply();
               }, function (err) {
                 $scope.err = err;
                 $scope.hasErr = true;
@@ -163,6 +173,7 @@ define(['./module'], function (controllers) {
 
           // See if we were passed a reservation link in the URL
           if ($stateParams.resNum && $stateParams.resNum > 0){
+            resInURL = true;
             $scope.selected.reservation = {number: Number($stateParams.resNum), room: Number($stateParams.resRoom), guest: $stateParams.resGuest};
           }
         }]);

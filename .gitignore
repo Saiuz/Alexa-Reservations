@@ -13,7 +13,8 @@ win32/
 /cache
 /releases
 app.css
-7za.exe
+mongodump.exe
+mongodump
 nbproject
 lib/
 

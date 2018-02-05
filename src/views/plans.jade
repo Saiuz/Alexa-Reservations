@@ -24,9 +24,9 @@ include nav_common.jade
             tbody
               tr(ng-repeat="p in planObjects | filter:planFilter" ng-click="setSelected(p.name)" ng-class="{'zp-EZ-Komf': p.name === selectedPlan}")
                 td.text-center
-                  i.glyphicon.glyphicon-edit(ng-click="editPlan(p._id.id)")
+                  i.glyphicon.glyphicon-edit(ng-click="editPlan(p._id)")
                 td.text-center
-                  i.glyphicon.glyphicon-remove(ng-click="removePlan(p._id.id)" )
+                  i.glyphicon.glyphicon-remove(ng-click="removePlan(p._id)" )
                 td {{p.name}}
                 td {{p.duration}}
                 td {{p.pp_price | currency}}

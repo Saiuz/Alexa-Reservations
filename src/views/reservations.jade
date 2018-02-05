@@ -10,24 +10,35 @@ include nav_common.jade
         tab(ng-repeat="m in months" heading="{{m.month}}" active="m.active" disabled="m.disabled" select="monthSelected(m.mm)")
       .reservations-content-box
         div(ng-show="!working") {{reservations.length}} Reserverungen in {{months[selectedMonth].month}} {{selectedYear}}
-        div(ng-show="working")
-          span.btn.btn-warning.btn-sm
-          i.glyphicon.glyphicon-refresh
+        div(ng-show="working" class="zp-loading")
+          img(src="images/startup.gif" alt="loading...")
         div(ng-show="reservations.length")
           table.table.table-bordered.table-hover.table-condensed.table-first-last-center
             thead
               tr
                 th
-                th {{txt.res_num}}
-                th {{txt.from}}
-                th {{txt.until}}
-                th {{txt.nights}}
+                th(ng-click="changeSort('resNum')") {{txt.res_num}} 
+                  i.glyphicon.glyphicon-sort-by-alphabet-alt(ng-show="sort.descending")
+                  i.glyphicon.glyphicon-sort-by-alphabet(ng-show="!sort.descending")
+                th(ng-click="changeSort('start')") {{txt.from}} 
+                  i.glyphicon.glyphicon-sort-by-alphabet-alt(ng-show="sort.descending")
+                  i.glyphicon.glyphicon-sort-by-alphabet(ng-show="!sort.descending")
+                th(ng-click="changeSort('end')") {{txt.until}} 
+                  i.glyphicon.glyphicon-sort-by-alphabet-alt(ng-show="sort.descending")
+                  i.glyphicon.glyphicon-sort-by-alphabet(ng-show="!sort.descending")
+                th(ng-click="changeSort('nights')") {{txt.nights}} 
+                  i.glyphicon.glyphicon-sort-by-alphabet-alt(ng-show="sort.descending")
+                  i.glyphicon.glyphicon-sort-by-alphabet(ng-show="!sort.descending")
                 th {{txt.numRoomsAbrv}} / {{txt.guests}} (#Zr)
-                th {{txt.guest}}
-                th {{txt.type}}
+                th(ng-click="changeSort('lastName')") {{txt.guest}} 
+                  i.glyphicon.glyphicon-sort-by-alphabet-alt(ng-show="sort.descending")
+                  i.glyphicon.glyphicon-sort-by-alphabet(ng-show="!sort.descending")
+                th(ng-click="changeSort('type')") {{txt.type}} 
+                  i.glyphicon.glyphicon-sort-by-alphabet-alt(ng-show="sort.descending")
+                  i.glyphicon.glyphicon-sort-by-alphabet(ng-show="!sort.descending")
                 th
             tbody
-              tr(ng-repeat="r in reservations", ng-class="{'late-chkout': r.lateCheckOut && !r.lateCheckIn, 'late-chkin': r.lateCheckIn}")
+              tr(ng-repeat="r in reservations | orderBy:sort.column:sort.descending", ng-class="{'late-chkout': r.lateCheckOut && !r.lateCheckIn, 'late-chkin': r.lateCheckIn}")
                 td
                   span(ng-if="!r.canEdit")
                     i.glyphicon.glyphicon-eye-open(ng-click="view(r.resNum)") &nbsp;

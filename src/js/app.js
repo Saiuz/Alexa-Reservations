@@ -8,11 +8,12 @@ define("app", [
   'angular-bootstrap',
   'text!',
   'angular-xeditable',
+  'angular-chart',
   'angular-i18n',
-  './controllers/index',
-  './directives/index',
-  './filters/index',
   './services/index',
+  './controllers/index',
+  './filters/index',
+  './directives/index',
   './views/index',
   './states/index',
   './models/index'
@@ -32,7 +33,8 @@ define("app", [
     'ui.bootstrap.tooltip',
     'ui.router',
     'ngLocale',
-    'xeditable'
+    'xeditable',
+    'chart.js'
   ]).config(function($compileProvider){ //perform app configuration steps
     $compileProvider.aHrefSanitizationWhitelist(/^\s*(https?|ftp|mailto|chrome-extension):/); //needed for NW.js 0.15.4
   }).run(function ($state, nwService, appConstants, $rootScope, editableOptions) {
@@ -73,22 +75,44 @@ define("app", [
                 ]
               },
               {
-                label: 'Importieren...',
-                tooltip: 'Importieren von Daten',
-                click: 'open-file',
-                items: [
-                  {
-                    label: 'Einzeldaten',
-                    tooltip: 'Gäste Addresse Liste, Firma, usw.',
-                    click: 'import-one'
-                  },
-                  {
-                    label: 'Alle Daten',
-                    tooltip: 'Wiederherstellung alle Programmdaten',
-                    click: 'import-all'
-                  }
-                ]
+                label: 'Zurücksetzen',
+                tooltip: 'Datenbankverbindung zurücksetzen',
+                click: 'reset-db'
               },
+              // {
+              //   label: 'Importieren...',
+              //   tooltip: 'Importieren von Daten',
+              //   click: 'open-file',
+              //   items: [
+              //     {
+              //       label: 'Einzeldaten',
+              //       tooltip: 'Gäste Addresse Liste, Firma, usw.',
+              //       click: 'import-one'
+              //     },
+              //     {
+              //       label: 'Alle Daten',
+              //       tooltip: 'Wiederherstellung alle Programmdaten',
+              //       click: 'import-all'
+              //     }
+              //   ]
+              // },,
+              // {
+              //   label: 'Importieren...',
+              //   tooltip: 'Importieren von Daten',
+              //   click: 'open-file',
+              //   items: [
+              //     {
+              //       label: 'Einzeldaten',
+              //       tooltip: 'Gäste Addresse Liste, Firma, usw.',
+              //       click: 'import-one'
+              //     },
+              //     {
+              //       label: 'Alle Daten',
+              //       tooltip: 'Wiederherstellung alle Programmdaten',
+              //       click: 'import-all'
+              //     }
+              //   ]
+              // },
               {
                 label: 'Quit',
                 tooltip: 'Quit Alexa Reservierung',

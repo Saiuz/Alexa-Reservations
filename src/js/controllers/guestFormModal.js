@@ -15,7 +15,7 @@
  * instance object. In the case of a delete operation, the _id of the deleted object will be returned.
  *
  * The form is activated, and any returned results are handled by the following code:
- *        var modalInstance = $modal.open({
+ *        let modalInstance = $modal.open({
  *                     templateUrl: './templates/guestFormModal.html',
  *                     controller: 'GuestFormModalCtrl',
  *                     size: size,
@@ -36,252 +36,270 @@
 define(['./module'], function (controllers) {
   'use strict';
 
-  controllers.controller('GuestFormModalCtrl',
-      ['$scope',
-        '$modalInstance',
-        'modalParams',
-        'Guest',
-        'dbEnums',
-        'configService',
-        '$timeout',
-        'utility',
-        function ($scope, $modalInstance, modalParams, Guest, dbEnums, configService, $timeout, utility) {
-          console.log("guestFormModal controller fired");
-          $scope.err = {};
-          $scope.errSave = false;
-          $scope.errLoad = false;
-          $scope.hide = false;
-          $scope.actionMsg = '';
-          $scope.saveTxt = configService.loctxt.add;
-          $scope.cancelTxt = configService.loctxt.cancel;
-          $scope.txt = configService.loctxt;
-          $scope.deleteMode = false;
-          $scope.confirmed = false;
-          $scope.bdate1 = undefined;
-          $scope.bdate2 = undefined;
+  controllers.controller('GuestFormModalCtrl', ['$scope',
+    '$rootScope',
+    '$modalInstance',
+    'modalParams',
+    'Guest',
+    'Reservation',
+    'dbEnums',
+    'configService',
+    'modalUtility',
+    function ($scope, $rootScope, $modalInstance, modalParams, Guest, Reservation, dbEnums, configService, utility) {
+      console.log("guestFormModal controller fired");
 
-          $scope.firmPrice = 0; // required by firm lookup but not used in this form.
-          $scope.salutations = dbEnums.getSalutationEnum();
+      let helpers = new utility.Helpers($scope, $modalInstance);
+      let oldName = '';
+      $scope.actionMsg = '';
+      $scope.saveTxt = configService.loctxt.add;
+      $scope.cancelTxt = configService.loctxt.cancel;
+      $scope.txt = configService.loctxt;
+      $scope.deleteMode = false;
+      $scope.confirmed = false;
+      $scope.bdate1 = undefined;
+      $scope.bdate2 = undefined;
+      $scope.disableFirm = modalParams.extraData.disableFirm || false;
+      $scope.firmPrice = 0; // required by firm lookup but not used in this form.
+      $scope.salutations = dbEnums.getSalutationEnum();
 
-          // Determine CRUD mode of form.
-          // For all but 'C' the query can be by id or by the unique_name property.
-          var mode = modalParams.mode.substring(0, 1).toLowerCase();
-          var qry = parseInt(modalParams.data) ? {'_id': parseInt(modalParams.data)} : {'unique_name': modalParams.data};
-          var notFound = configService.loctxt.guest + ' "' + modalParams.data + '" ' + configService.loctxt.notFound;
-          switch (mode) {
-            case 'c':
-              $scope.title = configService.loctxt.guest_titleCreate;
-              $scope.edit = true;
-              $scope.guest = new Guest();
-              switch (modalParams.data.length) {
-                case 1:
-                  $scope.guest.last_name = modalParams.data[0];
+      // Determine CRUD mode of form.
+      // For all but 'C' the query can be by id or by the unique_name property.
+      const mode = modalParams.mode.substring(0, 1).toLowerCase();
+      const qry = typeof (modalParams.data) === 'object' ? {
+        '_id': modalParams.data
+      } : {
+        'unique_name': modalParams.data
+      };
+      const notFound = configService.loctxt.guest + ' "' + modalParams.data + '" ' + configService.loctxt.notFound;
+      switch (mode) {
+        case 'c':
+          $scope.title = configService.loctxt.guest_titleCreate;
+          $scope.edit = true;
+          $scope.guest = new Guest();
+          if (modalParams.extraData.firm) {
+            $scope.guest.firm = modalParams.extraData.firm;
+          }
+          switch (modalParams.data.length) { //pre-populate name fields from input parameters
+            case 1:
+              $scope.guest.last_name = modalParams.data[0];
+              break;
+            case 2:
+              $scope.guest.first_name = modalParams.data[0];
+              $scope.guest.last_name = modalParams.data[1];
+              break;
+            case 3:
+              //try to match salutation
+              for (let i = 0; i < $scope.salutations.length; i++) {
+                if ($scope.salutations[i] === modalParams.data[0]) {
+                  $scope.guest.salutation = $scope.salutations[i];
                   break;
-                case 2:
-                  $scope.guest.first_name = modalParams.data[0];
-                  $scope.guest.last_name = modalParams.data[1];
-                  break;
-                case 3:
-                  //try to match salutation
-                  for (var i = 0; i < $scope.salutations.length; i++) {
-                    if ($scope.salutations[i] === modalParams.data[0]) {
-                      $scope.guest.salutation = $scope.salutations[i];
-                      break;
-                    }
-                  }
-                  $scope.guest.first_name = modalParams.data[1];
-                  $scope.guest.last_name = modalParams.data[2];
-                  break;
+                }
               }
-              break;
-            case 'r':
-              $scope.title = configService.loctxt.guest_titleRead;
-              Guest.findOne(qry, function (err, guest) {
-                if (err) {
-                  $scope.err = new utility.errObj(err);
-                  $scope.errLoad = true;
-                }
-                else {
-                  if (guest) {
-                    $scope.guest = guest;
-                    $scope.bdate1 = guest.birthday;
-                    $scope.bdate2 = guest.birthday_partner;
-                    $scope.edit = false;
-                    $scope.read = true;
-                    $scope.cancelTxt = configService.loctxt.close;
-                  }
-                  else {
-                    $scope.err = new utility.errObj(notFound);
-                    $scope.errLoad = true;
-                  }
-                  $scope.$apply();
-                }
-              });
-              break;
-
-            case 'u':
-              $scope.title = configService.loctxt.guest_titleUpdate;
-              Guest.findOne(qry, function (err, guest) {
-                if (err) {
-                  $scope.err = new utility.errObj(err);
-                  $scope.errLoad = true;
-                }
-                else {
-                  if (guest) {
-                    $scope.guest = guest;
-                    $scope.bdate1 = guest.birthday;
-                    $scope.bdate2 = guest.birthday_partner;
-                    $scope.edit = true;
-                    $scope.read = false;
-                    $scope.saveTxt = configService.loctxt.update;
-                  }
-                  else {
-                    $scope.err = new utility.errObj(notFound);
-                    $scope.errLoad = true;
-                  }
-                  $scope.$apply();
-                }
-              });
-              break;
-
-            case 'd':
-              $scope.title = configService.loctxt.guest_titleDelete;
-              Guest.findOne(qry, function (err, guest) {
-                if (err) {
-                  $scope.err = new utility.errObj(err);
-                  $scope.errLoad = true;
-                }
-                else {
-                  if (guest) {
-                    $scope.guest = guest;
-                    $scope.bdate1 = guest.birthday;
-                    $scope.bdate2 = guest.birthday_partner;
-                    $scope.edit = false;
-                    $scope.read = true;
-                    $scope.deleteMode = true;
-                    $scope.cancelTxt = configService.loctxt.close;
-                    $scope.saveTxt = configService.loctxt.delete;
-                  }
-                  else {
-                    $scope.err = new utility.errObj(notFound);
-                    $scope.errLoad = true;
-                  }
-                  $scope.$apply();
-                }
-              });
+              $scope.guest.first_name = modalParams.data[1];
+              $scope.guest.last_name = modalParams.data[2];
               break;
           }
+          break;
 
-
-          // need to separate the birthday date fields from the model. When the date picker is linked to the
-          // model date fields, the German date format entry created strange behavior, even with the datepicker fix.
-          // we now watch for a change in the birthday date field and when we have a valid date, we update
-          // the Mongoose model.
-          $scope.$watchCollection('[bdate1, bdate2]', function (newVals) {
-            console.log("bdate watch fired " + newVals);
-            if (newVals[0] !== undefined) {
-              $scope.guest.birthday = newVals[0];
+        case 'r':
+          $scope.title = configService.loctxt.guest_titleRead;
+          Guest.findOne(qry).then((guest) => {
+            if (guest) {
+              $scope.guest = guest;
+              $scope.bdate1 = guest.birthday;
+              $scope.bdate2 = guest.birthday_partner;
+              $scope.edit = false;
+              $scope.read = true;
+              $scope.cancelTxt = configService.loctxt.close;
+              helpers.dApply();
+            } else {
+              helpers.showLoadErr(notFound);
             }
-            if (newVals[1] !== undefined) {
-              $scope.guest.birthday_partner = newVals[1];
+          }).catch(err => helpers.showLoadErr(err));
+          break;
+
+        case 'u':
+          $scope.title = configService.loctxt.guest_titleUpdate;
+          Guest.findOne(qry).then((guest) => {
+            if (guest) {
+              oldName = guest.name;
+              $scope.guest = guest;
+              $scope.bdate1 = guest.birthday;
+              $scope.bdate2 = guest.birthday_partner;
+              $scope.edit = true;
+              $scope.read = false;
+              $scope.saveTxt = configService.loctxt.update;
+              helpers.dApply();
+            } else {
+              helpers.showLoadErr(notFound);
             }
-          });
+          }).catch(err => helpers.showLoadErr(err));
+          break;
 
-          // for date pickers
-          $scope.openBday1 = function ($event) {
-            $event.preventDefault();
-            $event.stopPropagation();
-            $scope.openedBday1 = true;
-            //$scope.openEnd = false;
-          };
-          // for date pickers
-          $scope.openBday2 = function ($event) {
-            $event.preventDefault();
-            $event.stopPropagation();
-            $scope.openedBday2 = true;
-            //$scope.openEnd = false;
-          };
-
-          $scope.dateOptions = {
-            formatYear: 'yy',
-            startingDay: 1,
-            showWeeks: false,
-            currentText: 'Heute',
-            closeText: 'OK'
-          };
-          $scope.dateFormat = "dd.MM.yyyy";
-
-          // auto close after successful action methods
-          var timer = null; // used for timer to auto close modal after a delay when a C, U or D operation occurs
-          var autoClose = function (msg, val) {
-            $scope.hide = true;
-            $scope.actionMsg = msg;
-            $scope.$apply();
-            timer = $timeout(function () {
-              $modalInstance.close(val);
-            }, configService.constants.autoCloseTime)
-          };
-
-          // modal button click methods
-          // save button handler  Save the guest but then retrieve the guest object
-          $scope.save = function () {
-            //perform any pre save form validation here
-            // if the salutation contains '' then set the salutation field to undefined
-            if ($scope.guest.salutation === '') {
-              $scope.guest.salutation = undefined;
+        case 'd':
+          $scope.title = configService.loctxt.guest_titleDelete;
+          Guest.findOne(qry).then((guest) => {
+            if (guest) {
+              $scope.guest = guest;
+              $scope.bdate1 = guest.birthday;
+              $scope.bdate2 = guest.birthday_partner;
+              $scope.edit = false;
+              $scope.read = true;
+              $scope.deleteMode = true;
+              $scope.cancelTxt = configService.loctxt.close;
+              $scope.saveTxt = configService.loctxt.delete;
+              helpers.dApply();
+            } else {
+              helpers.showLoadErr(notFound);
             }
+          }).catch(err => helpers.showLoadErr(err));
+          break;
+      }
 
-            // If the firm field contains a firm name, then clear address fields.  The address of the firm will
-            // be used.
-            if ($scope.guest.firm) {
-              $scope.guest.address1 = '';
-              $scope.guest.address2 = '';
-              $scope.guest.post_code = '';
-              $scope.guest.city = '';
-              $scope.guest.country = '';
-            }
-            //save guest and return
-            $scope.guest.save(function (err) {
-              if (err) {
-                console.log('Guest save error: ' + err);
-                $scope.err = err;
-                $scope.errSave = true;
-                $scope.$apply();
+      // need to separate the birthday date fields from the model. When the date picker is linked to the
+      // model date fields, the German date format entry created strange behavior, even with the datepicker fix.
+      // we now watch for a change in the birthday date field and when we have a valid date, we update
+      // the Mongoose model.
+      $scope.$watchCollection('[bdate1, bdate2]', function (newVals) {
+        console.log("bdate watch fired " + newVals);
+        if (newVals[0] !== undefined) {
+          $scope.guest.birthday = newVals[0];
+        }
+        if (newVals[1] !== undefined) {
+          $scope.guest.birthday_partner = newVals[1];
+        }
+      });
+
+      // for date pickers
+      $scope.openBday1 = function ($event) {
+        $event.preventDefault();
+        $event.stopPropagation();
+        $scope.openedBday1 = true;
+        //$scope.openEnd = false;
+      };
+      // for date pickers
+      $scope.openBday2 = function ($event) {
+        $event.preventDefault();
+        $event.stopPropagation();
+        $scope.openedBday2 = true;
+        //$scope.openEnd = false;
+      };
+
+      $scope.dateOptions = {
+        formatYear: 'yy',
+        startingDay: 1,
+        showWeeks: false,
+        currentText: 'Heute',
+        closeText: 'OK'
+      };
+      $scope.dateFormat = "dd.MM.yyyy";
+
+      //#region - modal button click methods
+      // save button handler  Save the guest but then retrieve the guest object
+      /**
+       * Save button handler. Saves the guest object. If the name has been changed, then
+       * it will update any existing, open (not checked out) reservations with the corrected
+       * name.
+       */
+      $scope.save = function () {
+        $scope.err = new utility.ErrObj();
+        //perform the pre save form validation here
+        // 12/17 - Now allowing for no salutation 
+        // if (!$scope.guest.salutation || $scope.guest.salutation === '') {
+        //   $scope.err.push(configService.loctxt.val_invalidSalutation);
+        // }
+        if (!$scope.guest.last_name) { //Must have a last name at least
+          $scope.err.push(configService.loctxt.val_invalidLastName)
+        }
+        if ($scope.err.hasErrors()) {
+          helpers.showSaveError();
+          return;
+        }
+        //TODO - after guest saved, if name has changed update existing reservations with new guest names...
+        //save guest and return
+        $scope.guest.save().then(() => {
+          let msg = (mode === 'c' ? configService.loctxt.guest + configService.loctxt.success_saved :
+            configService.loctxt.success_changes_saved);
+          $rootScope.$broadcast(configService.constants.resGuestEditedEvent, $scope.guest.id); //fire guestEdited event    
+
+          //Update any reservations if needed
+          if (oldName && $scope.guest.name !== oldName) {
+            _updateResNames().then(() =>  helpers.autoClose(msg, $scope.guest)).catch((err) => helpers.showSaveError(err));
+          } else {
+            helpers.autoClose(msg, $scope.guest);
+          }
+        }).catch((err) => helpers.showSaveError(err));
+      }
+
+      // Delete btn handler
+      $scope.delete = function () {
+        let id = $scope.guest._id;
+        $scope.guest.remove().then(() => {
+          let msg = configService.loctxt.guest + configService.loctxt.success_deleted;
+          helpers.autoClose(msg, id);
+        }).catch((err) => helpers.showSaveError(err));
+      };
+
+      //#endregion
+
+      //#region - private functions
+      /**
+       * Updates open reservations with a new name. that contain the old name. This method 
+       * updates the guest fields in the reservation, as well as in the rooms, expenses and
+       * bills document arrays. Note: I could not get the routine to work by finding all of 
+       * the matching reservations then updating and saveing each one in the list. (second
+       * update always failed with a version error). I had to first find all of the ids then
+       * retrieve, modify and save each reservation separately.
+       */
+      async function _updateResNames() { 
+        try {
+          let guest = $scope.guest;
+          //let nameParts = utility.parseNameString(guest.name);
+
+          let res = await Reservation.find({ //Guest name field
+            $and: [{
+              checked_out: {
+                $exists: false
               }
-              else {
-                var msg = (mode === 'c' ? configService.loctxt.guest + configService.loctxt.success_saved :
-                    configService.loctxt.success_changes_saved);
-                autoClose(msg, $scope.guest);
+            }, {
+              $or: [{"guest.id": guest._id},{"guest2.id": guest._id}]              
+            }]
+          }).lean().distinct('_id');
+          for(let ix = 0; ix < res.length; ix++) {
+            let r = await Reservation.findById(res[ix]);
+            let resOldName;
+            let newName = guest.name;
+            if (r.guest.id.equals(guest._id)) {
+              resOldName = r.guest.name;
+              r.guest.name = newName;
+            } else if (r.guest2 && r.guest2.id && r.guest2.id.equals(guest._id)) {
+              resOldName = r.guest2.name;
+              r.guest2.name = newName;
+            }
+            r.rooms.forEach((rm) => {
+              if (rm.guest === resOldName) {
+                rm.guest = newName;
+              } else if (rm.guest2 === resOldName) {
+                rm.guest2 = newName;
               }
             });
-          };
-
-          // Delete btn handler
-          $scope.delete = function () {
-            var id = $scope.guest._id.id;
-            $scope.guest.remove(function (err) {
-              if (err) {
-                console.log('Guest delete error: ' + err);
-                $scope.err = new utility.errObj(err);
-                $scope.errSave = true;
-                $scope.$apply();
-              }
-              else {
-                var msg = configService.loctxt.guest + configService.loctxt.success_deleted;
-                autoClose(msg, id);
+            r.expenses.forEach((ex) => {
+              if (ex.guest === resOldName) {
+                ex.guest = newName
               }
             });
-          };
-
-          // Cancel btn handler
-          $scope.cancel = function () {
-            $modalInstance.dismiss('cancel');
-          };
-
-          // Error msg close handler
-          $scope.hideErr = function () {
-            $scope.errSave = false;
-          };
-
-        }]);
+            r.bill_numbers.forEach((bn) => {
+              if (bn.guest === resOldName) {
+                bn.guest = newName;
+              }
+            });
+            await r.save();
+          }
+        } catch (err) {
+          throw err;
+        }
+      }
+      //#endregion          
+    }
+  ]);
 });

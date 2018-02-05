@@ -37,6 +37,7 @@ define(['./module'], function (controllers) {
 
           dashboard.getItemTypeListExcept('').then(function(items){
             $scope.itemTypes = items;
+            $scope.$apply();
           });
 
           $scope.$watch('selected.reservation', function (newval) {
@@ -49,7 +50,7 @@ define(['./module'], function (controllers) {
                 $scope.pTitle = configService.loctxt.charges;
                 $scope.showCharges = true;
                 $scope.room = newval.room;
-                $scope.guest = newval.guest;
+                $scope.guest = newval.guest || resVM.res.guest.name;
                 $scope.gRooms = [];
                 var rmObj = resVM.generatePlanRoomString(newval.room, newval.guest);
                 $scope.roomGuest1 = rmObj.roomGuest1;
@@ -57,6 +58,7 @@ define(['./module'], function (controllers) {
                 $scope.roomGuest2 = rmObj.roomGuest2;
                 $scope.gRooms = rmObj.groupRooms;
                 $scope.planText = rmObj.displayText;
+                $scope.$apply();
                 //$scope.selectedReservation = newval;
               }
             });

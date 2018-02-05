@@ -16,6 +16,7 @@ define(['./module'], function (controllers) {
         'datetime',
         function ($scope, $state, $rootScope, configService, importExport, fileDialogs, modals, appConstants, datetime) {
           console.log("Export controller fired");
+          const waitTime = 2500;
           var taxDate;
           $scope.appTitle = $rootScope.appTitle;
           $scope.appBrand = $rootScope.appBrand;
@@ -43,24 +44,27 @@ define(['./module'], function (controllers) {
           switch (mode) {
             case 'all':
               $scope.showAll = true;
-              fileDialogs.saveAs(function (fpath) {
+              fileDialogs.openDir(function (fpath) {
                     $scope.path = fpath;
                     $scope.working = true;
                     $scope.$apply();
-                    importExport.exportAll(fpath).then(function () {
+                    fpath = importExport.getDbExportFilePath(fpath);
+                    importExport.exportAll(fpath).then((cnt) => {
                       $scope.working = false;
+                      $scope.records = cnt;
                       $scope.complete = true;
                       $scope.showHome = false;
-                      //$scope.$apply();
+                      $scope.$apply();
                       setTimeout(function () {
                         $state.go('home');
-                      }, 4000);
-                    }, function (err) {
+                      }, waitTime);
+                    }).catch((err) => {
                       $scope.working = false;
                       $scope.showErr = true;
                       $scope.errMsg = err;
+                      $scope.$apply();
                     });
-                  },importExport.getDefaultExportFilePath(), ['zip']);
+                  },appConstants.defExportPath);
               break;
 
             case 'address':
@@ -76,7 +80,7 @@ define(['./module'], function (controllers) {
                   //$scope.$apply();
                   setTimeout(function () {
                     $state.go('home');
-                  }, 4000);
+                  }, waitTime);
                 }, function (err) {
                   $scope.working = false;
                   $scope.showErr = true;
@@ -138,13 +142,13 @@ define(['./module'], function (controllers) {
                 //$scope.$apply();
                 setTimeout(function () {
                   $state.go('home');
-                }, 4000);
+                }, waitTime);
               }, function (err) {
                 $scope.working = false;
                 $scope.showErr = true;
                 $scope.errMsg = err;
               });
-            },importExport.getDefaultExportFilePath(mode,model.model_name,model.fileType), [model.fileType]);
+            },importExport.getDefaultExportFilePath(model.model_name,model.fileType), [model.fileType]);
           };
 
           // Starts the generation and export of the tax report
