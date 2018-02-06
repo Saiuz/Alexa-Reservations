@@ -558,7 +558,7 @@ define(['./module'], function (model) {
             if (that.res.rooms.length) {
               that.res.checked_out = new Date();
             }
-            _addTaxItem(roomNum, guest)
+            _addTaxItem();
           }
           else if (that.oneRoom && that.oneBill) {  //single bill one room res. only check that a room exists
             if (that.res.rooms.length) {
@@ -572,7 +572,7 @@ define(['./module'], function (model) {
             }
 
           }
-          else { //All other reservations
+          else { //All other reservations - should not get here any more.
             room = that.getRoomInReservation(roomNum);
             if (room) {
               room.isCheckedOut = true;

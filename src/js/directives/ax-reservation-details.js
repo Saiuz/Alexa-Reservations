@@ -18,7 +18,7 @@ define(['./module'], function (directives) {
       scope.err = '';
       scope.errSave = false;
       scope.errLoad = false;
-      let originalLink = null;
+      let originalLink = {};
 
       function findRoom(roomNum) {
         var r = undefined;

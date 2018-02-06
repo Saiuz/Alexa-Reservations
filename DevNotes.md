@@ -82,7 +82,7 @@ Bugs that still need fixing
 suites = lilac 21,26,27,32,42
 comfort = dark blue 35,45,46,48,53,58~~
 
-4) correct Spelling of Standard !!
+4) **DONE** ~~correct Spelling of Standard !!~~
 5) Kur bill, the last page, the u umlaut is printing as a weird symbol, don't know why, it shows up ok in HTML page.
 
 *Issues found during data conversion*
@@ -107,8 +107,8 @@ Others:
 1) **DONE** ~~need way to edit name on room without deleting and replacing room - only for multi-room - not needed with new group single bill logic.~~
 2) **DONE** ~~add multi-room business - one bill~~
 3) **DONE** ~~remove birthday from address list add number of stays for guest~~
-4) **DONE** ~~on checkout, update guests last_stay field with checkout date - need to deal with group business~~
-5) **DONE** ~~adding new guest from import form needs to supply firm if there is one~~
+4) **DONE** ~~on checkout, update guests last_stay field with checkout date - need to deal with group business NOTE: Changed to end of res date not checkout date.~~
+5) **DONE** ~~adding new guest from res input form needs to supply firm if there is one~~
 6) **DONE** ~~Add function to guest form, if name changed then any active reservations with the old name are updated to the new name.~~
 7) **DONE** ~~Update the validation error display on the modal forms to hide after a predefined time interval, refactor all common modal code into utility service method.~~
 8) Can we modify the address list to not scroll to the top when a res is selected or checked in on pages with lots of entries
@@ -122,4 +122,5 @@ NEW Features:
 Address export
    .. For eastern germany, leading zeros are needed on address list.
    .. Export format separate lines for salutation, name, address. 
+   .. Added a Guest and Firm detail popup which shows all reservations for a guest or firm. For firm also shows guest names associated with firm.
 

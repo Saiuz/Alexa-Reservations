@@ -20,7 +20,7 @@ include nav_common.jade
                 th {{txt.singleRoomPriceAbr}}
                 th {{txt.doubleRoomPriceAbr}}
                 th {{txt.requiresKurtaxe}}
-                th Required Item Count
+                th Artikelanzahl
             tbody
               tr(ng-repeat="p in planObjects | filter:planFilter" ng-click="setSelected(p.name)" ng-class="{'zp-EZ-Komf': p.name === selectedPlan}")
                 td.text-center

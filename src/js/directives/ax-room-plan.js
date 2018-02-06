@@ -78,6 +78,7 @@ define(['./module'], function (directives) {
         // repaint calendar if we have a date
         scope.$on(configService.constants.appReadyEvent, (event) => {
           //Register other events that this directive responds to. The first two events don't change the date
+          
           [configService.constants.reservationChangedEvent, configService.constants.calEventChangedEvent].forEach((value) => {
             scope.$on(value, function (event, result) {
               _buildCalendar();
