@@ -113,7 +113,15 @@ define(['./module'], function (directives) {
         });
 
         var updateAddress = function () {
-          let gRec = (scope.rvm.guest1rec.name == scope.guest ? scope.rvm.guest1rec : scope.rvm.guest2rec) || {};
+          const defG = {
+            guestId: null,
+            address1: scope.rvm.res.address1,
+            address2: scope.rvm.res.address2,
+            post_code: scope.rvm.res.post_code,
+            city: scope.rvm.res.city,
+            country: scope.rvm.res.country,
+          };
+          let gRec = (scope.rvm.guest1rec.name == scope.guest ? scope.rvm.guest1rec : scope.rvm.guest2rec) || defG;
           scope.address1 = gRec.address1;
           scope.address2 = gRec.address2;
           scope.post_code = gRec.post_code;
