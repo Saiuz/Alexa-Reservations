@@ -78,14 +78,15 @@ define(['./module'], function (directives) {
         // repaint calendar if we have a date
         scope.$on(configService.constants.appReadyEvent, (event) => {
           //Register other events that this directive responds to. The first two events don't change the date
-          
-          [configService.constants.reservationChangedEvent, configService.constants.calEventChangedEvent].forEach((value) => {
-            scope.$on(value, function (event, result) {
-              _buildCalendar();
-            });
+          scope.$on(configService.constants.reservationChangedEvent, (event, result) => {
+            console.log("room-plan: res changed event handled");
+            _buildCalendar();
+          });
+          scope.$on(configService.constants.calEventChangedEvent, (event, result) => {
+            _buildCalendar();
           });
           //This event responds to external code wanting to set the current date of the calendar
-          scope.$on(configService.constants.weekButtonsSetEvent, function (event, dateval) {
+          scope.$on(configService.constants.weekButtonsSetEvent, (event, dateval) => {
             if (datetime.isDate(dateval)) {
               console.log('WeekButtonsSetEvent: ' + dateval);
               startDate = dateval;
