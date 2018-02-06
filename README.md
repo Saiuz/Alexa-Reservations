@@ -29,6 +29,6 @@ The app can export it's MongoDB database to a local archive. To do this, it requ
 ## Packaging & Distribution
 Currently there is only a packaging option for Windows using InnoSetup. This app will create a Setup executable for the application. You can download the InnoSetup software from [here](http://www.jrsoftware.org/isdl.php)
 
-The setup script is the file `InnoScript32.iss`. **NOTE:** this script uses absolute file paths for the source and destination files. Be sure to modify the ```#define MyBaseDir``` statement near the top of the file to point to the local project's top level directory. 
+The setup script is the file `InnoScript.iss`. **NOTE:** this script uses absolute file paths for the source and destination files. Be sure to modify the ```#define MyBaseDir``` statement near the top of the file to point to the local project's top level directory. 
 
-To run the script
+To run the script cd to the project directory and type ``` iscc InnoScript.iss``` at the command line prompt. Note: this assumes that the path to the iscc.exe file is in the PATH variable.
