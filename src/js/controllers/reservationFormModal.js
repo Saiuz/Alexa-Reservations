@@ -305,10 +305,12 @@ define(['./module'], function (controllers) {
             $scope.rvm.afterSave().then(() => {
               let msg = (mode === 'c' ? configService.loctxt.reservation + configService.loctxt.success_saved :
                 configService.loctxt.success_changes_saved);
-              $rootScope.$broadcast(configService.constants.reservationChangedEvent, {
-                data: $scope.rvm.res.reservation_number,
-                sDate: $scope.rvm.res.start_date
-              });
+                let evData = {
+                  data: $scope.rvm.res.reservation_number,
+                  sDate: $scope.rvm.res.start_date
+                }
+              $rootScope.$broadcast(configService.constants.reservationChangedEvent, evData);
+              $rootScope.$emit(configService.constants.reservationChangedEvent, evData);
               helpers.autoClose(msg, $scope.rvm.res);
             }).catch((err) => helpers.showSaveError(err)); //after save
           }).catch((err) => helpers.showSaveError(err)); //save

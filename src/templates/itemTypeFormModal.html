@@ -35,7 +35,7 @@
                         ng-options="c.text for c in billCodes"></select>
             </div>
         </div>
-        <div class="form-group"  ng-show="full || plan">
+        <div class="form-group"  ng-show="full">
             <label class="control-label col-xs-4">{{txt.displayString}}</label>
             <div class="col-xs-8" ng-show="read">
                 <p class="form-control-static">{{itemType.display_string}}</p>
@@ -53,7 +53,7 @@
                 <input class="form-control" type="number" min="1" ng-model="itemType.display_order"/>
             </div>
         </div>
-        <div class="form-group" ng-show="full || plan">
+        <div class="form-group" ng-show="full">
             <label class="control-label col-xs-4">{{txt.priceLookup}}</label>
             <div class="col-xs-8" ng-show="read">
                 <p class="form-control-static">{{selLookup.text}}</p>

@@ -2234,7 +2234,7 @@ define(['./module'], function (model) {
         _addBreakfastKurtax(room, includedInPrice);
 
         if (extraDays) {
-          _addExtraPackageDaysExpense(roomItems[0], extraDays);
+          _addExtraPackageDaysExpense(exp, price, extraDays);
         }
       }
 
@@ -2341,7 +2341,7 @@ define(['./module'], function (model) {
       // Adds an expense item for extra days in the room. This method creates a new ExpenseItem object rather than
       // adding an existing one. It adds an item with the is_room flag set, it is displayed on the bill and the default
       // room price added is the current price of the main room (daily plan price).
-      function _addExtraPackageDaysExpense(roomItem, days) {
+      function _addExtraPackageDaysExpense(roomItem, price, days) {
         var room = that.getRoomInReservation(roomItem.room);
 
         if (days) { //safety check
@@ -2361,7 +2361,7 @@ define(['./module'], function (model) {
           exp.price = roomItem.price;
           exp.count = days;
           exp.taxable_price = roomItem.taxable_price;
-          _addExpenseItem(room, exp, null, days);
+          _addExpenseItem(room, exp, price, days);
         }
       }
 

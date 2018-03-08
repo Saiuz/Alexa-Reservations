@@ -150,6 +150,7 @@ define(['./module'], function (controllers) {
           dashboard.getReservationsInMonth($scope.selectedMonth, $scope.selectedYear).then(function (results) {
             $scope.reservations = results;
             $scope.working = false;
+            $scope.changeSort('start', true);
             $scope.$apply();
           }, function (err) {
             $scope.working = false;

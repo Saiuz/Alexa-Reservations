@@ -18,24 +18,24 @@ include nav_common.jade
               tr
                 th
                 th(ng-click="changeSort('resNum')") {{txt.res_num}} 
-                  i.glyphicon.glyphicon-sort-by-alphabet-alt(ng-show="sort.descending")
-                  i.glyphicon.glyphicon-sort-by-alphabet(ng-show="!sort.descending")
+                  i.glyphicon.glyphicon-sort-by-alphabet-alt(ng-show="sort.descending && sort.column == 'resNum'")
+                  i.glyphicon.glyphicon-sort-by-alphabet(ng-show="!sort.descending && sort.column == 'resNum'")
                 th(ng-click="changeSort('start')") {{txt.from}} 
-                  i.glyphicon.glyphicon-sort-by-alphabet-alt(ng-show="sort.descending")
-                  i.glyphicon.glyphicon-sort-by-alphabet(ng-show="!sort.descending")
+                  i.glyphicon.glyphicon-sort-by-alphabet-alt(ng-show="sort.descending && sort.column == 'start'")
+                  i.glyphicon.glyphicon-sort-by-alphabet(ng-show="!sort.descending && sort.column == 'start'")
                 th(ng-click="changeSort('end')") {{txt.until}} 
-                  i.glyphicon.glyphicon-sort-by-alphabet-alt(ng-show="sort.descending")
-                  i.glyphicon.glyphicon-sort-by-alphabet(ng-show="!sort.descending")
+                  i.glyphicon.glyphicon-sort-by-alphabet-alt(ng-show="sort.descending && sort.column == 'end'")
+                  i.glyphicon.glyphicon-sort-by-alphabet(ng-show="!sort.descending && sort.column == 'end'")
                 th(ng-click="changeSort('nights')") {{txt.nights}} 
-                  i.glyphicon.glyphicon-sort-by-alphabet-alt(ng-show="sort.descending")
-                  i.glyphicon.glyphicon-sort-by-alphabet(ng-show="!sort.descending")
-                th {{txt.numRoomsAbrv}} / {{txt.guests}} (#Zr)
+                  i.glyphicon.glyphicon-sort-by-alphabet-alt(ng-show="sort.descending && sort.column == 'nights'")
+                  i.glyphicon.glyphicon-sort-by-alphabet(ng-show="!sort.descending && sort.column == 'nights'")
+                th {{txt.roomNumberAbrv}} / {{txt.guests}} (#Zr)
                 th(ng-click="changeSort('lastName')") {{txt.guest}} 
-                  i.glyphicon.glyphicon-sort-by-alphabet-alt(ng-show="sort.descending")
-                  i.glyphicon.glyphicon-sort-by-alphabet(ng-show="!sort.descending")
+                  i.glyphicon.glyphicon-sort-by-alphabet-alt(ng-show="sort.descending && sort.column == 'lastName'")
+                  i.glyphicon.glyphicon-sort-by-alphabet(ng-show="!sort.descending && sort.column == 'lastName'")
                 th(ng-click="changeSort('type')") {{txt.type}} 
-                  i.glyphicon.glyphicon-sort-by-alphabet-alt(ng-show="sort.descending")
-                  i.glyphicon.glyphicon-sort-by-alphabet(ng-show="!sort.descending")
+                  i.glyphicon.glyphicon-sort-by-alphabet-alt(ng-show="sort.descending && sort.column == 'type'")
+                  i.glyphicon.glyphicon-sort-by-alphabet(ng-show="!sort.descending && sort.column == 'type'")
                 th
             tbody
               tr(ng-repeat="r in reservations | orderBy:sort.column:sort.descending", ng-class="{'late-chkout': r.lateCheckOut && !r.lateCheckIn, 'late-chkin': r.lateCheckIn}")
@@ -47,8 +47,8 @@ include nav_common.jade
                     i.glyphicon.glyphicon-resize-small
                   a(ng-if="r.canEdit && r.lateCheckIn" href="#/home/{{r.resNum}}/{{r.room}}/{{r.guest}}")
                     i.glyphicon.glyphicon-resize-small &nbsp;
-                  a(ng-if="r.canEdit && r.lateCheckOut && !r.lateCheckIn" href="#/rechnung/{{r.resNum}}/{{r.room}}/{{r.guest}}")
-                    i.glyphicon.glyphicon-resize-full
+                  a(ng-if="r.canEdit && (r.lateCheckOut || r.canCheckOut) && !r.lateCheckIn" href="#/rechnung/{{r.resNum}}/{{r.room}}/{{r.guest}}")
+                    i.glyphicon.glyphicon-resize-full &nbsp;
                   i.glyphicon.glyphicon-edit(ng-if="r.canEdit && !r.lateCheckOut && !r.canCheckIn" ng-click="edit(r.resNum)")
                 td {{r.resNum}}
                 td {{r.start}}

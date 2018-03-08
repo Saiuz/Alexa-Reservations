@@ -144,7 +144,7 @@ define(['./module'], function (services) {
                 delete record._id;
                 callback(null, record);
                 recCnt++;
-              }, {parallel: 10});
+              }, {parallel: 1});
               transformer.on('error', function (err) {
                 deferred.reject('Transformer Error: ' + err);
               });
@@ -189,7 +189,7 @@ define(['./module'], function (services) {
                 var newRecord = JSON.stringify(record) + '\r\n';
                 recCnt++;
                 callback(null, newRecord);
-              }, {parallel: 10});
+              }, {parallel: 1});
               transformer.on('error', function (err) {
                 deferred.reject('Transformer Error: ' + err);
               });
@@ -318,7 +318,7 @@ define(['./module'], function (services) {
                   end_date:  $filter('date')(record.end_date,'shortDate')
                 });
               }
-            }, {parallel: 10});
+            }, {parallel: 1});
             transformer.on('error', function (err) {
               deferred.reject('Transformer Error:' + err);
             });
@@ -393,7 +393,7 @@ define(['./module'], function (services) {
               }
               recCnt++;
               callback(null, arec);
-            }, {parallel: 10});
+            }, {parallel: 1});
 
             //pads number with leading zeros and returns a quoted string for Excel to interpret as a string
             function postPad(num, size)  { 
@@ -426,7 +426,7 @@ define(['./module'], function (services) {
           };
 
           this.getDefaultMailingListPath = function() {
-            let name = `Adressliste_${$filter('date')(new Date(), 'yyyyMMdd')}.csv`;
+            let name = `Addressliste_${$filter('date')(new Date(), 'yyyyMMdd')}.csv`;
             return  fileExecUtil.pathJoin(appConstants.defExportPath,name);
           };
 

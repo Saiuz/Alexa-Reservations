@@ -53,7 +53,7 @@ define(['./module'], function (controllers) {
             }
           }));
           shortCuts.push(new nw.Shortcut({
-            key : "Ctrl+Shift+O",
+            key : "Ctrl+Shift+o",
             active : function() {
               console.log("Global desktop keyboard shortcut: " + this.key + " active.");
               zoomPercent += 10;
@@ -65,7 +65,7 @@ define(['./module'], function (controllers) {
             }
           }));
           shortCuts.push(new nw.Shortcut({
-            key : "Ctrl+Shift+I",
+            key : "Ctrl+Shift+i",
             active : function() {
               console.log("Global desktop keyboard shortcut: " + this.key + " active.");
               zoomPercent -= 10;

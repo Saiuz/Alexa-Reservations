@@ -53,25 +53,25 @@ define("app", [
                 click: '',
                 items: [
                   {
-                    label: 'Steuerinformationen',
-                    tooltip: 'Mehrwertsteuer, Kurtaxe usw.',
-                    click: 'export-tax'
-                  },
-                  {
                     label: 'Addressliste',
                     tooltip: 'Gaste Postadressen',
                     click: 'export-address'
-                  },  
+                  }, 
+                  {
+                    label: 'Alle Daten',
+                    tooltip: 'Backup aller Programmdaten',
+                    click: 'export-all'
+                  }, 
                   {
                     label: 'Einzeldaten',
                     tooltip: 'Gäste Addresse Liste, Firma, usw.',
                     click: 'export-one'
                   },
                   {
-                    label: 'Alle Daten',
-                    tooltip: 'Backup aller Programmdaten',
-                    click: 'export-all'
-                  }
+                    label: 'Steuerinformationen',
+                    tooltip: 'Mehrwertsteuer, Kurtaxe usw.',
+                    click: 'export-tax'
+                  },
                 ]
               },
               {
