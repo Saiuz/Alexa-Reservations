@@ -31,4 +31,4 @@ Currently there is only a packaging option for Windows using InnoSetup. This app
 
 The setup script is the file `InnoScript.iss`. **NOTE:** this script uses absolute file paths for the source and destination files. Be sure to modify the ```#define MyBaseDir``` statement near the top of the file to point to the local project's top level directory. 
 
-To run the script cd to the project directory and type ``` iscc InnoScript.iss``` at the command line prompt. Note: this assumes that the path to the iscc.exe file is in the PATH variable.
+To run the script cd to the project directory and type ``` iscc InnoScript.iss``` at the command line prompt. Note: this assumes that the path to the iscc.exe file is in the PATH variable. This command creates a .exe file in the `releases/inno32/` directory.
