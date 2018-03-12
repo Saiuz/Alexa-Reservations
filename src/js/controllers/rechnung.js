@@ -149,6 +149,7 @@ define(['./module'], function (controllers) {
                   $scope.rvm.checkOut($scope.room, $scope.guest).then(function () {
                     $scope.canCheckOut = false;
                     $rootScope.$broadcast(configService.constants.reservationChangedEvent, {data: $scope.rvm.res.reservation_number});
+                    $rootScope.$emit(configService.constants.reservationChangedEvent, {data: $scope.rvm.res.reservation_number});
                     $scope.clearSelected();
                     $scope.$apply();
                   }, function (err) {
@@ -162,6 +163,7 @@ define(['./module'], function (controllers) {
               $scope.rvm.checkOut($scope.room, $scope.guest).then(function () {
                 $scope.canCheckOut = false;
                 $rootScope.$broadcast(configService.constants.reservationChangedEvent, {data: $scope.rvm.res.reservation_number});
+                $rootScope.$emit(configService.constants.reservationChangedEvent, {data: $scope.rvm.res.reservation_number});
                 $scope.clearSelected();
                 $scope.$apply();
               }, function (err) {

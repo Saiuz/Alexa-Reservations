@@ -389,6 +389,7 @@ define(['./module'], function (services) {
       'ustRate': 'UST Steuersatz',
       'val_invalidPlan': 'Sie müssen einen Zimmerplan wählen',
       'val_invalidGuest': 'Fehlende oder ungültige Gast',
+      'val_missingGuest2' : 'Ein zweiter Gast ist erforderlich',
       'val_invalidFirm': 'Fehlende oder ungültige Firma',
       'val_invalidRoom': 'Mindestens ein Zimmer ist erforderlich',
       'val_invalidDates': 'Fehlende oder ungültige Reservierungsdaten',

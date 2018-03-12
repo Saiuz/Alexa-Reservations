@@ -311,6 +311,7 @@ define(['./module'], function (controllers) {
                 }
               $rootScope.$broadcast(configService.constants.reservationChangedEvent, evData);
               $rootScope.$emit(configService.constants.reservationChangedEvent, evData);
+              console.log("reservation form: sending res. changed event");
               helpers.autoClose(msg, $scope.rvm.res);
             }).catch((err) => helpers.showSaveError(err)); //after save
           }).catch((err) => helpers.showSaveError(err)); //save
@@ -325,6 +326,10 @@ define(['./module'], function (controllers) {
             $rootScope.$broadcast(configService.constants.reservationChangedEvent, {
               data: id
             }); //broadcast change event
+            $rootScope.$emit(configService.constants.reservationChangedEvent, {
+              data: id
+            }); //broadcast change event
+            console.log("reservation form: sending res. changed event");
             helpers.autoClose(msg, id);
         }).catch(err => helpers.showSaveError(err));
       };

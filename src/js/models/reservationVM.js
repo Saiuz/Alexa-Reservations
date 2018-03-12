@@ -26,7 +26,7 @@ define(['./module'], function (model) {
     var reservationVM = function (reservation, roomPlanList, itemTypeList, loadExisting) {
       var that = this; // for internal function reference
 
-      //#region - public properties assigned to VM and initialization code
+    //#region - public properties assigned to VM and initialization code
 
       this.res = reservation; // The Reservation (Mongoose model) that this ViewModel works with.
       this.guest1rec = null; // Holds complete guest record
@@ -94,9 +94,9 @@ define(['./module'], function (model) {
           lastInsurance1,
           lastInsurance2;
       var planRequiredItems = []; //used by pre-save code stores required items of current plan.
-      //#endregion
+    //#endregion
 
-      //region *** Public methods assigned to VM ***
+    //region *** Public methods assigned to VM ***
 
       // Utility method to return a room type abbreviation from a reservedRoom item
       this.generateRoomAbbrv = function (rrObj) {
@@ -1272,9 +1272,9 @@ define(['./module'], function (model) {
         aggArr = _aggregateItems(locItems);
         return aggArr;
       };
-      //#endregion
+    //#endregion
 
-      //#region ******* private methods  and constructor initialization *******
+    //#region ******* private methods  and constructor initialization *******
 
       // retrieves a specific expense item based on name gues and room
       function _getExpenseItem(name, roomNo, guest) {
@@ -1404,13 +1404,17 @@ define(['./module'], function (model) {
         if (!plan) {
           vObj.push(configService.loctxt.val_invalidPlan);
         }
+        // check that we have a firm if needed.
+        if (that.showFirm && !res.firm) {
+          vObj.push(configService.loctxt.val_invalidFirm);
+        }        
         // check that we have a guest defined we do not check if guest exists in guest list.
         if (!res.guest || !res.guest.id) {
           vObj.push(configService.loctxt.val_invalidGuest);
         }
-        // check that we have a firm if needed.
-        if (that.showFirm && !res.firm) {
-          vObj.push(configService.loctxt.val_invalidFirm);
+        // if we require a second guest make sure we have one
+        if ((!that.oneBill && res.occupants === 2) && (!res.guest2 || !res.guest2.id)) {
+          vObj.push(configService.loctxt.val_missingGuest2);
         }
         // need at least one room
         if (res.rooms.length === 0) {
@@ -2666,9 +2670,9 @@ define(['./module'], function (model) {
         });
         return selPlan;
       }
-      //#endregion
+    //#endregion
 
-      //#region *** Constructor initialization ***
+    //#region *** Constructor initialization ***
       // Now that everything is defined, initialize the VM based on the reservation model
       // perform model setup actions
       if (reservation) {
@@ -2697,7 +2701,7 @@ define(['./module'], function (model) {
         _filterRoomPlans(reservation.type, reservation.plan_code);
         this.nights = reservation.nights; //The reservation model's nights property is calculated and read only.
       }
-      //#endregion
+    //#endregion
     }; //End of VM class
 
     //#region *** Start of ViewModel factory. Has methods to return the VM class with a new or existing VM.

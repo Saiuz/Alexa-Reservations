@@ -88,6 +88,7 @@ define(['./module'], function (directives) {
           scope.canCheckIn = false;
           scope.canDelete = false;
           $rootScope.$broadcast(configService.constants.reservationChangedEvent, {data: scope.rvm.res.reservation_number});
+          $rootScope.$emit(configService.constants.reservationChangedEvent, {data: scope.rvm.res.reservation_number});
         },function (err) {
           scope.err = err;
           scope.errSave = true;
@@ -142,7 +143,7 @@ define(['./module'], function (directives) {
       };
 
       scope.$on(configService.constants.reservationChangedEvent, (event, val) => {
-        console.log("Reservation changed event fired " + val.data);
+        console.log("ax-reservation-details: Reservation changed event fired " + val.data);
         _getReservation(val.data).then(() => {
           scope.$apply();
         }).catch((err) => {

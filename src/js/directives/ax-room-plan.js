@@ -40,9 +40,8 @@ define(['./module'], function (directives) {
           selEnd = 0,
           isHighlighted,
           resResults;
-        scope.isLoading = true;
+        scope.isLoading = false;
         scope.txt = configService.loctxt;
-
         //scope.weekStart;
         //scope.weekEnd;
         //scope.dateInWeek;
@@ -77,22 +76,6 @@ define(['./module'], function (directives) {
         // respond to the appReady event, set-up other event responses and
         // repaint calendar if we have a date
         scope.$on(configService.constants.appReadyEvent, (event) => {
-          //Register other events that this directive responds to. The first two events don't change the date
-          scope.$on(configService.constants.reservationChangedEvent, (event, result) => {
-            console.log("room-plan: res changed event handled");
-            _buildCalendar();
-          });
-          scope.$on(configService.constants.calEventChangedEvent, (event, result) => {
-            _buildCalendar();
-          });
-          //This event responds to external code wanting to set the current date of the calendar
-          scope.$on(configService.constants.weekButtonsSetEvent, (event, dateval) => {
-            if (datetime.isDate(dateval)) {
-              console.log('WeekButtonsSetEvent: ' + dateval);
-              startDate = dateval;
-              scope.theDate = dateval;
-            }
-          });
           $rootScope.firstTime = false;
           if (datetime.isDate(scope.theDate)) {
             scope.dates = datetime.findWeek(scope.theDate, sundayStart);
@@ -100,6 +83,24 @@ define(['./module'], function (directives) {
             wSpan = scope.weekSpan || 1;
             console.log('ax-room-plan responding to app ready event');
             _buildCalendar(false);
+          }
+        });
+
+        scope.$on(configService.constants.reservationChangedEvent, (event, result) => {
+          console.log("**room-plan**: res changed event handled");
+          _buildCalendar();
+        });
+
+        scope.$on(configService.constants.calEventChangedEvent, (event, result) => {
+          _buildCalendar();
+        });
+
+        //This event responds to external code wanting to set the current date of the calendar
+        scope.$on(configService.constants.weekButtonsSetEvent, (event, dateval) => {
+          if (datetime.isDate(dateval)) {
+            console.log('WeekButtonsSetEvent: ' + dateval);
+            startDate = dateval;
+            scope.theDate = dateval;
           }
         });
 
@@ -184,6 +185,7 @@ define(['./module'], function (directives) {
         // function to retrieve items to build calendar, calls _updateCalendar which does the heavy lifting
         function _buildCalendar(paintOnly = false) {
           var startCal, endCal, cols;
+          if (scope.isLoading) return; // only one instance running
           scope.isLoading = true;
           if (scope.dates) {
             startCal = datetime.dateOnly(scope.dates.weekStart, -7 * wSpan);
@@ -209,16 +211,19 @@ define(['./module'], function (directives) {
                     resResults = results; //cache last query.
                     _updateCalendar(resResults, startCal, endCal, cols);
                     _updateTdEvents()
-                    scope.isLoading = false
+                    scope.isLoading = false;
+
                   }
                 }).catch((err) => {
                   scope.hasErr = true;
                   scope.errMsg = err.message;
+                  scope.isLoading = false;
                   scope.$apply();
                 });
               }).catch((err) => {
                 scope.hasErr = true;
                 scope.errMsg = err.message;
+                scope.isLoading = false;
                 scope.$apply();
               });
             }

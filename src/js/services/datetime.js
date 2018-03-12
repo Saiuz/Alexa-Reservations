@@ -131,9 +131,12 @@ define(['./module'], function (services) {
      * @param {number} dseVal 
      */
     const _dseToDate = (dseVal) => {
-      let d = new Date();
-      let adjust = d.getTimezoneOffset() * 60000;
-      return new Date(dseVal * millisecondsPerDay + adjust);
+      let d = new Date(1970,0,1,0,0,0); //Unix epoch start
+      if (dseVal) {
+        dseVal = Math.floor(dseVal); // remove any fractional days
+      }
+       d.setDate(d.getDate() + dseVal);
+       return d;
     }
     /**
      * Given a date (which defaults to current date), find the start and end of the month the date falls in. Returns
