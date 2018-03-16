@@ -428,7 +428,7 @@ define(['./module'], function (model) {
       }
       else {
         return {
-          'Name': this.name, 'Partner': this.partner_name, 'Addresse': this.full_address,
+          'Name': this.name, 'Partner': this.partner_name, 'Adresse': this.full_address,
           'Telefon': this.telephone, 'Email': this.email,
           'Letzter Aufenthalt': $filter('date')( this.last_stay, 'shortDate'), 
           'Nr. Res.': resCount, 'Bemerkung': this.comments
@@ -440,7 +440,7 @@ define(['./module'], function (model) {
         return ['Name','Firma','Telefon','Email','Letzter Aufenthalt','Nr. Res.','Bemerkung'];
       }
       else {
-        return ['Name','Partner', 'Addresse','Telefon','Email','Letzter Aufenthalt','Nr. Res.','Bemerkung'];
+        return ['Name','Partner', 'Adresse','Telefon','Email','Letzter Aufenthalt','Nr. Res.','Bemerkung'];
       }
     };
 
@@ -623,14 +623,14 @@ define(['./module'], function (model) {
      */
     schema.methods.toDisplayObj = function (guestCount, resCount) {
         return {
-          'Firma': this.firm_name, 'Zimmer Preis': this.room_price, 'Addresse': this.full_address,
+          'Firma': this.firm_name, 'Zimmer Preis': this.room_price, 'Adresse': this.full_address,
           'Kontakt Name': this.contact_name, 'Nr. Gäste': guestCount, 'Nr. Res.': resCount, 'Kontakt E-Mail': this.contact_email,
           'Bemerkung': this.comments
         };
     };
 
     schema.statics.toDisplayObjHeader = function () {
-      return ['Firma', 'Zimmer Preis', 'Addresse', 'Kontakt Name',
+      return ['Firma', 'Zimmer Preis', 'Adresse', 'Kontakt Name',
               'Nr. Gäste','Nr. Res.','Kontakt E-Mail','Bemerkung'];
     };
 

@@ -3,5 +3,6 @@
     "Abrv",
     "fsex",
     "loctxt"
-  ]
+  ],
+  "python.linting.enabled": false
 }
