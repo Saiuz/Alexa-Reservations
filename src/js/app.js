@@ -53,7 +53,7 @@ define("app", [
                 click: '',
                 items: [
                   {
-                    label: 'Addressliste',
+                    label: 'Adressliste',
                     tooltip: 'Gaste Postadressen',
                     click: 'export-address'
                   }, 

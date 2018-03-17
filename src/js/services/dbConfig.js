@@ -524,7 +524,7 @@ define(['./module'], function (services) {
       },
       {
         "category": "Plan",
-        "name": "Telephone",
+        "name": "Telephon",
         "bill_code": 6,
         "guest": "",
         "room": 0,
