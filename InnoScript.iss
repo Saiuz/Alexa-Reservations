@@ -5,7 +5,7 @@
 ; software during compilation.
 ;
 
-#define MyAppName "AlexaReservierungen"
+#define MyAppName "AlexaReservierungsprogramm"
 #define MyAppVersion "1.4.0"
 #define MyAppPublisher "Vogel Software Consulting LLC"
 #define MyAppURL "https://github.com/vogelrh/Alexa-Reservations"
@@ -34,7 +34,7 @@ AppUpdatesURL={#MyAppURL}
 DefaultDirName={pf}\{#MyAppName}
 DefaultGroupName=Alexa Reservierungen
 OutputDir="{#MyBaseDir}\releases\inno32"
-OutputBaseFilename=Alexa_Reservierungen_setup_{#MyAppVersion}
+OutputBaseFilename=Alexa_Reservierungsprogramm_setup_{#MyAppVersion}
 Compression=lzma
 SolidCompression=yes
 ArchitecturesInstallIn64BitMode=x64
