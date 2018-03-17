@@ -33,7 +33,7 @@ include nav_common.jade
                 td {{p.single_surcharge | currency}}
                 td {{p.single_room_price | number : 4}}
                 td {{p.double_room_price | number : 4}}
-                td {{p.requires_kurtax}}
+                td {{p.requires_kurtax ? "Ja" : "Nein"}}
                 td {{p.required_items.length}}
               tr
                 td
