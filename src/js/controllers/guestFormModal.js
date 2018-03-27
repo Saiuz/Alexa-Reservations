@@ -61,7 +61,9 @@ define(['./module'], function (controllers) {
       $scope.disableFirm = modalParams.extraData.disableFirm || false;
       $scope.firmPrice = 0; // required by firm lookup but not used in this form.
       $scope.salutations = dbEnums.getSalutationEnum();
-
+      $scope.mailChoices = [{value: undefined, text: '?'}, {value: true, text: 'Ja'}, { value: false, text: 'Nein'}]
+      $scope.mailChoice = $scope.mailChoices[0];
+      $scope.yesNoMaybe = (val) => {return val == null ? '?' : val === true ? 'Ja' : 'Nein'};
       // Determine CRUD mode of form.
       // For all but 'C' the query can be by id or by the unique_name property.
       const mode = modalParams.mode.substring(0, 1).toLowerCase();
@@ -129,6 +131,8 @@ define(['./module'], function (controllers) {
               $scope.edit = true;
               $scope.read = false;
               $scope.saveTxt = configService.loctxt.update;
+              let ix = guest.canMail == null ? 0 : guest.canMail === true ? 1 : 2;
+              $scope.mailChoice = $scope.mailChoices[ix];
               helpers.dApply();
             } else {
               helpers.showLoadErr(notFound);
@@ -170,6 +174,11 @@ define(['./module'], function (controllers) {
         }
       });
 
+      $scope.onMailSelect = function () {
+        if ($scope.mailChoice) {
+          $scope.guest.canMail = $scope.mailChoice.value;
+        }
+      }
       // for date pickers
       $scope.openBday1 = function ($event) {
         $event.preventDefault();

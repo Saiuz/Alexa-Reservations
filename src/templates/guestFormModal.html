@@ -134,6 +134,15 @@
             </div>
         </div>
         <div class="form-group">
+            <label class="control-label col-xs-4">{{txt.canMail}}</label>
+            <div class="col-xs-8" ng-show="!edit">
+                <p class="form-control-static">{{yesNoMaybe(guest.canMail)}}</p>
+            </div>
+            <div class="col-xs-8" ng-show="edit">
+               <select ng-model="mailChoice" ng-change="onMailSelect()" ng-options="c.text for c in mailChoices"></select>
+            </div>
+        </div>
+        <div class="form-group">
             <label class="control-label col-xs-4">{{txt.telephone}}</label>
             <div class="col-xs-8" ng-show="!edit">
                 <p class="form-control-static">{{guest.telephone}}</p>

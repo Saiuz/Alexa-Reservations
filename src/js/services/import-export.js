@@ -409,7 +409,11 @@ define(['./module'], function (services) {
             transformer.on('finish',function() {console.log('TRANSFORMER FINISHED ' + recCnt + ' records')});
 
             // Query addresses-find all addresses without firms and that have postcodes.
-            let gQry = {$and: [{firm: ''},{post_code: {$exists: true}},{$or:[{country: {$exists: false}},{country: ''}, {country: 'Deutschland'}]}]};
+            let gQry = {$and: [
+              {firm: ''},
+              {post_code: {$exists: true}},
+              {canMail: true},
+              {$or:[{country: {$exists: false}},{country: ''}, {country: 'Deutschland'}]}]};
             Guest.find(gQry)
                 .sort({post_code: 1, last_name: 1})
                 .lean()

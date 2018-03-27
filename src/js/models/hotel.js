@@ -348,6 +348,7 @@ define(['./module'], function (model) {
         post_code: String,
         country: String,
         telephone: String,
+        canMail: Boolean,
         comments: String,
         last_stay: Date,
         unique_name: {type: String, unique: true, index: true} //NOTE this field should not be exposed as an editable field on a UI form. It is generated on save.
@@ -429,7 +430,7 @@ define(['./module'], function (model) {
       else {
         return {
           'Name': this.name, 'Partner': this.partner_name, 'Adresse': this.full_address,
-          'Telefon': this.telephone, 'Email': this.email,
+          'Post': this.canMail == null ? '?' : this.canMail ? 'Ja': 'Nein', 'Email': this.email,
           'Letzter Aufenthalt': $filter('date')( this.last_stay, 'shortDate'), 
           'Nr. Res.': resCount, 'Bemerkung': this.comments
         };
@@ -440,7 +441,7 @@ define(['./module'], function (model) {
         return ['Name','Firma','Telefon','Email','Letzter Aufenthalt','Nr. Res.','Bemerkung'];
       }
       else {
-        return ['Name','Partner', 'Adresse','Telefon','Email','Letzter Aufenthalt','Nr. Res.','Bemerkung'];
+        return ['Name','Partner', 'Adresse','Post','Email','Letzter Aufenthalt','Nr. Res.','Bemerkung'];
       }
     };
 

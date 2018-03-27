@@ -165,6 +165,7 @@ define(['./module'], function (services) {
       'busPauschale': 'Business Pauschale',
       'calendar': 'Kalender',
       'cancel': 'Abbrechen',
+      'canMail': 'Post',
       'category': 'Kategorie',
       'charges': 'Gebühren',
       'chargesFor': 'Gebühren für',
