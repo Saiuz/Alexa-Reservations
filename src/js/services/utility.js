@@ -58,7 +58,32 @@ define(['./module'], function (services) {
         return NaN;
       }
     };
-
+    /**
+     * Method that will adjust a numeric value to the specific percision but it will round the 
+     * decimap value down (truncate)
+     * @param {*} x the numeric value to be rounded
+     * @param {*} p the precision or number of digits to the right of the decimal point
+     */
+    this.roundpd =  (x, p) => {
+      if (p < 0) {
+        p = 0;
+      } else if (p > 10) {
+        p = 10;
+      }
+    
+      if (typeof x === 'number') {
+        let xstr = x.toString();
+        let xpts = xstr.split('.');
+        if (xpts.length === 1) {
+          return parseFloat(xpts[0]).toFixed(p);
+        } else {
+          return parseFloat(`${xpts[0]}.${xpts[1].substring(0,p)}`).toFixed(p);
+        }
+    
+      } else {
+        return NaN;
+      }
+    }
     // method that takes in an object with a 'display_string' property and returns the formated string
     // making substitutions for key words that are capped by '%' characters. The key words are either properties
     // on the object or a properties of the extras object. The instructions object can be used to give special
@@ -154,7 +179,6 @@ define(['./module'], function (services) {
      * @param {string} nameStr 
      */
     this.parseNameString = function (nameStr) {
-      nameStr = nameStr.replace(/undefined/, '').replace(/\s\s+/g, ' ').trim();
 
       let validPrefix = /^(von|an)$/;
       let validSuffix = /^(II|III|Sr|Sr.|Jr|Jr.|[0-9])$/;
@@ -165,6 +189,9 @@ define(['./module'], function (services) {
         first_name: '',
         last_name: ''
       }
+      if (nameStr == null) return np;
+
+      nameStr = nameStr.replace(/undefined/, '').replace(/\s\s+/g, ' ').trim();
       // first extract the salutation from the sting if any
       // if salutation is invalid it will be ignored and added
       // to the first name. Note, the salutation 'Herren' may

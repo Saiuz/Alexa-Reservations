@@ -456,7 +456,7 @@ define(['./module'], function (services) {
               var guestName;
               var cnt = 0;
 
-              if (guest && typeof guest.hasOwnProperty('name')) {
+              if (guest && guest.hasOwnProperty('name')) {
                 guestName = guest.name;
               } else {
                 guestName = rec.guest.name;
@@ -551,13 +551,13 @@ define(['./module'], function (services) {
                 reservations: [],
                 resources: []
               },
-              startDoy = datetime.dayOfYear(start),
-              endDoy = datetime.dayOfYear(end);
+              cStartDSE = datetime.daysSinceEpoch(start),
+              cEndDSE = datetime.daysSinceEpoch(end);
 
             let resResults = await Reservation.find({
               $and: [{
                 start_date: {
-                  $lt: datetime.lastSecondUTC(end)
+                  $lt: datetime.dateOnlyUTC(end)
                 }
               }, {
                 end_date: {
@@ -569,7 +569,7 @@ define(['./module'], function (services) {
             }).exec();
             resResults.forEach(function (res) {
               let rstartDse = datetime.daysSinceEpoch(res.start_date),
-                rendDse = datetime.daysSinceEpoch(res.end_date);
+                  rendDse = datetime.daysSinceEpoch(res.end_date);
 
               res.rooms.forEach(function (room) {
                 let r = {
@@ -581,8 +581,8 @@ define(['./module'], function (services) {
                   room: room.number,
                   guest: room.guest,
                   guest2: room.guest2,
-                  before_start: rstartDse < startDoy,
-                  after_end: rendDse > endDoy,
+                  before_start: rstartDse < cStartDSE,
+                  after_end: rendDse > cEndDSE,
                   nights: res.nights,
                   price: room.price,
                   status: res.checked_out ? 1 : res.checked_in ? 0 : -1,
@@ -602,8 +602,8 @@ define(['./module'], function (services) {
                   end_dse: rendDse,
                   room: resource.room_number,
                   guest: resource.guest,
-                  before_start: rstartDse < startDoy,
-                  after_end: rendDse > endDoy,
+                  before_start: rstartDse < cStartDSE,
+                  after_end: rendDse > cEndDSE,
                   nights: res.nights,
                   title: res.title,
                   oneRoom: res.rooms.length === 1

@@ -387,7 +387,8 @@ define(['./module'], function (directives) {
           var bodyArr = [],
             sDSE = datetime.daysSinceEpoch(start),  //use date since epoch to avoid logic issues with day of year
             eDSE = datetime.daysSinceEpoch(end),    //that occur at end of the year.
-            dDSE = datetime.daysSinceEpoch(scope.dates.currentDate);
+            dDSE = datetime.daysSinceEpoch(scope.dates.currentDate),
+            cLen = eDSE - sDSE + 1;
 
           // for each room in rooms..
           //  find all reservations in reservations array for the specified room
@@ -408,11 +409,14 @@ define(['./module'], function (directives) {
               var rix = 0,
                 ixDSE = sDSE;
 
-              while (rix < resArr.length && ixDSE < eDSE) {
+              while (rix < resArr.length && ixDSE <= eDSE) {
                 var res = resArr[rix],
                   blanks = 0;
                 if (rix === 0 && res.start_dse < ixDSE && res.end_dse >= ixDSE) { //first res starts before calendar start
                   res.nights -= (ixDSE - res.start_dse);
+                  if (res.nights > cLen) {
+                    res.nights = cLen;
+                  }
                   res.start_dse = ixDSE;
                   ixDSE = _addResItem(res, _backToBack(resArr, rix), bItem.resItems, eDSE);
                 }
@@ -421,7 +425,7 @@ define(['./module'], function (directives) {
                   res.end_dse = eDSE;
                   blanks = res.start_dse - ixDSE;
                   ixDSE += _addBlanks(blanks, bItem.resItems, room.number, ixDSE, dDSE);
-                  ixDSE = _addResItem(res, true, bItem.resItems, eDSE); //don't add checkout day to last res
+                  ixDSE = _addResItem(res, false, bItem.resItems, eDSE, true); //don't add checkout day to last res
                 }
                 else if (rix === resArr.length - 1 && res.end_dse < eDSE) { // last res ends before calendar end add then backfill with blanks
                   blanks = res.start_dse - ixDSE;
@@ -454,8 +458,8 @@ define(['./module'], function (directives) {
           var bodyArr = [],
             sDSE = datetime.daysSinceEpoch(start),  //use date since epoch to avoid logic issues with day of year
             eDSE = datetime.daysSinceEpoch(end),    //that occur at end of the year.
-            dDSE = datetime.daysSinceEpoch(scope.dates.currentDate);
-
+            dDSE = datetime.daysSinceEpoch(scope.dates.currentDate),
+            cLen = eDSE - sDSE + 1;
           // for each r in resources..
           //  find all reservations in reservations array for the specified room
           // build the table row - try first to span empty cells to see how it looks.
@@ -478,6 +482,9 @@ define(['./module'], function (directives) {
                   blanks = 0;
                 if (rix === 0 && res.start_dse < ixDSE && res.end_dse >= ixDSE) { //first res starts before calendar start
                   res.nights -= (ixDSE - res.start_dse);
+                  if (res.nights > cLen) {
+                    res.nights = cLen;
+                  }
                   res.start_dse = ixDSE;
                   ixDSE = _addResItem(res, _backToBack(resArr, rix), bItem.resItems, eDSE);
                 }
@@ -486,7 +493,7 @@ define(['./module'], function (directives) {
                   res.end_dse = eDSE;
                   blanks = res.start_dse - ixDSE;
                   ixDSE += _addBlanks(blanks, bItem.resItems, 0, ixDSE, dDSE);
-                  ixDSE = _addResItem(res, true, bItem.resItems, eDSE); //don't add checkout day to last res
+                  ixDSE = _addResItem(res, false, bItem.resItems, eDSE, true); //don't add checkout day to last res
                 }
                 else if (rix === resArr.length - 1 && res.end_dse < eDSE) { // last res ends before calendar end, add then backfill with blanks
                   blanks = res.start_dse - ixDSE;
@@ -664,7 +671,7 @@ define(['./module'], function (directives) {
         }
 
         // Adds a reservation/resource item if not overlapEnd then add a checkout day
-        function _addResItem(res, overlapEnd, rArr, edse) {
+        function _addResItem(res, overlapEnd, rArr, edse, adjustEnd = false) {
           var std = res.end_date.getDay(),
             wknd = sundayStart ? 6 : 0;
 
@@ -676,7 +683,7 @@ define(['./module'], function (directives) {
             resCol: true,
             endCol: false,
             link: { number: res.reservation_number, room: res.room, guest: res.guest },
-            overLapCol: overlapEnd && res.end_dse !== edse,
+            overLapCol: overlapEnd && res.end_dse <= edse,
             hoverTxt: '<b>' + res.title + (!res.oneRoom ? ' - ' + res.guest : '') + '</b><br />Von: '
               + $filter('date')(res.start_date, 'shortDate')
               + '<br />Bis: ' + $filter('date')(res.end_date, 'shortDate')
@@ -699,7 +706,7 @@ define(['./module'], function (directives) {
             nextDSE = res.start_dse + res.nights;
 
           rArr.push(resItem);
-          if (!overlapEnd && (res.end_dse <= edse)) {
+          if (!overlapEnd && (res.end_dse <= edse) && !adjustEnd) {
             rArr.push(checkout);
             nextDSE++;
           }

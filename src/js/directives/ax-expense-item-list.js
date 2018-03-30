@@ -105,7 +105,7 @@ define(['./module'], function (directives) {
         scope.discountKurtax = function (item) {
           var dc = configService.constants.get("cityTaxDiscount") / 100.;
 
-          item.price = convert.roundp(scope.ktax * dc, 2);
+          item.price = convert.roundpd(scope.ktax * dc, 2);
           _updateRes(item._id);
         };
 
