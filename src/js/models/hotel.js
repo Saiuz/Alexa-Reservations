@@ -523,7 +523,9 @@ define(['./module'], function (model) {
                                                             // will contain the partner name field for the main guest
       firm: { type: String, index: true},
       start_date: { type: Date, required: true},
+      start_dse: {type: Number, required: true, index: true}, //days since unix epoch of start date
       end_date: { type: Date, required: true},
+      end_dse: {type: Number, required: true, index: true}, //days since unix epoch of end date
       checked_in: Date, // set when all rooms in this reservation have been checked in.
       checked_out: Date, // set when all rooms in this reservation have been checked out.
       occupants: Number,

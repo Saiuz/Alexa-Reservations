@@ -673,6 +673,7 @@ define(['./module'], function (model) {
       // This method is called prior to saving the reservation. It performs the following functions:
       //    Validates various reservation properties
       //    Cleans up start and end dates (removes time component)
+      //    Calculates the days since Unix epoch (dse) values of the start and end dates.
       //    Generates the reservation title.
       //    Copies the required expense items from the room plan to the reservation if the plan has changed.
       //    Copies the address details from the guest or firm if the guest or firm properties have changed.
@@ -689,7 +690,9 @@ define(['./module'], function (model) {
           // perform stuff that doesn't require a promise
           // clean dates - this is needed to deal with time zone changes
           this.res.start_date = datetime.dateOnly(new Date(this.res.start_date));
+          this.res.start_dse = datetime.daysSinceEpoch(new Date(this.res.start_date));
           this.res.end_date = datetime.dateOnly(new Date(this.res.end_date));
+          this.res.end_dse = datetime.daysSinceEpoch(new Date(this.res.end_date))
 
           // generate title (required field)
           if (this.res.firm) {

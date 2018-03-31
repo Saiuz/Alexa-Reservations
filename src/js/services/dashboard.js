@@ -17,19 +17,27 @@ define(['./module'], function (services) {
         /**
          * Return reservations with start dates on date specified
          * @param {Date} dateVal 
+         * start_date: {
+                  $lt: datetime.dateOnlyUTC(end)
+                }
+              }, {
+                end_date: {
+                  $gt: datetime.lastSecondUTC(start)
+                }
          */
         getArrivals: async function (dateVal) {
           try {
             const qry = {
-              $and: [{
+/*               $and: [{
                 start_date: {
                   $gte: datetime.dateOnlyUTC(dateVal)
                 }
               }, {
                 start_date: {
-                  $lt: datetime.dateOnlyUTC(dateVal, 1)
+                  $lt: datetime.lastSecondUTC(dateVal)
                 }
-              }]
+              }] */
+              start_dse: datetime.daysSinceEpoch(dateVal)
             };
             let reservations = await Reservation.find(qry).sort('room').exec();
             return reservations
@@ -45,15 +53,16 @@ define(['./module'], function (services) {
         getDepartures: async function (dateVal) {
           try {
             let qry = {
-              $and: [{
+/*               $and: [{
                 end_date: {
                   $gte: datetime.dateOnlyUTC(dateVal)
                 }
               }, {
                 end_date: {
-                  $lt: datetime.dateOnlyUTC(dateVal, 1)
+                  $lt: datetime.lastSecondUTC(dateVal)
                 }
-              }]
+              }] */
+              end_dse: datetime.daysSinceEpoch(dateVal)
             };
             let reservations = await Reservation.find(qry).sort('room').exec();
             return reservations;
@@ -439,8 +448,8 @@ define(['./module'], function (services) {
          */
         getReservationsInMonth: async function (month, year) {
           try {
-            let startmonth = new Date(year, month, 1);
-            let endmonth = new Date(year, month + 1, 0);
+            let startmonth = datetime.daysSinceEpoch(new Date(year, month, 1));
+            let endmonth = datetime.daysSinceEpoch(new Date(year, month + 1, 0));
             let results = [];
             let findPlan = function (id, plan) {
               var ix = -1;
@@ -492,18 +501,18 @@ define(['./module'], function (services) {
 
             let resResults = await Reservation.find({
                 $and: [{
-                  start_date: {
+                  start_dse: {
                     $gte: startmonth
                   }
                 }, {
-                  start_date: {
+                  start_dse: {
                     $lte: endmonth
                   }
                 }]
               })
               .lean()
               .sort({
-                start_date: 1
+                start_dse: 1
               })
               .exec();
             // break out reservations based on type:
@@ -555,7 +564,7 @@ define(['./module'], function (services) {
               cEndDSE = datetime.daysSinceEpoch(end);
 
             let resResults = await Reservation.find({
-              $and: [{
+/*               $and: [{
                 start_date: {
                   $lt: datetime.dateOnlyUTC(end)
                 }
@@ -563,26 +572,32 @@ define(['./module'], function (services) {
                 end_date: {
                   $gt: datetime.lastSecondUTC(start)
                 }
+              }] */
+              $and: [{
+                start_dse: {
+                  $lte: cEndDSE  
+                }
+              }, {
+                end_dse: {
+                  $gt: cStartDSE
+                }
               }]
             }).sort({
               start_date: 1
             }).exec();
             resResults.forEach(function (res) {
-              let rstartDse = datetime.daysSinceEpoch(res.start_date),
-                  rendDse = datetime.daysSinceEpoch(res.end_date);
-
               res.rooms.forEach(function (room) {
                 let r = {
                   reservation_number: res.reservation_number,
                   start_date: res.start_date,
-                  start_dse: rstartDse,
+                  start_dse: res.start_dse,
                   end_date: res.end_date,
-                  end_dse: rendDse,
+                  end_dse: res.end_dse,
                   room: room.number,
                   guest: room.guest,
                   guest2: room.guest2,
-                  before_start: rstartDse < cStartDSE,
-                  after_end: rendDse > cEndDSE,
+                  before_start: res.start_dse < cStartDSE,
+                  after_end: res.end_dse > cEndDSE,
                   nights: res.nights,
                   price: room.price,
                   status: res.checked_out ? 1 : res.checked_in ? 0 : -1,
@@ -597,13 +612,13 @@ define(['./module'], function (services) {
                   resource_name: resource.name,
                   reservation_number: res.reservation_number,
                   start_date: res.start_date,
-                  start_dse: rstartDse,
+                  start_dse:  res.start_dse,
                   end_date: res.end_date,
-                  end_dse: rendDse,
+                  end_dse: res.end_dse,
                   room: resource.room_number,
                   guest: resource.guest,
-                  before_start: rstartDse < cStartDSE,
-                  after_end: rendDse > cEndDSE,
+                  before_start:  res.start_dse < cStartDSE,
+                  after_end: res.end_dse > cEndDSE,
                   nights: res.nights,
                   title: res.title,
                   oneRoom: res.rooms.length === 1
@@ -662,11 +677,11 @@ define(['./module'], function (services) {
             let resResults = await Reservation.find({
               $and: [{
                 start_date: {
-                  $lt: datetime.lastSecondUTC(endDate)
+                  $lt: datetime.dateOnlyUTC(end)
                 }
               }, {
                 end_date: {
-                  $gt: datetime.lastSecondUTC(startDate)
+                  $gt: datetime.lastSecondUTC(start)
                 }
               }]
             }, {
@@ -944,7 +959,6 @@ define(['./module'], function (services) {
         /**
          * Retrieve the room plan types by id. Filtering will be done in the vm or UI
          * @param {ObjectId} id - plan id
-         */
         getRoomPlanById: async function (id) {
           try {
             return await RoomPlan.findById(id);
