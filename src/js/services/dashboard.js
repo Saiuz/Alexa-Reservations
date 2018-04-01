@@ -649,18 +649,20 @@ define(['./module'], function (services) {
             // query reservations, return only data needed
             let resResults = await Reservation.find({
               $and: [{
-                start_date: {
-                  $lt: datetime.dateOnlyUTC(end)
+                start_dse: {
+                  $lt: de
                 }
               }, {
-                end_date: {
-                  $gt: datetime.lastSecondUTC(start)
+                end_dse: {
+                  $gt: ds
                 }
               }]
             }, {
               reservation_number: 1,
               start_date: 1,
+              start_dse: 1,
               end_date: 1,
+              end_dse: 1,
               checked_in: 1,
               checked_out: 1,
               rooms: 1,
@@ -668,8 +670,8 @@ define(['./module'], function (services) {
             });
             // Build the daily data for all reserved rooms 
             resResults.forEach(function (res) {
-              let rStartDse = datetime.daysSinceEpoch(res.start_date)
-              let rEndDse = datetime.daysSinceEpoch(res.end_date);
+              let rStartDse = res.start_dse;
+              let rEndDse = res.end_dse;
               let expRooms = res.expenses.filter(item => item.bill_code === 0);
               expRooms.forEach((r) => {
                 if (!excludedRooms.includes(r.room)) { //don't process excluded 'fake' rooms
