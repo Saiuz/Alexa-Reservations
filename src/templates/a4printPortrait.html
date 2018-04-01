@@ -13,7 +13,7 @@
     };
     function delayedPrint() { //Wait for real contents to be written to pContent div.
         setTimeout(function () {
-            window.print();
+            window.print({'shouldPrintBackgrounds': true});
         }, 50);
     }
 </script>
