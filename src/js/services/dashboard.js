@@ -768,7 +768,7 @@ define(['./module'], function (services) {
             let qry = {
               $and: [{
                 start_dse: {
-                  $lt: end - 1 //datetime.dateOnlyUTC(end)
+                  $lte: end - 1 //datetime.dateOnlyUTC(end)
                 }
               }, {
                 end_dse: {
