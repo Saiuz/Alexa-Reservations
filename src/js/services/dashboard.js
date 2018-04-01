@@ -768,11 +768,11 @@ define(['./module'], function (services) {
             let qry = {
               $and: [{
                 start_dse: {
-                  $lt: end //datetime.dateOnlyUTC(end)
+                  $lt: end - 1 //datetime.dateOnlyUTC(end)
                 }
               }, {
                 end_dse: {
-                  $gte: start//datetime.lastSecondUTC(start)
+                  $gt: start//datetime.lastSecondUTC(start)
                 }
               }]
             };
@@ -783,7 +783,7 @@ define(['./module'], function (services) {
               end_date: 1,
               end_dse: 1,
               rooms: 1
-            });
+            }).lean();
             //get a distinct list of the rooms that don't work
             let booked = new Set();
             reservations.forEach((item) => {
