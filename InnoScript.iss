@@ -62,7 +62,7 @@ Source: "{#NwSourcePath}\locales\*"; DestDir: "{app}\locales"; Flags: ignorevers
 Source: "{#NwSourcePath}\pnacl\*"; DestDir: "{app}\pnacl"; Flags: ignoreversion
 Source: "{#NwSourcePath}\swiftshader\*"; DestDir: "{app}\swiftshader"; Flags: ignoreversion
 Source: "{MyBaseDir}\..\src\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
-Source: "{MyBaseDir}\..\extra\mongodump*"; DestDir: "{app}"; Flags: ignoreversion
+Source: "{MyBaseDir}\..\extra\mongodump*"; DestDir: "{app}\extra"; Flags: ignoreversion
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 
 [Icons]

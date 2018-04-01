@@ -30,9 +30,9 @@ define(['./module'], function (services) {
       basePath = process.env.APPDATA + '\\' + appName.replace(' ', '-');
       workPath = basePath + '\\' + dataSubPath;
       defExportPath = process.env.HOMEDRIVE + process.env.HOMEPATH + '\\Desktop';
-      execPath = process.execPath.replace('nw.exe','');
+      execPath = process.execPath.replace('nw.exe','').replace('Alexa.exe', '');
       dbDumpPath = `${workPath}\\${database}`
-      dbDumpCmd =  (outFile) => {return `${execPath}\extra\\mongodump.exe --host ${host} --port ${port} --gzip --archive="${outFile}"`;};
+      dbDumpCmd =  (outFile) => {return `"${execPath}\extra\\mongodump.exe" --host ${host} --port ${port} --gzip --archive="${outFile}"`;};
     }
     else { //assume mac
       tmpPath = process.env.TMPDIR;
