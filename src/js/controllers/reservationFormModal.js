@@ -157,8 +157,10 @@ define(['./module'], function (controllers) {
               console.log("start_date changed");
               ignoreIndex = 1; //end_date
               $scope.rvm.res.start_date = $scope.start_date;
+              $scope.rvm.res.start_dse = datetime.daysSinceEpoch($scope.rvm.res.start_date);
               rdates = $scope.rvm.calculateEndDate($scope.rvm.res.start_date);
               $scope.rvm.res.end_date = rdates.end;
+              $scope.rvm.res.end_dse = datetime.daysSinceEpoch($scope.rvm.res.end_date);
               $scope.end_date = rdates.end;
               $scope.rvm.updateAvailableRoomsAndResources().then((cnt) => {
                 helpers.dApply();
@@ -170,6 +172,7 @@ define(['./module'], function (controllers) {
               console.log("end_date changed");
               ignoreIndex = 2; //nights
               $scope.rvm.res.end_date = $scope.end_date;
+              $scope.rvm.res.end_dse = datetime.daysSinceEpoch($scope.rvm.res.end_date);
               $scope.rvm.calculateNights();
               $scope.rvm.updateAvailableRoomsAndResources().then((cnt) => {
                 helpers.dApply();
@@ -181,6 +184,7 @@ define(['./module'], function (controllers) {
               ignoreIndex = 1; //end_date
               rdates = $scope.rvm.calculateEndDate($scope.rvm.res.start_date);
               $scope.rvm.res.end_date = rdates.end;
+              $scope.rvm.res.end_dse = datetime.daysSinceEpoch($scope.rvm.res.end_date);
               $scope.end_date = rdates.end;
               $scope.rvm.updateAvailableRoomsAndResources().then((cnt) => {
                 helpers.dApply();

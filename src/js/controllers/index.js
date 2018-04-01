@@ -11,7 +11,6 @@ define([
     './reservations',
     './rechnung',
     './charges',
-    './addresse',
     './liste',
     './plans',
     './guestFormModal',

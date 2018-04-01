@@ -756,8 +756,8 @@ define(['./module'], function (services) {
          * The currentResNumber parameter, if provided will exclude any rooms from the booked list that
          * are currently associated with the reservation. Technically a reservations booked rooms should
          * be available to itself.
-         * @param {Date} start - room retrieval start date
-         * @param {Date} end - room retrieval end date
+         * @param {Date} start - room retrieval start dse
+         * @param {Date} end - room retrieval end dse
          * @param {boolean} doubleOnly - if true then only retrieve double rooms and suites.
          * @param {boolean} forList - if true then an empty room is added to the top of the list returned
          * @param {number} currentResNumber - current reservation number
@@ -825,8 +825,8 @@ define(['./module'], function (services) {
         },
         /**
          * Finds bookable resources such as parking places available between the specified dates
-         * @param {Date} start - resource retrieval start date
-         * @param {Date} end - resource retrieval end date
+         * @param {Date} start - resource retrieval start dse
+         * @param {Date} end - resource retrieval end dse
          * @param {boolean} forList - if true then an empty resource is added to the top of the list returned
          * @param {number} currentResNumber - current reservation number
          */
@@ -834,19 +834,21 @@ define(['./module'], function (services) {
           try {
             let qry = {
               $and: [{
-                start_date: {
-                  $lt: datetime.dateOnlyUTC(end)
+                start_dse: {
+                  $lte: end - 1 //datetime.dateOnlyUTC(end)
                 }
               }, {
-                end_date: {
-                  $gt: datetime.lastSecondUTC(start)
+                end_dse: {
+                  $gt: start//datetime.lastSecondUTC(start)
                 }
               }]
             };
             let reservations = await Reservation.find(qry, {
               reservation_number: 1,
               start_date: 1,
+              start_dse: 1,
               end_date: 1,
+              end_dse: 1,
               resources: 1
             });
             //get a distinct list of resources (parking) that don't work
