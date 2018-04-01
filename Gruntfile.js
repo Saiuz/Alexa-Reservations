@@ -1,4 +1,4 @@
-const nwVer = '0.25.4'; // '0.24.3'; //'0.15.4'; //'0.12.3';
+const nwVer = '0.29.3'; // '0.24.3'; //'0.15.4'; //'0.12.3';
 
 const isWin32 = /^win/.test(process.platform) || nwVer === '0.10.5';
 const isWin64 = (/^win/.test(process.platform) && nwVer !== '0.10.5') && /^x64/.test(process.arch);
