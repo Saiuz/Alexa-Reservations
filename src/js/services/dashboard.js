@@ -28,15 +28,6 @@ define(['./module'], function (services) {
         getArrivals: async function (dateVal) {
           try {
             const qry = {
-/*               $and: [{
-                start_date: {
-                  $gte: datetime.dateOnlyUTC(dateVal)
-                }
-              }, {
-                start_date: {
-                  $lt: datetime.lastSecondUTC(dateVal)
-                }
-              }] */
               start_dse: datetime.daysSinceEpoch(dateVal)
             };
             let reservations = await Reservation.find(qry).sort('room').exec();
@@ -53,15 +44,6 @@ define(['./module'], function (services) {
         getDepartures: async function (dateVal) {
           try {
             let qry = {
-/*               $and: [{
-                end_date: {
-                  $gte: datetime.dateOnlyUTC(dateVal)
-                }
-              }, {
-                end_date: {
-                  $lt: datetime.lastSecondUTC(dateVal)
-                }
-              }] */
               end_dse: datetime.daysSinceEpoch(dateVal)
             };
             let reservations = await Reservation.find(qry).sort('room').exec();
@@ -564,15 +546,6 @@ define(['./module'], function (services) {
               cEndDSE = datetime.daysSinceEpoch(end);
 
             let resResults = await Reservation.find({
-/*               $and: [{
-                start_date: {
-                  $lt: datetime.dateOnlyUTC(end)
-                }
-              }, {
-                end_date: {
-                  $gt: datetime.lastSecondUTC(start)
-                }
-              }] */
               $and: [{
                 start_dse: {
                   $lte: cEndDSE  
@@ -794,19 +767,21 @@ define(['./module'], function (services) {
           try {
             let qry = {
               $and: [{
-                start_date: {
-                  $lt: datetime.dateOnlyUTC(end)
+                start_dse: {
+                  $lt: end //datetime.dateOnlyUTC(end)
                 }
               }, {
-                end_date: {
-                  $gt: datetime.lastSecondUTC(start)
+                end_dse: {
+                  $gte: start//datetime.lastSecondUTC(start)
                 }
               }]
             };
             let reservations = await Reservation.find(qry, {
               reservation_number: 1,
               start_date: 1,
+              start_dse: 1,
               end_date: 1,
+              end_dse: 1,
               rooms: 1
             });
             //get a distinct list of the rooms that don't work

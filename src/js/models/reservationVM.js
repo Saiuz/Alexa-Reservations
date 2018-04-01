@@ -156,7 +156,7 @@ define(['./module'], function (model) {
             that.res.rooms[0].guest2 = that.res.occupants === 1 ? '' : that.res.guest2.name;
           }
 
-          var rdates = that.cleanResDates();
+          var rdates = that.getResDateDse();
           var doubleOnly = that.double_only || (that.res.occupants === 2 && that.oneRoom);
           this.updateAvailableRoomsAndResources(rdates, doubleOnly, true).then(function (cnt) {
             deferred.resolve(cnt);
@@ -260,25 +260,26 @@ define(['./module'], function (model) {
 
       // Updates the nights property of the VM based on the start and end dates of the reservation
       this.calculateNights = function () {
-        var rdates = that.cleanResDates();
-        this.nights = datetime.getNightsStayed(new Date(rdates.start), new Date(rdates.end));
+        var rdates = that.getResDateDse();
+        this.nights = rdates.end - rdates.start; //datetime.getNightsStayed(new Date(rdates.start), new Date(rdates.end));
         return {  //returned the clean dates
           start: rdates.start,
           end: rdates.end
         };
       };
 
-      // Utility routine that will clean the reservation start and end dates, remove the time portion.
-      // Returns a simple object with the cleaned dates in the start and an end properties.
-      this.cleanResDates = function () {
+      // Utility routine that will return the start and end DSE values for the reservation.
+      // Returns a simple object with the dse values in the start and an end properties.
+      // Note replaces the cleaned dates function
+      this.getResDateDse = function () {
         if (this.res) {
           return {
-            start: datetime.dateOnly(new Date(this.res.start_date)),
-            end: datetime.dateOnly(new Date(this.res.end_date))
+            start: this.res.start_dse, // datetime.dateOnly(new Date(this.res.start_date)),
+            end: this.res.end_dse // datetime.dateOnly(new Date(this.res.end_date))
           };
         }
         else {
-          return {start: null, end: null};
+          return {start: 0, end: 0};
         }
       };
 
@@ -290,7 +291,7 @@ define(['./module'], function (model) {
       // The method returns a promise that resolves to the count of the rooms found. Internally, the avalableRooms and
       // the availableResources arrays are updated with the results of the search.
       this.updateAvailableRoomsAndResources = function (roomOnly) {
-        var rdates = that.cleanResDates(); //retrieve reservation dates and clean of time portion
+        var rdates = that.getResDateDse(); //retrieve reservation dates and clean of time portion
         var doubleOnly = that.double_only || (that.res.occupants === 2 && that.oneRoom);
         var resource = dbEnums.getResourceTypeEnum()[0]; //currently the only bookable resource type.
         var deferred = $q.defer();
@@ -2731,7 +2732,9 @@ define(['./module'], function (model) {
           let reservation = new Reservation();
           reservation.reservation_number = resNo;
           reservation.start_date = start;
+          reservation.start_dse = datetime.daysSinceEpoch(start);
           reservation.end_date = end;
+          reservation.end_dse = datetime.daysSinceEpoch(end);
           reservation.occupants = 1;
           rvm = new reservationVM(reservation, roomPlanList, itemTypeList);
           reservation.type = rvm.resTypeList[0]; //defaults to standard reservation
