@@ -12,7 +12,7 @@
 #define MyAppExeName "Alexa.exe"
 
 #define MyBaseDir "C:\Users\nb88843\AppDevP\working\Alexa-Reservations"
-#define NwVersion "0.25.4-sdk"
+#define NwVersion "0.29.3-sdk"
 #define Architecture "win64"
 
 #define NwSourcePath MyBaseDir + "\cache\" + NwVersion + "\" + Architecture
