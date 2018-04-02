@@ -689,7 +689,7 @@ define(['./module'], function (model) {
         }
         else {
           // perform stuff that doesn't require a promise
-          // clean dates - this is needed to deal with time zone changes
+          // Recalculate res start and end DSE values
           this.res.start_date = datetime.dateOnly(new Date(this.res.start_date));
           this.res.start_dse = datetime.daysSinceEpoch(new Date(this.res.start_date));
           this.res.end_date = datetime.dateOnly(new Date(this.res.end_date));
@@ -1042,6 +1042,9 @@ define(['./module'], function (model) {
         if (item && item.is_room) {
           _updateRoomTaxablePrice(item);
         }
+        // In case we updated a Kur item see if we need to add/update some fixed and variable
+        // charges
+        _updatePrescriptionAndCopay();
         item.last_updated = datetime.dateOnly(new Date()); //date only ignore time
 
         that.res.save(function (err) {
@@ -1514,7 +1517,7 @@ define(['./module'], function (model) {
         }
 
         if (lastInsurance2 !== that.res.insurance2) {
-          _removeExistingExpenseItemsByBillCode(configService.constants.bcKur, guest2)
+          _removeExistingExpenseItemsByBillCode(configService.constants.bcKur, (guest2 ? guest2 : 'xxxx')); //bogus name if guest 2 not defined dont want to delete all
         }
 
         // Update the names associated with the expense items if the names of the guests change and we only have
@@ -1538,7 +1541,7 @@ define(['./module'], function (model) {
 
         // If the plan has not changed but the room hash has changed, see if we can handle changes without replacing
         // all expenses.
-        if (lastPlanCode === that.res.plan_code && roomsChanged) {
+        if (that.res.plan_code.equals(lastPlanCode) && roomsChanged) {
           rchanges = _buildRoomChanges(lastRoomInfo, that.res.rooms);
           if (that.res.rooms.length) that.res.rooms[0].update_date = new Date(); // handles bug if only array length changes.
           replaceAll = _updateExpenseRooms(rchanges, curPlan);
@@ -1548,7 +1551,7 @@ define(['./module'], function (model) {
         // If plan changed, or we couldn't handle room changes then remove all expense items
         // and replace the required items. This is a drastic move since we could deleted recorded expense items
         // such as food or drink.
-        if (lastPlanCode !== that.res.plan_code || replaceAll) {
+        if (!that.res.plan_code.equals(lastPlanCode) || replaceAll) {
           // First see if we can
           // Remove the current required items, retrieve the new required Items and add them to the current reservation
           // (copy and initialize based on business logic) TODO-- Need to refine all this logic based on Billing Logic doc.
@@ -2680,15 +2683,15 @@ define(['./module'], function (model) {
       // Now that everything is defined, initialize the VM based on the reservation model
       // perform model setup actions
       if (reservation) {
-        lastPlanCode = reservation.plan_code ? reservation.plan_code : "-1";
+        lastPlanCode = reservation.plan_code ? reservation.plan_code : undefined;
         lastGuest = reservation.guest ? reservation.guest.name : '';
         lastGuest2 = reservation.guest2 ? reservation.guest2.name : '';
         lastFirm = reservation.firm ? reservation.firm : '';
         lastNights = reservation.nights;
         lastRoomHash = _buildRoomHash(reservation.rooms, reservation.occupants);
         lastResourceHash = _buildResourceHash(reservation.resources);
-        lastInsurance1 = reservation.insurance ? reservation.insurance : '';
-        lastInsurance2 = reservation.insurance2 ? reservation.insurance2 : '';
+        lastInsurance1 = reservation.insurance; // ? reservation.insurance : '';
+        lastInsurance2 = reservation.insurance2; // ? reservation.insurance2 : '';
 
         if (reservation.rooms.length) {
           reservation.rooms.forEach(function (room) {
