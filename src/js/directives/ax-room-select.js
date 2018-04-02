@@ -380,9 +380,11 @@ define(['./module'], function (directives) {
       scope.removeRoom = function (roomnum) {
         for (var ix = 0; ix < scope.rooms.length; ix++) {
           if (scope.rooms[ix].number === roomnum) {
-            lastDeleted.guest = scope.rooms[ix].guest;
-            lastDeleted.guest2 = scope.rooms[ix].guest2;
-            lastDeleted.checkedIn = scope.rooms[ix].isCheckedIn;
+            if (scope.oneRoomB) {
+              lastDeleted.guest = scope.rooms[ix].guest;
+              lastDeleted.guest2 = scope.rooms[ix].guest2;
+              lastDeleted.checkedIn = scope.rooms[ix].isCheckedIn;
+            }
             var id = scope.rooms[ix]._id;
             scope.guestCount -= scope.rooms[ix].guest_count;
             scope.rooms.id(id).remove(); //Mongoose sub doc remove

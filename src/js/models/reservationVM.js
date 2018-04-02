@@ -364,7 +364,7 @@ define(['./module'], function (model) {
           }
 
           if (that.isKur && that.showSecondGuest) {
-            that.res.guest2 = {name: guest.partner, id: that.res.guest.id};
+            that.res.guest2 = {name: guest.partner, id: guest.id};
             name2 = guest.partner;
           }
 
@@ -1955,7 +1955,7 @@ define(['./module'], function (model) {
 
             if (checkItems2 && hasCopay2) {
               if (copay2) {
-                copay2.price = kursum1;
+                copay2.price = kursum2;
               }
               else {
                 _addCopayItem(room, guest2, kursum2, insurance2);
